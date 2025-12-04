@@ -2,23 +2,18 @@
 //  ContentView.swift
 //  LearnTrack
 //
-//  Created by anatole on 04/12/2025.
+//  Vue de contenu principale (remplacée par MainTabView)
 //
 
 import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+        MainTabView()
     }
 }
 
 #Preview {
     ContentView()
+        .environmentObject(AuthService.shared)
 }

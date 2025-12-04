@@ -2,16 +2,29 @@
 //  LearnTrackApp.swift
 //  LearnTrack
 //
-//  Created by anatole on 04/12/2025.
+//  Created on December 4, 2025.
 //
 
 import SwiftUI
 
 @main
 struct LearnTrackApp: App {
+    @StateObject private var authService = AuthService.shared
+    
+    init() {
+        // Configuration initiale de Supabase
+        SupabaseManager.shared.configure()
+    }
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            if authService.isAuthenticated {
+                MainTabView()
+                    .environmentObject(authService)
+            } else {
+                LoginView()
+                    .environmentObject(authService)
+            }
         }
     }
 }
