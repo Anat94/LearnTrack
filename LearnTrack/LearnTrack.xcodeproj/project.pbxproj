@@ -6,20 +6,68 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		AC1EEB752EE1A066001103EE /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = AC1EEB742EE1A066001103EE /* Supabase */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		AC1EEADB2EE19B4C001103EE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AC1EEABF2EE19B49001103EE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AC1EEAC62EE19B49001103EE;
+			remoteInfo = LearnTrack;
+		};
+		AC1EEAE52EE19B4C001103EE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AC1EEABF2EE19B49001103EE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AC1EEAC62EE19B49001103EE;
+			remoteInfo = LearnTrack;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
-		DFB338822EE18A3A00DF814E /* LearnTrack.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LearnTrack.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AC1EEAC72EE19B49001103EE /* LearnTrack.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LearnTrack.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AC1EEADA2EE19B4C001103EE /* LearnTrackTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LearnTrackTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AC1EEAE42EE19B4C001103EE /* LearnTrackUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LearnTrackUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		DFB338842EE18A3A00DF814E /* LearnTrack */ = {
+		AC1EEAC92EE19B49001103EE /* LearnTrack */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = LearnTrack;
+			sourceTree = "<group>";
+		};
+		AC1EEADD2EE19B4C001103EE /* LearnTrackTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = LearnTrackTests;
+			sourceTree = "<group>";
+		};
+		AC1EEAE72EE19B4C001103EE /* LearnTrackUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = LearnTrackUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		DFB3387F2EE18A3A00DF814E /* Frameworks */ = {
+		AC1EEAC42EE19B49001103EE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AC1EEB752EE1A066001103EE /* Supabase in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AC1EEAD72EE19B4C001103EE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AC1EEAE12EE19B4C001103EE /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -29,83 +77,169 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		DFB338792EE18A3A00DF814E = {
+		AC1EEABE2EE19B49001103EE = {
 			isa = PBXGroup;
 			children = (
-				DFB338842EE18A3A00DF814E /* LearnTrack */,
-				DFB338832EE18A3A00DF814E /* Products */,
+				AC1EEAC92EE19B49001103EE /* LearnTrack */,
+				AC1EEADD2EE19B4C001103EE /* LearnTrackTests */,
+				AC1EEAE72EE19B4C001103EE /* LearnTrackUITests */,
+				AC1EEB732EE1A066001103EE /* Frameworks */,
+				AC1EEAC82EE19B49001103EE /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		DFB338832EE18A3A00DF814E /* Products */ = {
+		AC1EEAC82EE19B49001103EE /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				DFB338822EE18A3A00DF814E /* LearnTrack.app */,
+				AC1EEAC72EE19B49001103EE /* LearnTrack.app */,
+				AC1EEADA2EE19B4C001103EE /* LearnTrackTests.xctest */,
+				AC1EEAE42EE19B4C001103EE /* LearnTrackUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		AC1EEB732EE1A066001103EE /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		DFB338812EE18A3A00DF814E /* LearnTrack */ = {
+		AC1EEAC62EE19B49001103EE /* LearnTrack */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DFB3388D2EE18A3B00DF814E /* Build configuration list for PBXNativeTarget "LearnTrack" */;
+			buildConfigurationList = AC1EEAEE2EE19B4C001103EE /* Build configuration list for PBXNativeTarget "LearnTrack" */;
 			buildPhases = (
-				DFB3387E2EE18A3A00DF814E /* Sources */,
-				DFB3387F2EE18A3A00DF814E /* Frameworks */,
-				DFB338802EE18A3A00DF814E /* Resources */,
+				AC1EEAC32EE19B49001103EE /* Sources */,
+				AC1EEAC42EE19B49001103EE /* Frameworks */,
+				AC1EEAC52EE19B49001103EE /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				DFB338842EE18A3A00DF814E /* LearnTrack */,
+				AC1EEAC92EE19B49001103EE /* LearnTrack */,
 			);
 			name = LearnTrack;
 			packageProductDependencies = (
+				AC1EEB742EE1A066001103EE /* Supabase */,
 			);
 			productName = LearnTrack;
-			productReference = DFB338822EE18A3A00DF814E /* LearnTrack.app */;
+			productReference = AC1EEAC72EE19B49001103EE /* LearnTrack.app */;
 			productType = "com.apple.product-type.application";
+		};
+		AC1EEAD92EE19B4C001103EE /* LearnTrackTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AC1EEAF12EE19B4C001103EE /* Build configuration list for PBXNativeTarget "LearnTrackTests" */;
+			buildPhases = (
+				AC1EEAD62EE19B4C001103EE /* Sources */,
+				AC1EEAD72EE19B4C001103EE /* Frameworks */,
+				AC1EEAD82EE19B4C001103EE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AC1EEADC2EE19B4C001103EE /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				AC1EEADD2EE19B4C001103EE /* LearnTrackTests */,
+			);
+			name = LearnTrackTests;
+			packageProductDependencies = (
+			);
+			productName = LearnTrackTests;
+			productReference = AC1EEADA2EE19B4C001103EE /* LearnTrackTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		AC1EEAE32EE19B4C001103EE /* LearnTrackUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AC1EEAF42EE19B4C001103EE /* Build configuration list for PBXNativeTarget "LearnTrackUITests" */;
+			buildPhases = (
+				AC1EEAE02EE19B4C001103EE /* Sources */,
+				AC1EEAE12EE19B4C001103EE /* Frameworks */,
+				AC1EEAE22EE19B4C001103EE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AC1EEAE62EE19B4C001103EE /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				AC1EEAE72EE19B4C001103EE /* LearnTrackUITests */,
+			);
+			name = LearnTrackUITests;
+			packageProductDependencies = (
+			);
+			productName = LearnTrackUITests;
+			productReference = AC1EEAE42EE19B4C001103EE /* LearnTrackUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		DFB3387A2EE18A3A00DF814E /* Project object */ = {
+		AC1EEABF2EE19B49001103EE /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2610;
-				LastUpgradeCheck = 2610;
+				LastSwiftUpdateCheck = 1620;
+				LastUpgradeCheck = 1620;
 				TargetAttributes = {
-					DFB338812EE18A3A00DF814E = {
-						CreatedOnToolsVersion = 26.1.1;
+					AC1EEAC62EE19B49001103EE = {
+						CreatedOnToolsVersion = 16.2;
+					};
+					AC1EEAD92EE19B4C001103EE = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = AC1EEAC62EE19B49001103EE;
+					};
+					AC1EEAE32EE19B4C001103EE = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = AC1EEAC62EE19B49001103EE;
 					};
 				};
 			};
-			buildConfigurationList = DFB3387D2EE18A3A00DF814E /* Build configuration list for PBXProject "LearnTrack" */;
+			buildConfigurationList = AC1EEAC22EE19B49001103EE /* Build configuration list for PBXProject "LearnTrack" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
 			);
-			mainGroup = DFB338792EE18A3A00DF814E;
+			mainGroup = AC1EEABE2EE19B49001103EE;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				AC1EEB722EE19FB7001103EE /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
-			productRefGroup = DFB338832EE18A3A00DF814E /* Products */;
+			productRefGroup = AC1EEAC82EE19B49001103EE /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				DFB338812EE18A3A00DF814E /* LearnTrack */,
+				AC1EEAC62EE19B49001103EE /* LearnTrack */,
+				AC1EEAD92EE19B4C001103EE /* LearnTrackTests */,
+				AC1EEAE32EE19B4C001103EE /* LearnTrackUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		DFB338802EE18A3A00DF814E /* Resources */ = {
+		AC1EEAC52EE19B49001103EE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AC1EEAD82EE19B4C001103EE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AC1EEAE22EE19B4C001103EE /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -115,7 +249,21 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		DFB3387E2EE18A3A00DF814E /* Sources */ = {
+		AC1EEAC32EE19B49001103EE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AC1EEAD62EE19B4C001103EE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AC1EEAE02EE19B4C001103EE /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -124,8 +272,21 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		AC1EEADC2EE19B4C001103EE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AC1EEAC62EE19B49001103EE /* LearnTrack */;
+			targetProxy = AC1EEADB2EE19B4C001103EE /* PBXContainerItemProxy */;
+		};
+		AC1EEAE62EE19B4C001103EE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AC1EEAC62EE19B49001103EE /* LearnTrack */;
+			targetProxy = AC1EEAE52EE19B4C001103EE /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
-		DFB3388B2EE18A3B00DF814E /* Debug */ = {
+		AC1EEAEC2EE19B4C001103EE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -177,18 +338,16 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
-		DFB3388C2EE18A3B00DF814E /* Release */ = {
+		AC1EEAED2EE19B4C001103EE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -234,100 +393,232 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
-				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
-		DFB3388E2EE18A3B00DF814E /* Debug */ = {
+		AC1EEAEF2EE19B4C001103EE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = LearnTrack/LearnTrack.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"LearnTrack/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = BetCooker.LearnTrack;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 2.2;
 			};
 			name = Debug;
 		};
-		DFB3388F2EE18A3B00DF814E /* Release */ = {
+		AC1EEAF02EE19B4C001103EE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = LearnTrack/LearnTrack.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"LearnTrack/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = BetCooker.LearnTrack;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 2.2;
+			};
+			name = Release;
+		};
+		AC1EEAF22EE19B4C001103EE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				MACOSX_DEPLOYMENT_TARGET = 15.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = BetCooker.LearnTrackTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LearnTrack.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/LearnTrack";
+				XROS_DEPLOYMENT_TARGET = 2.2;
+			};
+			name = Debug;
+		};
+		AC1EEAF32EE19B4C001103EE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				MACOSX_DEPLOYMENT_TARGET = 15.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = BetCooker.LearnTrackTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LearnTrack.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/LearnTrack";
+				XROS_DEPLOYMENT_TARGET = 2.2;
+			};
+			name = Release;
+		};
+		AC1EEAF52EE19B4C001103EE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				MACOSX_DEPLOYMENT_TARGET = 15.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = BetCooker.LearnTrackUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TEST_TARGET_NAME = LearnTrack;
+				XROS_DEPLOYMENT_TARGET = 2.2;
+			};
+			name = Debug;
+		};
+		AC1EEAF62EE19B4C001103EE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				MACOSX_DEPLOYMENT_TARGET = 15.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = BetCooker.LearnTrackUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TEST_TARGET_NAME = LearnTrack;
+				XROS_DEPLOYMENT_TARGET = 2.2;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DFB3387D2EE18A3A00DF814E /* Build configuration list for PBXProject "LearnTrack" */ = {
+		AC1EEAC22EE19B49001103EE /* Build configuration list for PBXProject "LearnTrack" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				DFB3388B2EE18A3B00DF814E /* Debug */,
-				DFB3388C2EE18A3B00DF814E /* Release */,
+				AC1EEAEC2EE19B4C001103EE /* Debug */,
+				AC1EEAED2EE19B4C001103EE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		DFB3388D2EE18A3B00DF814E /* Build configuration list for PBXNativeTarget "LearnTrack" */ = {
+		AC1EEAEE2EE19B4C001103EE /* Build configuration list for PBXNativeTarget "LearnTrack" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				DFB3388E2EE18A3B00DF814E /* Debug */,
-				DFB3388F2EE18A3B00DF814E /* Release */,
+				AC1EEAEF2EE19B4C001103EE /* Debug */,
+				AC1EEAF02EE19B4C001103EE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AC1EEAF12EE19B4C001103EE /* Build configuration list for PBXNativeTarget "LearnTrackTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AC1EEAF22EE19B4C001103EE /* Debug */,
+				AC1EEAF32EE19B4C001103EE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AC1EEAF42EE19B4C001103EE /* Build configuration list for PBXNativeTarget "LearnTrackUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AC1EEAF52EE19B4C001103EE /* Debug */,
+				AC1EEAF62EE19B4C001103EE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AC1EEB722EE19FB7001103EE /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AC1EEB742EE1A066001103EE /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AC1EEB722EE19FB7001103EE /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
-	rootObject = DFB3387A2EE18A3A00DF814E /* Project object */;
+	rootObject = AC1EEABF2EE19B49001103EE /* Project object */;
 }

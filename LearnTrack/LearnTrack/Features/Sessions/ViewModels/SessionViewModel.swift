@@ -67,7 +67,7 @@ class SessionViewModel: ObservableObject {
         try await supabase
             .from("sessions")
             .update(session)
-            .eq("id", value: id)
+            .eq("id", value: id as! PostgrestFilterValue)
             .execute()
         
         await fetchSessions()
@@ -80,7 +80,7 @@ class SessionViewModel: ObservableObject {
         try await supabase
             .from("sessions")
             .delete()
-            .eq("id", value: id)
+            .eq("id", value: id as! PostgrestFilterValue)
             .execute()
         
         await fetchSessions()

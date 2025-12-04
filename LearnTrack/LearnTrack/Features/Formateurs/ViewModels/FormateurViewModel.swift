@@ -63,7 +63,7 @@ class FormateurViewModel: ObservableObject {
         try await supabase
             .from("formateurs")
             .update(formateur)
-            .eq("id", value: id)
+            .eq("id", value: id as! PostgrestFilterValue)
             .execute()
         
         await fetchFormateurs()
@@ -76,7 +76,7 @@ class FormateurViewModel: ObservableObject {
         try await supabase
             .from("formateurs")
             .delete()
-            .eq("id", value: id)
+            .eq("id", value: id as! PostgrestFilterValue)
             .execute()
         
         await fetchFormateurs()
@@ -114,7 +114,7 @@ class FormateurViewModel: ObservableObject {
                     client:clients(*),
                     ecole:ecoles(*)
                 """)
-                .eq("formateur_id", value: formateurId)
+                .eq("formateur_id", value: formateurId as! PostgrestFilterValue)
                 .order("date", ascending: false)
                 .execute()
                 .value

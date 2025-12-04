@@ -56,7 +56,7 @@ class ClientViewModel: ObservableObject {
         try await supabase
             .from("clients")
             .update(client)
-            .eq("id", value: id)
+            .eq("id", value: id as! PostgrestFilterValue)
             .execute()
         
         await fetchClients()
@@ -69,7 +69,7 @@ class ClientViewModel: ObservableObject {
         try await supabase
             .from("clients")
             .delete()
-            .eq("id", value: id)
+            .eq("id", value: id as! PostgrestFilterValue)
             .execute()
         
         await fetchClients()
@@ -96,7 +96,7 @@ class ClientViewModel: ObservableObject {
                     client:clients(*),
                     ecole:ecoles(*)
                 """)
-                .eq("client_id", value: clientId)
+                .eq("client_id", value: clientId as! PostgrestFilterValue)
                 .order("date", ascending: false)
                 .execute()
                 .value

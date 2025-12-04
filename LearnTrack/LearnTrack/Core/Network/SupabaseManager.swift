@@ -17,11 +17,11 @@ class SupabaseManager {
     
     func configure() {
         // IMPORTANT: Remplacez ces valeurs par vos propres credentials Supabase
-        guard let supabaseURL = URL(string: "https://votre-projet.supabase.co") else {
+        guard let supabaseURL = URL(string: "https://epsksludoqhtpxjwrdmk.supabase.co/") else {
             fatalError("URL Supabase invalide")
         }
         
-        let supabaseKey = "votre-anon-key-ici"
+        let supabaseKey = "sb_publishable_EGI8p-vAtwRsEkk6ajwhAA_odtrHX6S"
         
         client = SupabaseClient(
             supabaseURL: supabaseURL,

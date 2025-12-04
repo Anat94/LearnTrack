@@ -56,7 +56,7 @@ class EcoleViewModel: ObservableObject {
         try await supabase
             .from("ecoles")
             .update(ecole)
-            .eq("id", value: id)
+            .eq("id", value: id as! PostgrestFilterValue)
             .execute()
         
         await fetchEcoles()
@@ -69,7 +69,7 @@ class EcoleViewModel: ObservableObject {
         try await supabase
             .from("ecoles")
             .delete()
-            .eq("id", value: id)
+            .eq("id", value: id as! PostgrestFilterValue)
             .execute()
         
         await fetchEcoles()
