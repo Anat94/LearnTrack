@@ -9,10 +9,10 @@ import Foundation
 import UIKit
 import MessageUI
 
-class ContactService {
+class ContactService: NSObject {
     static let shared = ContactService()
     
-    private init() {}
+    private override init() { super.init() }
     
     // MARK: - Helpers
     private func topViewController() -> UIViewController? {
