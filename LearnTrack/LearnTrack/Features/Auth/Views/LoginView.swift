@@ -98,9 +98,10 @@ struct LoginView: View {
                             }
                         }
                         .buttonStyle(LT.PrimaryButtonStyle())
-                        }
                         .disabled(isLoading || email.isEmpty || password.isEmpty)
                         .opacity((email.isEmpty || password.isEmpty) ? 0.6 : 1.0)
+                        }
+                        // Keep fields interactive at all times
                         
                         // Mot de passe oublié
                         HStack {
