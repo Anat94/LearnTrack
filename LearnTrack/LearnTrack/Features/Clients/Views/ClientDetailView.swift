@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ClientDetailView: View {
-    let client: Client
+    @State var client: Client
     @StateObject private var viewModel = ClientViewModel()
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var authService: AuthService
@@ -185,7 +185,9 @@ struct ClientDetailView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-        .sheet(isPresented: $showingEditSheet) {
+        .sheet(isPresented: $showingEditSheet, onDismiss: {
+            Task { await refreshClient() }
+        }) {
             ClientFormView(viewModel: viewModel, clientToEdit: client)
         }
         .alert("Supprimer le client ?", isPresented: $showingDeleteAlert) {
@@ -206,6 +208,32 @@ struct ClientDetailView: View {
     
     private func calculateTotalCA() -> Decimal {
         sessions.reduce(0) { $0 + $1.tarifClient }
+    }
+}
+
+extension ClientDetailView {
+    private func refreshClient() async {
+        guard let id = client.id else { return }
+        do {
+            let api = try await APIService.shared.getClient(id: Int(id))
+            await MainActor.run { self.client = mapAPIClient(api) }
+        } catch { print("Erreur refresh client: \(error)") }
+    }
+    private func mapAPIClient(_ api: APIClient) -> Client {
+        let id64 = Int64(api.id)
+        let extras = ExtrasStore.shared.getClientExtras(id: id64)
+        return Client(
+            id: id64,
+            raisonSociale: api.nom,
+            rue: api.adresse,
+            codePostal: api.codePostal,
+            ville: api.ville,
+            nomContact: api.contactNom ?? "",
+            email: api.email ?? (api.contactEmail ?? ""),
+            telephone: api.telephone ?? (api.contactTelephone ?? ""),
+            siret: api.siret,
+            numeroTva: extras?.numeroTva
+        )
     }
 }
 

@@ -28,9 +28,15 @@ struct ProfileView: View {
                             )
                         
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(authService.currentUser?.username ?? "Utilisateur")
+                            Text({
+                                if let u = authService.currentUser {
+                                    let name = "\(u.prenom) \(u.nom)".trimmingCharacters(in: .whitespaces)
+                                    return name.isEmpty ? "Utilisateur" : name
+                                }
+                                return "Utilisateur"
+                            }())
                                 .font(.headline)
-                            
+                        
                             Text(authService.currentUser?.email ?? "")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)

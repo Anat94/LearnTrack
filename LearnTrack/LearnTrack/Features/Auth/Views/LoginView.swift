@@ -14,6 +14,7 @@ struct LoginView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var showResetPassword = false
+    @State private var showRegister = false
     
     var body: some View {
         NavigationView {
@@ -106,6 +107,13 @@ struct LoginView: View {
                         }
                         .font(.subheadline)
                         .foregroundColor(.white)
+                        
+                        // Bouton inscription
+                        Button("Créer un compte") {
+                            showRegister = true
+                        }
+                        .font(.subheadline)
+                        .foregroundColor(.white)
                     }
                     .padding(.horizontal, 32)
                     
@@ -116,6 +124,10 @@ struct LoginView: View {
             .navigationBarHidden(true)
             .sheet(isPresented: $showResetPassword) {
                 ResetPasswordView()
+            }
+            .sheet(isPresented: $showRegister) {
+                RegisterView()
+                    .environmentObject(authService)
             }
         }
     }

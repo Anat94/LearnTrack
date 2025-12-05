@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct EcoleDetailView: View {
-    let ecole: Ecole
+    @State var ecole: Ecole
     @StateObject private var viewModel = EcoleViewModel()
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var authService: AuthService
@@ -113,7 +113,9 @@ struct EcoleDetailView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-        .sheet(isPresented: $showingEditSheet) {
+        .sheet(isPresented: $showingEditSheet, onDismiss: {
+            Task { await refreshEcole() }
+        }) {
             EcoleFormView(viewModel: viewModel, ecoleToEdit: ecole)
         }
         .alert("Supprimer l'école ?", isPresented: $showingDeleteAlert) {
@@ -125,6 +127,28 @@ struct EcoleDetailView: View {
                 }
             }
         }
+    }
+}
+
+extension EcoleDetailView {
+    private func refreshEcole() async {
+        guard let id = ecole.id else { return }
+        do {
+            let api = try await APIService.shared.getEcole(id: Int(id))
+            await MainActor.run { self.ecole = mapAPIEcole(api) }
+        } catch { print("Erreur refresh ecole: \(error)") }
+    }
+    private func mapAPIEcole(_ api: APIEcole) -> Ecole {
+        Ecole(
+            id: Int64(api.id),
+            nom: api.nom,
+            rue: api.adresse,
+            codePostal: api.codePostal,
+            ville: api.ville,
+            nomContact: api.responsableNom ?? "",
+            email: api.email ?? "",
+            telephone: api.telephone ?? ""
+        )
     }
 }
 

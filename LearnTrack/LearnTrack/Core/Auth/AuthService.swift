@@ -2,21 +2,19 @@
 //  AuthService.swift
 //  LearnTrack
 //
-//  Service d'authentification avec Supabase
+//  Service d'authentification via API REST
 //
 
 import Foundation
-import Supabase
 import Combine
+import Supabase
 
 class AuthService: ObservableObject {
     static let shared = AuthService()
     
     @Published var isAuthenticated = false
-    @Published var currentUser: User?
+    @Published var currentUser: APIUser?
     @Published var userRole: UserRole = .user
-    
-    private let supabase = SupabaseManager.shared.client!
     private var cancellables = Set<AnyCancellable>()
     
     enum UserRole: String, Codable {
@@ -30,95 +28,66 @@ class AuthService: ObservableObject {
     
     // Vérifier le statut d'authentification au démarrage
     func checkAuthStatus() {
-        Task {
-            do {
-                let session = try await supabase.auth.session
-                await MainActor.run {
-                    self.isAuthenticated = true
-                    self.loadUserProfile()
-                }
-            } catch {
-                await MainActor.run {
-                    self.isAuthenticated = false
-                    self.currentUser = nil
-                }
-            }
+        if let userJSON = KeychainManager.shared.get("auth_user"),
+           let data = userJSON.data(using: .utf8),
+           let user = try? JSONDecoder().decode(APIUser.self, from: data) {
+            self.currentUser = user
+            self.userRole = UserRole(rawValue: user.role) ?? .user
+            self.isAuthenticated = true
+        } else {
+            self.isAuthenticated = false
+            self.currentUser = nil
+            self.userRole = .user
         }
     }
     
     // Connexion
     func signIn(email: String, password: String) async throws {
-        let session = try await supabase.auth.signIn(
-            email: email,
-            password: password
-        )
+        let resp = try await APIService.shared.login(email: email, password: password)
+        guard resp.success, let user = resp.user else {
+            throw APIError.unauthorized
+        }
+        
+        // Persist user
+        let data = try JSONEncoder().encode(user)
+        _ = KeychainManager.shared.save(String(decoding: data, as: UTF8.self), forKey: "auth_user")
         
         await MainActor.run {
+            self.currentUser = user
+            self.userRole = UserRole(rawValue: user.role) ?? .user
             self.isAuthenticated = true
-            self.loadUserProfile()
+        }
+    }
+    
+    // Inscription
+    func signUp(email: String, password: String, nom: String, prenom: String) async throws {
+        let resp = try await APIService.shared.register(email: email, password: password, nom: nom, prenom: prenom)
+        guard resp.success, let user = resp.user else {
+            throw APIError.invalidData
+        }
+        // Persist user
+        let data = try JSONEncoder().encode(user)
+        _ = KeychainManager.shared.save(String(decoding: data, as: UTF8.self), forKey: "auth_user")
+        await MainActor.run {
+            self.currentUser = user
+            self.userRole = UserRole(rawValue: user.role) ?? .user
+            self.isAuthenticated = true
         }
     }
     
     // Déconnexion
     func signOut() async throws {
-        try await supabase.auth.signOut()
-        
         await MainActor.run {
             self.isAuthenticated = false
             self.currentUser = nil
             self.userRole = .user
         }
-        
-        KeychainManager.shared.deleteAll()
+        KeychainManager.shared.delete("auth_user")
     }
     
-    // Charger le profil utilisateur
-    private func loadUserProfile() {
-        Task {
-            do {
-                let user = try await supabase.auth.user()
-                
-                // Récupérer le rôle depuis la table users
-                let response: [User] = try await supabase
-                    .from("users")
-                    .select()
-                    .eq("supabase_user_id", value: user.id.uuidString)
-                    .execute()
-                    .value
-                
-                await MainActor.run {
-                    if let userProfile = response.first {
-                        self.currentUser = userProfile
-                        self.userRole = UserRole(rawValue: userProfile.role) ?? .user
-                    }
-                }
-            } catch {
-                print("Erreur chargement profil: \(error)")
-            }
-        }
-    }
-    
-    // Réinitialisation du mot de passe
+    // Réinitialisation du mot de passe (via Supabase pour conserver la fonctionnalité)
     func resetPassword(email: String) async throws {
-        try await supabase.auth.resetPasswordForEmail(email)
-    }
-}
-
-// Modèle User
-struct User: Codable, Identifiable {
-    let id: Int64
-    let username: String
-    let email: String
-    let role: String
-    let supabaseUserId: String
-    let isActive: Bool
-    
-    enum CodingKeys: String, CodingKey {
-        case id
-        case username
-        case email
-        case role
-        case supabaseUserId = "supabase_user_id"
-        case isActive = "is_active"
+        let client = SupabaseManager.shared.client!
+        try await client.auth.resetPasswordForEmail(email)
     }
 }
