@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Supabase
 
 @MainActor
 class EcoleViewModel: ObservableObject {
@@ -15,7 +14,6 @@ class EcoleViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var searchText = ""
     
-    private let supabase = SupabaseManager.shared.client!
     
     // Charger toutes les écoles
     func fetchEcoles() async {
@@ -23,14 +21,9 @@ class EcoleViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            let response: [Ecole] = try await supabase
-                .from("ecoles")
-                .select()
-                .order("nom", ascending: true)
-                .execute()
-                .value
-            
-            ecoles = response
+            let response: [APIEcole] = try await APIService.shared.getEcoles()
+            let mapped = response.map { self.mapAPIEcole($0) }
+            ecoles = mapped.sorted { $0.nom.localizedCaseInsensitiveCompare($1.nom) == .orderedAscending }
             isLoading = false
         } catch {
             errorMessage = "Erreur lors du chargement des écoles"
@@ -41,37 +34,25 @@ class EcoleViewModel: ObservableObject {
     
     // Créer une école
     func createEcole(_ ecole: Ecole) async throws {
-        try await supabase
-            .from("ecoles")
-            .insert(ecole)
-            .execute()
-        
+        let payload = mapToAPIEcoleCreate(ecole)
+        _ = try await APIService.shared.createEcole(payload)
         await fetchEcoles()
     }
     
     // Mettre à jour une école
     func updateEcole(_ ecole: Ecole) async throws {
-        guard let id = ecole.id else { return }
-        
-        try await supabase
-            .from("ecoles")
-            .update(ecole)
-            .eq("id", value: id as! PostgrestFilterValue)
-            .execute()
-        
+        guard let id64 = ecole.id else { return }
+        let id = Int(id64)
+        let payload = mapToAPIEcoleUpdate(ecole)
+        _ = try await APIService.shared.updateEcole(id: id, payload)
         await fetchEcoles()
     }
     
     // Supprimer une école
     func deleteEcole(_ ecole: Ecole) async throws {
-        guard let id = ecole.id else { return }
-        
-        try await supabase
-            .from("ecoles")
-            .delete()
-            .eq("id", value: id as! PostgrestFilterValue)
-            .execute()
-        
+        guard let id64 = ecole.id else { return }
+        let id = Int(id64)
+        try await APIService.shared.deleteEcole(id: id)
         await fetchEcoles()
     }
     
@@ -83,5 +64,48 @@ class EcoleViewModel: ObservableObject {
             ecole.nom.localizedCaseInsensitiveContains(searchText) ||
             ecole.ville?.localizedCaseInsensitiveContains(searchText) ?? false
         }
+    }
+
+    // MARK: - Mapping helpers
+    private func mapAPIEcole(_ api: APIEcole) -> Ecole {
+        Ecole(
+            id: Int64(api.id),
+            nom: api.nom,
+            rue: api.adresse,
+            codePostal: api.codePostal,
+            ville: api.ville,
+            nomContact: api.responsableNom ?? "",
+            email: api.email ?? "",
+            telephone: api.telephone ?? ""
+        )
+    }
+
+    private func mapToAPIEcoleCreate(_ ecole: Ecole) -> APIEcoleCreate {
+        APIEcoleCreate(
+            nom: ecole.nom,
+            adresse: ecole.rue,
+            ville: ecole.ville,
+            codePostal: ecole.codePostal,
+            telephone: ecole.telephone,
+            email: ecole.email,
+            responsableNom: ecole.nomContact,
+            capacite: nil,
+            notes: nil
+        )
+    }
+
+    private func mapToAPIEcoleUpdate(_ ecole: Ecole) -> APIEcoleUpdate {
+        APIEcoleUpdate(
+            nom: ecole.nom,
+            adresse: ecole.rue,
+            ville: ecole.ville,
+            codePostal: ecole.codePostal,
+            telephone: ecole.telephone,
+            email: ecole.email,
+            responsableNom: ecole.nomContact,
+            capacite: nil,
+            notes: nil,
+            actif: nil
+        )
     }
 }
