@@ -11,10 +11,12 @@ struct ProfileView: View {
     @EnvironmentObject var authService: AuthService
     @State private var showingLogoutAlert = false
     @AppStorage("isDarkMode") private var isDarkMode = false
+    @StateObject private var sessionVM = SessionViewModel()
     
     var body: some View {
         NavigationView {
             List {
+                LTHeroHeader(title: "Profil", subtitle: authService.currentUser?.email ?? "", systemImage: "person.crop.circle.fill")
                 // Section utilisateur
                 Section {
                     HStack(spacing: 16) {
@@ -54,6 +56,15 @@ struct ProfileView: View {
                     .padding(.vertical, 8)
                 }
                 
+                // KPIs
+                Section {
+                    HStack(spacing: 12) {
+                        LT.Tile(title: "À venir", value: "\(upcomingSessions)", systemImage: "calendar", color: LT.ColorToken.secondary)
+                        LT.Tile(title: "Rôle", value: authService.userRole == .admin ? "Admin" : "Utilisateur", systemImage: "star.fill", color: LT.ColorToken.accent)
+                    }
+                    .listRowInsets(EdgeInsets())
+                }
+
                 // Préférences
                 Section("Préférences") {
                     Toggle(isOn: $isDarkMode) {
@@ -106,8 +117,13 @@ struct ProfileView: View {
             } message: {
                 Text("Êtes-vous sûr de vouloir vous déconnecter ?")
             }
+            .task { await sessionVM.fetchSessions() }
         }
     }
+}
+
+extension ProfileView {
+    private var upcomingSessions: Int { sessionVM.sessions.filter { $0.date >= Date() }.count }
 }
 
 #Preview {

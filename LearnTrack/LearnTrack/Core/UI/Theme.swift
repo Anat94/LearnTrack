@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 // MARK: - Emerald Campus Theme
 
@@ -113,6 +114,37 @@ enum LT {
                 )
                 .cornerRadius(LT.Metric.cornerM)
                 .scaleEffect(configuration.isPressed ? 0.98 : 1)
+        }
+    }
+
+    // KPI Tile (icon + label + value)
+    struct Tile: View {
+        let title: String
+        let value: String
+        let systemImage: String
+        let color: Color
+        var body: some View {
+            VStack(alignment: .leading, spacing: 10) {
+                Image(systemName: systemImage)
+                    .font(.title2)
+                    .foregroundColor(color)
+                    .padding(10)
+                    .background(color.opacity(0.15))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                Text(title)
+                    .font(.caption)
+                    .foregroundColor(LT.ColorToken.textSecondary)
+                Text(value)
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(LT.ColorToken.textPrimary)
+            }
+            .padding(14)
+            .background(LT.ColorToken.surface)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(LT.ColorToken.border.opacity(0.7), lineWidth: 1)
+            )
+            .cornerRadius(16)
         }
     }
 }

@@ -12,40 +12,44 @@ struct MainTabView: View {
     
     var body: some View {
         TabView(selection: $selectedTab) {
+            // Dashboard
+            DashboardView()
+                .tabItem { Label("Accueil", systemImage: "house.fill") }
+                .tag(0)
             // Sessions
             SessionsListView()
                 .tabItem {
                     Label("Sessions", systemImage: "calendar")
                 }
-                .tag(0)
+                .tag(1)
             
             // Formateurs
             FormateursListView()
                 .tabItem {
                     Label("Formateurs", systemImage: "person.2.fill")
                 }
-                .tag(1)
+                .tag(2)
             
             // Clients
             ClientsListView()
                 .tabItem {
                     Label("Clients", systemImage: "building.2.fill")
                 }
-                .tag(2)
+                .tag(3)
             
             // Écoles
             EcolesListView()
                 .tabItem {
                     Label("Écoles", systemImage: "graduationcap.fill")
                 }
-                .tag(3)
+                .tag(4)
             
             // Profil
             ProfileView()
                 .tabItem {
                     Label("Profil", systemImage: "person.circle.fill")
                 }
-                .tag(4)
+                .tag(5)
         }
         .accentColor(LT.ColorToken.primary)
     }
