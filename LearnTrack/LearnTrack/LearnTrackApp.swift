@@ -12,7 +12,7 @@ struct LearnTrackApp: App {
     @StateObject private var authService = AuthService.shared
     
     init() {
-        // Configuration initiale de Supabase
+        // Garder Supabase pour reset password
         SupabaseManager.shared.configure()
     }
     
