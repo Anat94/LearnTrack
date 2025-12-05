@@ -142,7 +142,7 @@ struct SessionFormView: View {
                         TextField("Référence contrat (optionnel)", text: $refContrat).autocorrectionDisabled().textFieldStyle(LTTextFieldStyle())
                     }
                 }
-                if let errorMessage = errorMessage, showError { Text(errorMessage).foregroundColor(LT.ColorToken.danger).font(.caption) }
+                if showError && !errorMessage.isEmpty { Text(errorMessage).foregroundColor(LT.ColorToken.danger).font(.caption) }
                 Button(isEditing ? "Enregistrer" : "Créer") { saveSession() }.buttonStyle(LT.PrimaryButtonStyle())
             }
             .padding()

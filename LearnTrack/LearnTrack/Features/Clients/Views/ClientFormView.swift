@@ -71,7 +71,7 @@ struct ClientFormView: View {
                         }
                     }
                     
-                    if let errorMessage = errorMessage, showError {
+                    if showError && !errorMessage.isEmpty {
                         Text(errorMessage).foregroundColor(LT.ColorToken.danger).font(.caption)
                     }
                     

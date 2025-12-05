@@ -85,7 +85,7 @@ struct FormateurFormView: View {
                             TextField("Ville", text: $ville).textFieldStyle(LTTextFieldStyle())
                         }
                     }
-                    if let errorMessage = errorMessage, showError { Text(errorMessage).foregroundColor(LT.ColorToken.danger).font(.caption) }
+                    if showError && !errorMessage.isEmpty { Text(errorMessage).foregroundColor(LT.ColorToken.danger).font(.caption) }
                     Button(isEditing ? "Enregistrer" : "Créer") { saveFormateur() }.buttonStyle(LT.PrimaryButtonStyle())
                 }
                 .padding()
