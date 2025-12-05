@@ -14,6 +14,7 @@ struct EcolesListView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
+                LTHeroHeader(title: "Écoles", subtitle: "Établissements partenaires", systemImage: "graduationcap.fill")
                 // Barre de recherche
                 SearchBar(text: $viewModel.searchText)
                     .padding(.horizontal)
@@ -45,7 +46,8 @@ struct EcolesListView: View {
                     .refreshable { await viewModel.fetchEcoles() }
                 }
             }
-            .navigationTitle("Écoles")
+            .navigationTitle("")
+            .navigationBarHidden(true)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingAddEcole = true }) {

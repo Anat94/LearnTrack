@@ -83,10 +83,17 @@ enum LT {
         func makeBody(configuration: Configuration) -> some View {
             configuration.label
                 .font(.headline)
-                .frame(maxWidth: .infinity, minHeight: 50)
-                .background(LT.ColorToken.primary)
+                .frame(maxWidth: .infinity, minHeight: 52)
+                .background(
+                    LinearGradient(
+                        gradient: Gradient(colors: [LT.ColorToken.primary, LT.ColorToken.secondary]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
                 .foregroundColor(.white)
                 .cornerRadius(LT.Metric.cornerL)
+                .shadow(color: LT.ColorToken.primary.opacity(0.25), radius: 10, x: 0, y: 6)
                 .scaleEffect(configuration.isPressed ? 0.98 : 1)
                 .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
         }
@@ -115,6 +122,17 @@ struct LTScreen: ViewModifier {
     func body(content: Content) -> some View {
         ZStack {
             LT.ColorToken.bg.ignoresSafeArea()
+            // Soft decorative shapes for originality
+            Circle()
+                .fill(LT.ColorToken.secondary.opacity(0.10))
+                .blur(radius: 30)
+                .frame(width: 220, height: 220)
+                .offset(x: -140, y: -260)
+            Circle()
+                .fill(LT.ColorToken.primary.opacity(0.10))
+                .blur(radius: 30)
+                .frame(width: 260, height: 260)
+                .offset(x: 160, y: 320)
             content
         }
     }
@@ -142,6 +160,91 @@ private extension UIColor {
         let g = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
         let b = CGFloat(rgb & 0x0000FF) / 255.0
         self.init(red: r, green: g, blue: b, alpha: 1)
+    }
+}
+
+// MARK: - Extra components
+struct LTHeroHeader: View {
+    let title: String
+    let subtitle: String?
+    let systemImage: String
+
+    var body: some View {
+        ZStack(alignment: .bottomLeading) {
+            LinearGradient(
+                gradient: Gradient(colors: [LT.ColorToken.primary, LT.ColorToken.secondary]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .frame(height: 140)
+            .cornerRadius(20)
+            .overlay(
+                Image(systemName: systemImage)
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundColor(.white.opacity(0.15))
+                    .frame(width: 120, height: 120)
+                    .offset(x: 200, y: 10), alignment: .topLeading
+            )
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title)
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(.white)
+                if let subtitle = subtitle {
+                    Text(subtitle)
+                        .font(.subheadline)
+                        .foregroundColor(.white.opacity(0.9))
+                }
+            }
+            .padding(16)
+        }
+        .padding(.horizontal)
+        .padding(.top)
+    }
+}
+
+struct LTIconTextField: View {
+    let systemImage: String
+    let placeholder: String
+    @Binding var text: String
+    var keyboard: UIKeyboardType = .default
+    var autocap: UITextAutocapitalizationType = .sentences
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: systemImage)
+                .foregroundColor(LT.ColorToken.textSecondary)
+            TextField(placeholder, text: $text)
+                .keyboardType(keyboard)
+                .textInputAutocapitalization(autocap == .none ? .never : .sentences)
+                .autocorrectionDisabled()
+        }
+        .padding(12)
+        .background(LT.ColorToken.surface)
+        .overlay(
+            RoundedRectangle(cornerRadius: LT.Metric.cornerM)
+                .stroke(LT.ColorToken.border.opacity(0.7), lineWidth: 1)
+        )
+        .cornerRadius(LT.Metric.cornerM)
+    }
+}
+
+struct LTIconSecureField: View {
+    let systemImage: String
+    let placeholder: String
+    @Binding var text: String
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: systemImage)
+                .foregroundColor(LT.ColorToken.textSecondary)
+            SecureField(placeholder, text: $text)
+        }
+        .padding(12)
+        .background(LT.ColorToken.surface)
+        .overlay(
+            RoundedRectangle(cornerRadius: LT.Metric.cornerM)
+                .stroke(LT.ColorToken.border.opacity(0.7), lineWidth: 1)
+        )
+        .cornerRadius(LT.Metric.cornerM)
     }
 }
 

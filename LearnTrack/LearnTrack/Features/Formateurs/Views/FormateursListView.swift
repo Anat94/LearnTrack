@@ -14,18 +14,20 @@ struct FormateursListView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
+                LTHeroHeader(title: "Formateurs", subtitle: "Réseau d'intervenants", systemImage: "person.2.fill")
                 // Barre de recherche
                 SearchBar(text: $viewModel.searchText)
                     .padding(.horizontal)
                     .padding(.top)
                 
                 // Filtre type
-                Picker("Type", selection: $viewModel.filterType) {
+                HStack(spacing: 10) {
                     ForEach(FormateurViewModel.FilterType.allCases, id: \.self) { type in
-                        Text(type.rawValue).tag(type)
+                        Button(action: { viewModel.filterType = type }) {
+                            LT.Chip(label: type.rawValue, selected: viewModel.filterType == type)
+                        }
                     }
                 }
-                .pickerStyle(SegmentedPickerStyle())
                 .padding(.horizontal)
                 
                 // Liste
@@ -54,7 +56,8 @@ struct FormateursListView: View {
                     .refreshable { await viewModel.fetchFormateurs() }
                 }
             }
-            .navigationTitle("Formateurs")
+            .navigationTitle("")
+            .navigationBarHidden(true)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingAddFormateur = true }) {

@@ -14,6 +14,7 @@ struct ClientsListView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
+                LTHeroHeader(title: "Clients", subtitle: "Vos partenaires", systemImage: "building.2.fill")
                 // Barre de recherche
                 SearchBar(text: $viewModel.searchText)
                     .padding(.horizontal)
@@ -45,7 +46,8 @@ struct ClientsListView: View {
                     .refreshable { await viewModel.fetchClients() }
                 }
             }
-            .navigationTitle("Clients")
+            .navigationTitle("")
+            .navigationBarHidden(true)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingAddClient = true }) {

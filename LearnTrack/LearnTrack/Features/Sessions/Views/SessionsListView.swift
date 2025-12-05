@@ -15,6 +15,7 @@ struct SessionsListView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
+                LTHeroHeader(title: "Sessions", subtitle: "Vos formations à venir", systemImage: "calendar")
                 // Barre de recherche
                 SearchBar(text: $viewModel.searchText)
                     .padding(.horizontal)
@@ -50,7 +51,8 @@ struct SessionsListView: View {
                     .refreshable { await viewModel.fetchSessions() }
                 }
             }
-            .navigationTitle("Sessions")
+            .navigationTitle("")
+            .navigationBarHidden(true)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingAddSession = true }) {

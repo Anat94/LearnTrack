@@ -28,8 +28,8 @@ struct RegisterView: View {
                 LT.SectionCard {
                     VStack(alignment: .leading, spacing: 14) {
                         Text("Identité").font(.headline).foregroundColor(LT.ColorToken.textPrimary)
-                        TextField("Prénom", text: $prenom).textFieldStyle(CustomTextFieldStyle())
-                        TextField("Nom", text: $nom).textFieldStyle(CustomTextFieldStyle())
+                        LTIconTextField(systemImage: "person", placeholder: "Prénom", text: $prenom)
+                        LTIconTextField(systemImage: "person", placeholder: "Nom", text: $nom)
                     }
                 }
                 .padding(.horizontal)
@@ -37,13 +37,8 @@ struct RegisterView: View {
                 LT.SectionCard {
                     VStack(alignment: .leading, spacing: 14) {
                         Text("Compte").font(.headline).foregroundColor(LT.ColorToken.textPrimary)
-                        TextField("Email", text: $email)
-                            .textInputAutocapitalization(.never)
-                            .keyboardType(.emailAddress)
-                            .autocorrectionDisabled()
-                            .textFieldStyle(CustomTextFieldStyle())
-                        SecureField("Mot de passe", text: $password)
-                            .textFieldStyle(CustomTextFieldStyle())
+                        LTIconTextField(systemImage: "envelope", placeholder: "Email", text: $email, keyboard: .emailAddress, autocap: .none)
+                        LTIconSecureField(systemImage: "lock", placeholder: "Mot de passe", text: $password)
                     }
                 }
                 .padding(.horizontal)

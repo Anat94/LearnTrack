@@ -55,28 +55,16 @@ struct LoginView: View {
                     // Formulaire de connexion
                     LT.SectionCard {
                         VStack(spacing: 18) {
-                        // Email
-                        VStack(alignment: .leading, spacing: 8) {
-                            Label("Email", systemImage: "envelope")
-                                .foregroundColor(LT.ColorToken.textSecondary)
-                                .font(.subheadline)
-                            
-                            TextField("", text: $email)
-                                .textFieldStyle(CustomTextFieldStyle())
-                                .textInputAutocapitalization(.never)
-                                .keyboardType(.emailAddress)
-                                .autocorrectionDisabled()
-                        }
-                        
-                        // Mot de passe
-                        VStack(alignment: .leading, spacing: 8) {
-                            Label("Mot de passe", systemImage: "lock")
-                                .foregroundColor(LT.ColorToken.textSecondary)
-                                .font(.subheadline)
-                            
-                            SecureField("", text: $password)
-                                .textFieldStyle(CustomTextFieldStyle())
-                        }
+                            // Email
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Email").font(.subheadline).foregroundColor(LT.ColorToken.textSecondary)
+                                LTIconTextField(systemImage: "envelope", placeholder: "email@exemple.com", text: $email, keyboard: .emailAddress, autocap: .none)
+                            }
+                            // Mot de passe
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Mot de passe").font(.subheadline).foregroundColor(LT.ColorToken.textSecondary)
+                                LTIconSecureField(systemImage: "lock", placeholder: "••••••••", text: $password)
+                            }
                         
                         // Message d'erreur
                         if let errorMessage = errorMessage {
