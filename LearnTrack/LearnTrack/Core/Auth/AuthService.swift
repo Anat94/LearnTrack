@@ -59,6 +59,22 @@ class AuthService: ObservableObject {
         }
     }
     
+    // Inscription
+    func signUp(email: String, password: String, nom: String, prenom: String) async throws {
+        let resp = try await APIService.shared.register(email: email, password: password, nom: nom, prenom: prenom)
+        guard resp.success, let user = resp.user else {
+            throw APIError.invalidData
+        }
+        // Persist user
+        let data = try JSONEncoder().encode(user)
+        _ = KeychainManager.shared.save(String(decoding: data, as: UTF8.self), forKey: "auth_user")
+        await MainActor.run {
+            self.currentUser = user
+            self.userRole = UserRole(rawValue: user.role) ?? .user
+            self.isAuthenticated = true
+        }
+    }
+    
     // Déconnexion
     func signOut() async throws {
         await MainActor.run {
