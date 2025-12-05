@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct FormateurDetailView: View {
-    let formateur: Formateur
+    @State var formateur: Formateur
     @StateObject private var viewModel = FormateurViewModel()
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var authService: AuthService
@@ -180,7 +180,9 @@ struct FormateurDetailView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-        .sheet(isPresented: $showingEditSheet) {
+        .sheet(isPresented: $showingEditSheet, onDismiss: {
+            Task { await refreshFormateur() }
+        }) {
             FormateurFormView(viewModel: viewModel, formateurToEdit: formateur)
         }
         .alert("Supprimer le formateur ?", isPresented: $showingDeleteAlert) {
@@ -197,6 +199,41 @@ struct FormateurDetailView: View {
                 sessions = await viewModel.fetchSessionsForFormateur(id)
             }
         }
+    }
+
+    private func refreshFormateur() async {
+        guard let id = formateur.id else { return }
+        do {
+            let api = try await APIService.shared.getFormateur(id: Int(id))
+            await MainActor.run {
+                self.formateur = mapAPIFormateur(api)
+            }
+        } catch {
+            print("Erreur refresh formateur: \(error)")
+        }
+    }
+
+    private func mapAPIFormateur(_ api: APIFormateur) -> Formateur {
+        let specialite = (api.specialites?.first).map { String($0) } ?? ""
+        let taux = Decimal(api.tarifJournalier ?? 0)
+        let id64 = Int64(api.id)
+        let extras = ExtrasStore.shared.getFormateurExtras(id: id64)
+        return Formateur(
+            id: id64,
+            prenom: api.prenom,
+            nom: api.nom,
+            email: api.email,
+            telephone: api.telephone ?? "",
+            specialite: specialite,
+            tauxHoraire: taux,
+            exterieur: extras?.exterieur ?? false,
+            societe: extras?.societe,
+            siret: extras?.siret,
+            nda: extras?.nda,
+            rue: api.adresse,
+            codePostal: api.codePostal,
+            ville: api.ville
+        )
     }
 }
 
