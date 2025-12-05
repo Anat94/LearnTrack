@@ -10,6 +10,7 @@ import SwiftUI
 @main
 struct LearnTrackApp: App {
     @StateObject private var authService = AuthService.shared
+    @AppStorage("isDarkMode") private var isDarkMode = false
     
     init() {
         // Garder Supabase pour reset password
@@ -21,9 +22,11 @@ struct LearnTrackApp: App {
             if authService.isAuthenticated {
                 MainTabView()
                     .environmentObject(authService)
+                    .preferredColorScheme(isDarkMode ? .dark : .light)
             } else {
                 LoginView()
                     .environmentObject(authService)
+                    .preferredColorScheme(isDarkMode ? .dark : .light)
             }
         }
     }

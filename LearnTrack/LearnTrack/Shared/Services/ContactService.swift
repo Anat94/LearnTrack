@@ -21,9 +21,7 @@ class ContactService {
             .replacingOccurrences(of: "-", with: "")
         
         if let url = URL(string: "tel://\(cleanNumber)") {
-            if UIApplication.shared.canOpenURL(url) {
-                UIApplication.shared.open(url)
-            }
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
         }
     }
     
@@ -45,9 +43,7 @@ class ContactService {
         }
         
         if let url = components?.url {
-            if UIApplication.shared.canOpenURL(url) {
-                UIApplication.shared.open(url)
-            }
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
         }
     }
     
@@ -58,9 +54,7 @@ class ContactService {
             .replacingOccurrences(of: "-", with: "")
         
         if let url = URL(string: "sms:\(cleanNumber)") {
-            if UIApplication.shared.canOpenURL(url) {
-                UIApplication.shared.open(url)
-            }
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
         }
     }
     
@@ -69,13 +63,13 @@ class ContactService {
         let encodedAddress = address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         
         if let url = URL(string: "maps://?address=\(encodedAddress)") {
-            if UIApplication.shared.canOpenURL(url) {
-                UIApplication.shared.open(url)
-            } else if let googleMapsURL = URL(string: "comgooglemaps://?q=\(encodedAddress)") {
-                if UIApplication.shared.canOpenURL(googleMapsURL) {
-                    UIApplication.shared.open(googleMapsURL)
-                } else if let webURL = URL(string: "https://maps.apple.com/?address=\(encodedAddress)") {
-                    UIApplication.shared.open(webURL)
+            UIApplication.shared.open(url, options: [:]) { success in
+                if !success, let googleMapsURL = URL(string: "comgooglemaps://?q=\(encodedAddress)") {
+                    UIApplication.shared.open(googleMapsURL, options: [:]) { success in
+                        if !success, let webURL = URL(string: "https://maps.apple.com/?address=\(encodedAddress)") {
+                            UIApplication.shared.open(webURL, options: [:], completionHandler: nil)
+                        }
+                    }
                 }
             }
         }
