@@ -17,7 +17,8 @@ struct SessionsListView: View {
             VStack(spacing: 0) {
                 // Barre de recherche
                 SearchBar(text: $viewModel.searchText)
-                    .padding()
+                    .padding(.horizontal)
+                    .padding(.top)
                 
                 // Filtres par mois
                 MonthFilterView(selectedMonth: $viewModel.selectedMonth)
@@ -39,13 +40,14 @@ struct SessionsListView: View {
                         ForEach(viewModel.filteredSessions) { session in
                             NavigationLink(destination: SessionDetailView(session: session)) {
                                 SessionCardView(session: session)
+                                    .listRowSeparator(.hidden)
                             }
+                            .listRowBackground(Color.clear)
                         }
                     }
                     .listStyle(PlainListStyle())
-                    .refreshable {
-                        await viewModel.fetchSessions()
-                    }
+                    .scrollContentBackground(.hidden)
+                    .refreshable { await viewModel.fetchSessions() }
                 }
             }
             .navigationTitle("Sessions")
@@ -54,6 +56,7 @@ struct SessionsListView: View {
                     Button(action: { showingAddSession = true }) {
                         Image(systemName: "plus.circle.fill")
                             .font(.title2)
+                            .foregroundColor(LT.ColorToken.primary)
                     }
                 }
             }
@@ -63,6 +66,7 @@ struct SessionsListView: View {
             .task {
                 await viewModel.fetchSessions()
             }
+            .ltScreen()
         }
     }
 }
@@ -72,56 +76,48 @@ struct SessionCardView: View {
     let session: Session
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            // En-tête avec module et badge modalité
-            HStack {
-                Text(session.module)
-                    .font(.headline)
-                    .lineLimit(2)
-                
-                Spacer()
-                
-                // Badge Présentiel/Distanciel
-                HStack(spacing: 4) {
-                    Image(systemName: session.modalite.icon)
-                        .font(.caption)
-                    Text(session.modalite.label)
-                        .font(.caption)
-                        .fontWeight(.medium)
+        LT.SectionCard {
+            VStack(alignment: .leading, spacing: 12) {
+                // En-tête avec module et badge modalité
+                HStack(alignment: .top) {
+                    Text(session.module)
+                        .font(.headline)
+                        .foregroundColor(LT.ColorToken.textPrimary)
+                        .lineLimit(2)
+                    Spacer()
+                    LT.Badge(
+                        text: session.modalite.label,
+                        color: session.modalite == .presentiel ? LT.ColorToken.secondary : LT.ColorToken.primary
+                    )
                 }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(session.modalite == .presentiel ? Color.blue.opacity(0.2) : Color.green.opacity(0.2))
-                .foregroundColor(session.modalite == .presentiel ? .blue : .green)
-                .cornerRadius(8)
-            }
-            
-            // Date et horaires
-            HStack(spacing: 16) {
-                Label(session.displayDate, systemImage: "calendar")
-                    .font(.subheadline)
                 
-                Label(session.displayHoraires, systemImage: "clock")
-                    .font(.subheadline)
+                // Date et horaires
+                HStack(spacing: 16) {
+                    Label(session.displayDate, systemImage: "calendar")
+                        .font(.subheadline)
+                
+                    Label(session.displayHoraires, systemImage: "clock")
+                        .font(.subheadline)
+                }
+                .foregroundColor(LT.ColorToken.textSecondary)
+                
+                // Formateur
+                if let formateur = session.formateur {
+                    Label(formateur.nomComplet, systemImage: "person.fill")
+                        .font(.subheadline)
+                        .foregroundColor(LT.ColorToken.textSecondary)
+                }
+                
+                // Lieu (si présentiel)
+                if session.modalite == .presentiel && !session.lieu.isEmpty {
+                    Label(session.lieu, systemImage: "mappin.circle.fill")
+                        .font(.caption)
+                        .foregroundColor(LT.ColorToken.textSecondary)
+                        .lineLimit(1)
+                }
             }
-            .foregroundColor(.secondary)
-            
-            // Formateur
-            if let formateur = session.formateur {
-                Label(formateur.nomComplet, systemImage: "person.fill")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            
-            // Lieu (si présentiel)
-            if session.modalite == .presentiel {
-                Label(session.lieu, systemImage: "mappin.circle.fill")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
-            }
+            .padding(.vertical, 2)
         }
-        .padding(.vertical, 8)
     }
 }
 
@@ -138,17 +134,8 @@ struct MonthFilterView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
                 ForEach(1...12, id: \.self) { month in
-                    Button(action: {
-                        selectedMonth = month
-                    }) {
-                        Text(months[month - 1])
-                            .font(.subheadline)
-                            .fontWeight(selectedMonth == month ? .semibold : .regular)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(selectedMonth == month ? Color.blue : Color.gray.opacity(0.2))
-                            .foregroundColor(selectedMonth == month ? .white : .primary)
-                            .cornerRadius(20)
+                    Button(action: { selectedMonth = month }) {
+                        LT.Chip(label: months[month - 1], selected: selectedMonth == month)
                     }
                 }
             }

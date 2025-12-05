@@ -19,41 +19,46 @@ struct LoginView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Gradient de fond
                 LinearGradient(
-                    colors: [Color.blue.opacity(0.6), Color.purple.opacity(0.4)],
+                    colors: [LT.ColorToken.primary.opacity(0.35), LT.ColorToken.secondary.opacity(0.35)],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
                 .ignoresSafeArea()
                 
-                VStack(spacing: 30) {
+                VStack(spacing: 28) {
                     Spacer()
                     
                     // Logo et titre
-                    VStack(spacing: 16) {
-                        Image(systemName: "book.circle.fill")
-                            .resizable()
-                            .frame(width: 100, height: 100)
-                            .foregroundColor(.white)
-                        
+                    VStack(spacing: 14) {
+                        ZStack {
+                            Circle()
+                                .fill(LT.ColorToken.surface.opacity(0.15))
+                                .frame(width: 120, height: 120)
+                            Image(systemName: "graduationcap.fill")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 64, height: 64)
+                                .foregroundColor(.white)
+                        }
                         Text("LearnTrack")
                             .font(.system(size: 40, weight: .bold))
                             .foregroundColor(.white)
                         
                         Text("Gestion de formations")
                             .font(.subheadline)
-                            .foregroundColor(.white.opacity(0.8))
+                            .foregroundColor(.white.opacity(0.9))
                     }
                     
                     Spacer()
                     
                     // Formulaire de connexion
-                    VStack(spacing: 20) {
+                    LT.SectionCard {
+                        VStack(spacing: 18) {
                         // Email
                         VStack(alignment: .leading, spacing: 8) {
                             Label("Email", systemImage: "envelope")
-                                .foregroundColor(.white)
+                                .foregroundColor(LT.ColorToken.textSecondary)
                                 .font(.subheadline)
                             
                             TextField("", text: $email)
@@ -66,7 +71,7 @@ struct LoginView: View {
                         // Mot de passe
                         VStack(alignment: .leading, spacing: 8) {
                             Label("Mot de passe", systemImage: "lock")
-                                .foregroundColor(.white)
+                                .foregroundColor(LT.ColorToken.textSecondary)
                                 .font(.subheadline)
                             
                             SecureField("", text: $password)
@@ -77,8 +82,7 @@ struct LoginView: View {
                         if let errorMessage = errorMessage {
                             Text(errorMessage)
                                 .font(.caption)
-                                .foregroundColor(.red)
-                                .padding(.horizontal)
+                                .foregroundColor(LT.ColorToken.danger)
                         }
                         
                         // Bouton de connexion
@@ -86,36 +90,30 @@ struct LoginView: View {
                             HStack {
                                 if isLoading {
                                     ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
                                 } else {
                                     Text("Se connecter")
                                         .fontWeight(.semibold)
                                 }
                             }
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 50)
-                            .background(Color.white)
-                            .foregroundColor(.blue)
-                            .cornerRadius(12)
+                        }
+                        .buttonStyle(LT.PrimaryButtonStyle())
                         }
                         .disabled(isLoading || email.isEmpty || password.isEmpty)
                         .opacity((email.isEmpty || password.isEmpty) ? 0.6 : 1.0)
                         
                         // Mot de passe oublié
-                        Button("Mot de passe oublié ?") {
-                            showResetPassword = true
+                        HStack {
+                            Button("Mot de passe oublié ?") { showResetPassword = true }
+                                .font(.subheadline)
+                                .foregroundColor(LT.ColorToken.secondary)
+                            Spacer()
+                            Button("Créer un compte") { showRegister = true }
+                                .font(.subheadline).fontWeight(.semibold)
+                                .foregroundColor(LT.ColorToken.primary)
                         }
-                        .font(.subheadline)
-                        .foregroundColor(.white)
-                        
-                        // Bouton inscription
-                        Button("Créer un compte") {
-                            showRegister = true
-                        }
-                        .font(.subheadline)
-                        .foregroundColor(.white)
                     }
-                    .padding(.horizontal, 32)
+                    .padding(.horizontal, 24)
                     
                     Spacer()
                 }
@@ -154,9 +152,13 @@ struct CustomTextFieldStyle: TextFieldStyle {
     func _body(configuration: TextField<Self._Label>) -> some View {
         configuration
             .padding()
-            .background(Color.white.opacity(0.9))
-            .cornerRadius(10)
-            .foregroundColor(.black)
+            .background(LT.ColorToken.surface)
+            .cornerRadius(LT.Metric.cornerM)
+            .foregroundColor(LT.ColorToken.textPrimary)
+            .overlay(
+                RoundedRectangle(cornerRadius: LT.Metric.cornerM)
+                    .stroke(LT.ColorToken.border.opacity(0.7), lineWidth: 1)
+            )
     }
 }
 

@@ -24,38 +24,52 @@ struct RegisterView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                Section("Identité") {
-                    TextField("Prénom", text: $prenom)
-                    TextField("Nom", text: $nom)
+            VStack(spacing: 16) {
+                LT.SectionCard {
+                    VStack(alignment: .leading, spacing: 14) {
+                        Text("Identité").font(.headline).foregroundColor(LT.ColorToken.textPrimary)
+                        TextField("Prénom", text: $prenom).textFieldStyle(CustomTextFieldStyle())
+                        TextField("Nom", text: $nom).textFieldStyle(CustomTextFieldStyle())
+                    }
                 }
-                
-                Section("Compte") {
-                    TextField("Email", text: $email)
-                        .textInputAutocapitalization(.never)
-                        .keyboardType(.emailAddress)
-                        .autocorrectionDisabled()
-                    SecureField("Mot de passe", text: $password)
+                .padding(.horizontal)
+
+                LT.SectionCard {
+                    VStack(alignment: .leading, spacing: 14) {
+                        Text("Compte").font(.headline).foregroundColor(LT.ColorToken.textPrimary)
+                        TextField("Email", text: $email)
+                            .textInputAutocapitalization(.never)
+                            .keyboardType(.emailAddress)
+                            .autocorrectionDisabled()
+                            .textFieldStyle(CustomTextFieldStyle())
+                        SecureField("Mot de passe", text: $password)
+                            .textFieldStyle(CustomTextFieldStyle())
+                    }
                 }
-                
+                .padding(.horizontal)
+
                 if let errorMessage = errorMessage {
                     Text(errorMessage)
                         .font(.caption)
-                        .foregroundColor(.red)
+                        .foregroundColor(LT.ColorToken.danger)
+                        .padding(.horizontal)
                 }
+
+                Button(action: handleRegister) {
+                    if isLoading { ProgressView().progressViewStyle(CircularProgressViewStyle(tint: .white)) } else { Text("S'inscrire").fontWeight(.semibold) }
+                }
+                .buttonStyle(LT.PrimaryButtonStyle())
+                .padding(.horizontal)
+                .disabled(!isValid || isLoading)
+
+                Spacer()
             }
+            .padding(.top, 16)
+            .ltScreen()
             .navigationTitle("Créer un compte")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Annuler") { dismiss() }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: handleRegister) {
-                        if isLoading { ProgressView() } else { Text("S'inscrire") }
-                    }
-                    .disabled(!isValid || isLoading)
-                }
+                ToolbarItem(placement: .navigationBarLeading) { Button("Annuler") { dismiss() } }
             }
         }
     }
@@ -81,4 +95,3 @@ struct RegisterView: View {
     RegisterView()
         .environmentObject(AuthService.shared)
 }
-
