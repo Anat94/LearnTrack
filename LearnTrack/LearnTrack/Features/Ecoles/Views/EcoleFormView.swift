@@ -31,29 +31,41 @@ struct EcoleFormView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                Section("Établissement") {
-                    TextField("Nom de l'école", text: $nom)
+            ScrollView {
+                VStack(spacing: 16) {
+                    LT.SectionCard {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Établissement").font(.headline)
+                            TextField("Nom de l'école", text: $nom).textFieldStyle(LTTextFieldStyle())
+                        }
+                    }
+                    LT.SectionCard {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Contact").font(.headline)
+                            TextField("Nom du contact", text: $nomContact).textFieldStyle(LTTextFieldStyle())
+                            TextField("Email", text: $email)
+                                .keyboardType(.emailAddress)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                                .textFieldStyle(LTTextFieldStyle())
+                            TextField("Téléphone", text: $telephone)
+                                .keyboardType(.phonePad)
+                                .textFieldStyle(LTTextFieldStyle())
+                        }
+                    }
+                    LT.SectionCard {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Adresse").font(.headline)
+                            TextField("Rue", text: $rue).textFieldStyle(LTTextFieldStyle())
+                            TextField("Code postal", text: $codePostal).keyboardType(.numberPad).textFieldStyle(LTTextFieldStyle())
+                            TextField("Ville", text: $ville).textFieldStyle(LTTextFieldStyle())
+                        }
+                    }
+                    if let errorMessage = errorMessage, showError { Text(errorMessage).foregroundColor(LT.ColorToken.danger).font(.caption) }
+                    Button(isEditing ? "Enregistrer" : "Créer") { saveEcole() }.buttonStyle(LT.PrimaryButtonStyle())
                 }
-                
-                Section("Contact") {
-                    TextField("Nom du contact", text: $nomContact)
-                    
-                    TextField("Email", text: $email)
-                        .keyboardType(.emailAddress)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                    
-                    TextField("Téléphone", text: $telephone)
-                        .keyboardType(.phonePad)
-                }
-                
-                Section("Adresse") {
-                    TextField("Rue", text: $rue)
-                    TextField("Code postal", text: $codePostal)
-                        .keyboardType(.numberPad)
-                    TextField("Ville", text: $ville)
-                }
+                .padding()
+                .ltScreen()
             }
             .navigationTitle(isEditing ? "Modifier" : "Nouvelle école")
             .navigationBarTitleDisplayMode(.inline)
@@ -63,24 +75,14 @@ struct EcoleFormView: View {
                         dismiss()
                     }
                 }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(isEditing ? "Enregistrer" : "Créer") {
-                        saveEcole()
-                    }
-                    .disabled(nom.isEmpty || nomContact.isEmpty || isLoading)
-                }
+                // Primary action integrated in content
             }
             .onAppear {
                 if let ecole = ecoleToEdit {
                     loadEcoleData(ecole)
                 }
             }
-            .alert("Erreur", isPresented: $showError) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                Text(errorMessage)
-            }
+            .alert("Erreur", isPresented: $showError) { Button("OK", role: .cancel) { } } message: { Text(errorMessage) }
         }
     }
     

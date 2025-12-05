@@ -23,19 +23,11 @@ struct SessionDetailView: View {
                     Text(session.module)
                         .font(.title2)
                         .fontWeight(.bold)
-                    
                     HStack {
-                        // Badge modalité
-                        HStack(spacing: 4) {
-                            Image(systemName: session.modalite.icon)
-                            Text(session.modalite.label)
-                                .fontWeight(.medium)
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(session.modalite == .presentiel ? Color.blue.opacity(0.2) : Color.green.opacity(0.2))
-                        .foregroundColor(session.modalite == .presentiel ? .blue : .green)
-                        .cornerRadius(10)
+                        LT.Badge(
+                            text: session.modalite.label,
+                            color: session.modalite == .presentiel ? LT.ColorToken.secondary : LT.ColorToken.primary
+                        )
                     }
                 }
                 .padding(.horizontal)
@@ -65,7 +57,7 @@ struct SessionDetailView: View {
                         }) {
                             Label("Ouvrir dans Plans", systemImage: "map.fill")
                                 .font(.subheadline)
-                                .foregroundColor(.blue)
+                                .foregroundColor(LT.ColorToken.secondary)
                         }
                         .padding(.top, 4)
                     }
@@ -163,29 +155,15 @@ struct SessionDetailView: View {
                 
                 // Boutons d'action
                 VStack(spacing: 12) {
-                    Button(action: { showingShareSheet = true }) {
-                        Label("Partager la session", systemImage: "square.and.arrow.up")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
-                    }
-                    
-                    Button(action: { showingEditSheet = true }) {
-                        Label("Modifier", systemImage: "pencil")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.orange)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
-                    }
-                    
+                    Button(action: { showingShareSheet = true }) { Label("Partager la session", systemImage: "square.and.arrow.up") }
+                        .buttonStyle(LT.PrimaryButtonStyle())
+                    Button(action: { showingEditSheet = true }) { Label("Modifier", systemImage: "pencil") }
+                        .buttonStyle(LT.PrimaryButtonStyle())
                     Button(action: { showingDeleteAlert = true }) {
                         Label("Supprimer", systemImage: "trash")
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.red)
+                            .background(LT.ColorToken.danger)
                             .foregroundColor(.white)
                             .cornerRadius(12)
                     }
@@ -194,6 +172,7 @@ struct SessionDetailView: View {
                 .padding(.vertical)
             }
         }
+        .ltScreen()
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showingEditSheet) {
             SessionFormView(viewModel: viewModel, sessionToEdit: session)
@@ -225,8 +204,7 @@ struct InfoSection<Content: View>: View {
         VStack(alignment: .leading, spacing: 12) {
             Label(title, systemImage: icon)
                 .font(.headline)
-                .foregroundColor(.blue)
-            
+                .foregroundColor(LT.ColorToken.secondary)
             content
         }
         .padding(.horizontal)
@@ -241,10 +219,11 @@ struct InfoRow: View {
     var body: some View {
         HStack {
             Text(label)
-                .foregroundColor(.secondary)
+                .foregroundColor(LT.ColorToken.textSecondary)
             Spacer()
             Text(value)
                 .fontWeight(.medium)
+                .foregroundColor(LT.ColorToken.textPrimary)
         }
         .font(.body)
     }

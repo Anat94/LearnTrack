@@ -33,35 +33,53 @@ struct ClientFormView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                Section("Entreprise") {
-                    TextField("Raison sociale", text: $raisonSociale)
-                }
-                
-                Section("Contact principal") {
-                    TextField("Nom du contact", text: $nomContact)
+            ScrollView {
+                VStack(spacing: 16) {
+                    LT.SectionCard {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Entreprise").font(.headline)
+                            TextField("Raison sociale", text: $raisonSociale).textFieldStyle(LTTextFieldStyle())
+                        }
+                    }
+                    LT.SectionCard {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Contact principal").font(.headline)
+                            TextField("Nom du contact", text: $nomContact).textFieldStyle(LTTextFieldStyle())
+                            TextField("Email", text: $email)
+                                .keyboardType(.emailAddress)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                                .textFieldStyle(LTTextFieldStyle())
+                            TextField("Téléphone", text: $telephone)
+                                .keyboardType(.phonePad)
+                                .textFieldStyle(LTTextFieldStyle())
+                        }
+                    }
+                    LT.SectionCard {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Adresse").font(.headline)
+                            TextField("Rue", text: $rue).textFieldStyle(LTTextFieldStyle())
+                            TextField("Code postal", text: $codePostal).keyboardType(.numberPad).textFieldStyle(LTTextFieldStyle())
+                            TextField("Ville", text: $ville).textFieldStyle(LTTextFieldStyle())
+                        }
+                    }
+                    LT.SectionCard {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Informations fiscales").font(.headline)
+                            TextField("SIRET", text: $siret).keyboardType(.numberPad).textFieldStyle(LTTextFieldStyle())
+                            TextField("N° TVA intracommunautaire", text: $numeroTva).textFieldStyle(LTTextFieldStyle())
+                        }
+                    }
                     
-                    TextField("Email", text: $email)
-                        .keyboardType(.emailAddress)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
+                    if let errorMessage = errorMessage, showError {
+                        Text(errorMessage).foregroundColor(LT.ColorToken.danger).font(.caption)
+                    }
                     
-                    TextField("Téléphone", text: $telephone)
-                        .keyboardType(.phonePad)
+                    Button(isEditing ? "Enregistrer" : "Créer") { saveClient() }
+                        .buttonStyle(LT.PrimaryButtonStyle())
                 }
-                
-                Section("Adresse") {
-                    TextField("Rue", text: $rue)
-                    TextField("Code postal", text: $codePostal)
-                        .keyboardType(.numberPad)
-                    TextField("Ville", text: $ville)
-                }
-                
-                Section("Informations fiscales") {
-                    TextField("SIRET", text: $siret)
-                        .keyboardType(.numberPad)
-                    TextField("N° TVA intracommunautaire", text: $numeroTva)
-                }
+                .padding()
+                .ltScreen()
             }
             .navigationTitle(isEditing ? "Modifier" : "Nouveau client")
             .navigationBarTitleDisplayMode(.inline)
@@ -71,24 +89,14 @@ struct ClientFormView: View {
                         dismiss()
                     }
                 }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(isEditing ? "Enregistrer" : "Créer") {
-                        saveClient()
-                    }
-                    .disabled(raisonSociale.isEmpty || nomContact.isEmpty || isLoading)
-                }
+                // Primary action button integrated in content
             }
             .onAppear {
                 if let client = clientToEdit {
                     loadClientData(client)
                 }
             }
-            .alert("Erreur", isPresented: $showError) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                Text(errorMessage)
-            }
+            .alert("Erreur", isPresented: $showError) { Button("OK", role: .cancel) { } } message: { Text(errorMessage) }
         }
     }
     

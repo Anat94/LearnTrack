@@ -19,12 +19,12 @@ struct ProfileView: View {
                 Section {
                     HStack(spacing: 16) {
                         Circle()
-                            .fill(Color.blue.opacity(0.2))
+                            .fill(LT.ColorToken.primary.opacity(0.2))
                             .frame(width: 60, height: 60)
                             .overlay(
                                 Image(systemName: "person.fill")
                                     .font(.title)
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(LT.ColorToken.primary)
                             )
                         
                         VStack(alignment: .leading, spacing: 4) {
@@ -46,8 +46,8 @@ struct ProfileView: View {
                                 .font(.caption)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 3)
-                                .background(authService.userRole == .admin ? Color.orange.opacity(0.2) : Color.blue.opacity(0.2))
-                                .foregroundColor(authService.userRole == .admin ? .orange : .blue)
+                                .background(authService.userRole == .admin ? LT.ColorToken.accent.opacity(0.2) : LT.ColorToken.primary.opacity(0.2))
+                                .foregroundColor(authService.userRole == .admin ? LT.ColorToken.accent : LT.ColorToken.primary)
                                 .cornerRadius(8)
                         }
                     }
@@ -81,20 +81,21 @@ struct ProfileView: View {
                         showingLogoutAlert = true
                     }) {
                         Label("Déconnexion", systemImage: "arrow.right.square")
-                            .foregroundColor(.red)
+                            .foregroundColor(LT.ColorToken.danger)
                     }
                 } header: {
                     Text("Compte")
                 } footer: {
                     Text("LearnTrack © 2025\nApplication de gestion de formations")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(LT.ColorToken.textSecondary)
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity)
                         .padding(.top, 20)
                 }
             }
             .navigationTitle("Profil")
+            .ltScreen()
             .alert("Déconnexion", isPresented: $showingLogoutAlert) {
                 Button("Annuler", role: .cancel) { }
                 Button("Déconnexion", role: .destructive) {

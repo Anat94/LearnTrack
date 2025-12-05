@@ -16,7 +16,8 @@ struct ClientsListView: View {
             VStack(spacing: 0) {
                 // Barre de recherche
                 SearchBar(text: $viewModel.searchText)
-                    .padding()
+                    .padding(.horizontal)
+                    .padding(.top)
                 
                 // Liste
                 if viewModel.isLoading {
@@ -34,13 +35,14 @@ struct ClientsListView: View {
                         ForEach(viewModel.filteredClients) { client in
                             NavigationLink(destination: ClientDetailView(client: client)) {
                                 ClientRowView(client: client)
+                                    .listRowSeparator(.hidden)
                             }
+                            .listRowBackground(Color.clear)
                         }
                     }
                     .listStyle(PlainListStyle())
-                    .refreshable {
-                        await viewModel.fetchClients()
-                    }
+                    .scrollContentBackground(.hidden)
+                    .refreshable { await viewModel.fetchClients() }
                 }
             }
             .navigationTitle("Clients")
@@ -49,6 +51,7 @@ struct ClientsListView: View {
                     Button(action: { showingAddClient = true }) {
                         Image(systemName: "plus.circle.fill")
                             .font(.title2)
+                            .foregroundColor(LT.ColorToken.primary)
                     }
                 }
             }
@@ -58,6 +61,7 @@ struct ClientsListView: View {
             .task {
                 await viewModel.fetchClients()
             }
+            .ltScreen()
         }
     }
 }
@@ -69,12 +73,12 @@ struct ClientRowView: View {
         HStack(spacing: 12) {
             // Avatar avec initiales
             Circle()
-                .fill(Color.blue.opacity(0.2))
+                .fill(LT.ColorToken.primary.opacity(0.2))
                 .frame(width: 50, height: 50)
                 .overlay(
                     Text(client.initiales)
                         .font(.headline)
-                        .foregroundColor(.blue)
+                        .foregroundColor(LT.ColorToken.primary)
                 )
             
             VStack(alignment: .leading, spacing: 4) {
@@ -87,7 +91,7 @@ struct ClientRowView: View {
                     Text(client.villeDisplay)
                         .font(.subheadline)
                 }
-                .foregroundColor(.secondary)
+                .foregroundColor(LT.ColorToken.textSecondary)
             }
             
             Spacer()

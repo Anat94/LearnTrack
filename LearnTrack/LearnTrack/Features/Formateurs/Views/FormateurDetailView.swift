@@ -23,12 +23,12 @@ struct FormateurDetailView: View {
                 // En-tête avec avatar
                 VStack(spacing: 12) {
                     Circle()
-                        .fill(formateur.exterieur ? Color.orange.opacity(0.2) : Color.green.opacity(0.2))
+                        .fill(formateur.exterieur ? LT.ColorToken.accent.opacity(0.2) : LT.ColorToken.primary.opacity(0.2))
                         .frame(width: 100, height: 100)
                         .overlay(
                             Text(formateur.initiales)
                                 .font(.system(size: 36, weight: .bold))
-                                .foregroundColor(formateur.exterieur ? .orange : .green)
+                                .foregroundColor(formateur.exterieur ? LT.ColorToken.accent : LT.ColorToken.primary)
                         )
                     
                     Text(formateur.nomComplet)
@@ -53,15 +53,15 @@ struct FormateurDetailView: View {
                 
                 // Boutons d'action rapide
                 HStack(spacing: 12) {
-                    ActionButton(icon: "phone.fill", title: "Appeler", color: .green) {
+                    ActionButton(icon: "phone.fill", title: "Appeler", color: LT.ColorToken.primary) {
                         ContactService.shared.call(phoneNumber: formateur.telephone)
                     }
                     
-                    ActionButton(icon: "envelope.fill", title: "Email", color: .blue) {
+                    ActionButton(icon: "envelope.fill", title: "Email", color: LT.ColorToken.secondary) {
                         ContactService.shared.sendEmail(to: formateur.email)
                     }
                     
-                    ActionButton(icon: "message.fill", title: "Message", color: .orange) {
+                    ActionButton(icon: "message.fill", title: "Message", color: LT.ColorToken.accent) {
                         ContactService.shared.sendSMS(to: formateur.telephone)
                     }
                 }
@@ -179,6 +179,7 @@ struct FormateurDetailView: View {
                 .padding(.vertical)
             }
         }
+        .ltScreen()
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showingEditSheet, onDismiss: {
             Task { await refreshFormateur() }

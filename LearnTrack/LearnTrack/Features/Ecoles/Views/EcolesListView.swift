@@ -16,7 +16,8 @@ struct EcolesListView: View {
             VStack(spacing: 0) {
                 // Barre de recherche
                 SearchBar(text: $viewModel.searchText)
-                    .padding()
+                    .padding(.horizontal)
+                    .padding(.top)
                 
                 // Liste
                 if viewModel.isLoading {
@@ -34,13 +35,14 @@ struct EcolesListView: View {
                         ForEach(viewModel.filteredEcoles) { ecole in
                             NavigationLink(destination: EcoleDetailView(ecole: ecole)) {
                                 EcoleRowView(ecole: ecole)
+                                    .listRowSeparator(.hidden)
                             }
+                            .listRowBackground(Color.clear)
                         }
                     }
                     .listStyle(PlainListStyle())
-                    .refreshable {
-                        await viewModel.fetchEcoles()
-                    }
+                    .scrollContentBackground(.hidden)
+                    .refreshable { await viewModel.fetchEcoles() }
                 }
             }
             .navigationTitle("Écoles")
@@ -49,6 +51,7 @@ struct EcolesListView: View {
                     Button(action: { showingAddEcole = true }) {
                         Image(systemName: "plus.circle.fill")
                             .font(.title2)
+                            .foregroundColor(LT.ColorToken.primary)
                     }
                 }
             }
@@ -58,6 +61,7 @@ struct EcolesListView: View {
             .task {
                 await viewModel.fetchEcoles()
             }
+            .ltScreen()
         }
     }
 }
@@ -69,12 +73,12 @@ struct EcoleRowView: View {
         HStack(spacing: 12) {
             // Avatar avec initiales
             Circle()
-                .fill(Color.purple.opacity(0.2))
+                .fill(LT.ColorToken.secondary.opacity(0.2))
                 .frame(width: 50, height: 50)
                 .overlay(
                     Text(ecole.initiales)
                         .font(.headline)
-                        .foregroundColor(.purple)
+                        .foregroundColor(LT.ColorToken.secondary)
                 )
             
             VStack(alignment: .leading, spacing: 4) {
@@ -87,7 +91,7 @@ struct EcoleRowView: View {
                     Text(ecole.villeDisplay)
                         .font(.subheadline)
                 }
-                .foregroundColor(.secondary)
+                .foregroundColor(LT.ColorToken.textSecondary)
             }
             
             Spacer()

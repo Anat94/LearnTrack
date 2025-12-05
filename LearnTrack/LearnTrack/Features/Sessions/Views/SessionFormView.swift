@@ -42,48 +42,33 @@ struct SessionFormView: View {
     
     var body: some View {
         NavigationView {
-            Form {
+            ScrollView {
+                VStack(spacing: 16) {
                 // Module
-                Section("Informations générales") {
-                    TextField("Module de formation", text: $module)
-                        .autocorrectionDisabled()
-                    
-                    DatePicker("Date", selection: $date, displayedComponents: .date)
-                    
-                    HStack {
-                        Text("Début")
-                        Spacer()
-                        TextField("09:00", text: $debut)
-                            .keyboardType(.numbersAndPunctuation)
-                            .multilineTextAlignment(.trailing)
-                            .frame(width: 80)
-                    }
-                    
-                    HStack {
-                        Text("Fin")
-                        Spacer()
-                        TextField("17:00", text: $fin)
-                            .keyboardType(.numbersAndPunctuation)
-                            .multilineTextAlignment(.trailing)
-                            .frame(width: 80)
+                LT.SectionCard {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Informations générales").font(.headline)
+                        TextField("Module de formation", text: $module).autocorrectionDisabled().textFieldStyle(LTTextFieldStyle())
+                        DatePicker("Date", selection: $date, displayedComponents: .date)
+                        HStack { Text("Début"); Spacer(); TextField("09:00", text: $debut).keyboardType(.numbersAndPunctuation).multilineTextAlignment(.trailing).frame(width: 100).textFieldStyle(LTTextFieldStyle()) }
+                        HStack { Text("Fin"); Spacer(); TextField("17:00", text: $fin).keyboardType(.numbersAndPunctuation).multilineTextAlignment(.trailing).frame(width: 100).textFieldStyle(LTTextFieldStyle()) }
                     }
                 }
                 
                 // Modalité et lieu
-                Section("Modalité") {
-                    Picker("Type", selection: $modalite) {
-                        ForEach(Session.Modalite.allCases, id: \.self) { mode in
-                            Text(mode.label).tag(mode)
-                        }
+                LT.SectionCard {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Modalité").font(.headline)
+                        Picker("Type", selection: $modalite) { ForEach(Session.Modalite.allCases, id: \.self) { mode in Text(mode.label).tag(mode) } }
+                        .pickerStyle(SegmentedPickerStyle())
+                        TextField(modalite == .presentiel ? "Adresse" : "Lien visio", text: $lieu).autocorrectionDisabled().textFieldStyle(LTTextFieldStyle())
                     }
-                    .pickerStyle(SegmentedPickerStyle())
-                    
-                    TextField(modalite == .presentiel ? "Adresse" : "Lien visio", text: $lieu)
-                        .autocorrectionDisabled()
                 }
                 
                 // Intervenants
-                Section("Intervenants") {
+                LT.SectionCard {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Intervenants").font(.headline)
                     NavigationLink(destination: FormateurPickerView(
                         formateurs: formateurViewModel.formateurs,
                         selectedId: $selectedFormateurId
@@ -137,25 +122,31 @@ struct SessionFormView: View {
                             }
                         }
                     }
+                    }
                 }
                 
                 // Tarifs
-                Section("Tarifs (€)") {
-                    TextField("Tarif client", text: $tarifClient)
-                        .keyboardType(.decimalPad)
-                    
-                    TextField("Tarif sous-traitant", text: $tarifSousTraitant)
-                        .keyboardType(.decimalPad)
-                    
-                    TextField("Frais à rembourser", text: $fraisRembourser)
-                        .keyboardType(.decimalPad)
+                LT.SectionCard {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Tarifs (€)").font(.headline)
+                        TextField("Tarif client", text: $tarifClient).keyboardType(.decimalPad).textFieldStyle(LTTextFieldStyle())
+                        TextField("Tarif sous-traitant", text: $tarifSousTraitant).keyboardType(.decimalPad).textFieldStyle(LTTextFieldStyle())
+                        TextField("Frais à rembourser", text: $fraisRembourser).keyboardType(.decimalPad).textFieldStyle(LTTextFieldStyle())
+                    }
                 }
                 
                 // Référence
-                Section("Référence") {
-                    TextField("Référence contrat (optionnel)", text: $refContrat)
-                        .autocorrectionDisabled()
+                LT.SectionCard {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Référence").font(.headline)
+                        TextField("Référence contrat (optionnel)", text: $refContrat).autocorrectionDisabled().textFieldStyle(LTTextFieldStyle())
+                    }
                 }
+                if let errorMessage = errorMessage, showError { Text(errorMessage).foregroundColor(LT.ColorToken.danger).font(.caption) }
+                Button(isEditing ? "Enregistrer" : "Créer") { saveSession() }.buttonStyle(LT.PrimaryButtonStyle())
+            }
+            .padding()
+            .ltScreen()
             }
             .navigationTitle(isEditing ? "Modifier" : "Nouvelle session")
             .navigationBarTitleDisplayMode(.inline)
@@ -165,13 +156,7 @@ struct SessionFormView: View {
                         dismiss()
                     }
                 }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(isEditing ? "Enregistrer" : "Créer") {
-                        saveSession()
-                    }
-                    .disabled(module.isEmpty || isLoading)
-                }
+                // Primary action integrated in content
             }
             .task {
                 await formateurViewModel.fetchFormateurs()

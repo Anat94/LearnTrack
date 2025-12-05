@@ -22,12 +22,12 @@ struct EcoleDetailView: View {
                 // En-tête
                 VStack(spacing: 12) {
                     Circle()
-                        .fill(Color.purple.opacity(0.2))
+                        .fill(LT.ColorToken.secondary.opacity(0.2))
                         .frame(width: 100, height: 100)
                         .overlay(
                             Text(ecole.initiales)
                                 .font(.system(size: 36, weight: .bold))
-                                .foregroundColor(.purple)
+                                .foregroundColor(LT.ColorToken.secondary)
                         )
                     
                     Text(ecole.nom)
@@ -88,21 +88,15 @@ struct EcoleDetailView: View {
                 
                 // Boutons d'action
                 VStack(spacing: 12) {
-                    Button(action: { showingEditSheet = true }) {
-                        Label("Modifier", systemImage: "pencil")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.orange)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
-                    }
+                    Button(action: { showingEditSheet = true }) { Label("Modifier", systemImage: "pencil") }
+                    .buttonStyle(LT.PrimaryButtonStyle())
                     
                     if authService.userRole == .admin {
                         Button(action: { showingDeleteAlert = true }) {
                             Label("Supprimer", systemImage: "trash")
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.red)
+                                .background(LT.ColorToken.danger)
                                 .foregroundColor(.white)
                                 .cornerRadius(12)
                         }
@@ -112,6 +106,7 @@ struct EcoleDetailView: View {
                 .padding(.vertical)
             }
         }
+        .ltScreen()
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showingEditSheet, onDismiss: {
             Task { await refreshEcole() }

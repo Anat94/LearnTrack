@@ -145,3 +145,17 @@ private extension UIColor {
     }
 }
 
+// MARK: - TextField Style (shared)
+struct LTTextFieldStyle: TextFieldStyle {
+    func _body(configuration: TextField<_Label>) -> some View {
+        configuration
+            .padding()
+            .background(LT.ColorToken.surface)
+            .cornerRadius(LT.Metric.cornerM)
+            .foregroundColor(LT.ColorToken.textPrimary)
+            .overlay(
+                RoundedRectangle(cornerRadius: LT.Metric.cornerM)
+                    .stroke(LT.ColorToken.border.opacity(0.7), lineWidth: 1)
+            )
+    }
+}

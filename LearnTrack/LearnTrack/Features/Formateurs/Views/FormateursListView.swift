@@ -16,7 +16,8 @@ struct FormateursListView: View {
             VStack(spacing: 0) {
                 // Barre de recherche
                 SearchBar(text: $viewModel.searchText)
-                    .padding()
+                    .padding(.horizontal)
+                    .padding(.top)
                 
                 // Filtre type
                 Picker("Type", selection: $viewModel.filterType) {
@@ -43,13 +44,14 @@ struct FormateursListView: View {
                         ForEach(viewModel.filteredFormateurs) { formateur in
                             NavigationLink(destination: FormateurDetailView(formateur: formateur)) {
                                 FormateurRowView(formateur: formateur)
+                                    .listRowSeparator(.hidden)
                             }
+                            .listRowBackground(Color.clear)
                         }
                     }
                     .listStyle(PlainListStyle())
-                    .refreshable {
-                        await viewModel.fetchFormateurs()
-                    }
+                    .scrollContentBackground(.hidden)
+                    .refreshable { await viewModel.fetchFormateurs() }
                 }
             }
             .navigationTitle("Formateurs")
@@ -58,6 +60,7 @@ struct FormateursListView: View {
                     Button(action: { showingAddFormateur = true }) {
                         Image(systemName: "plus.circle.fill")
                             .font(.title2)
+                            .foregroundColor(LT.ColorToken.primary)
                     }
                 }
             }
@@ -67,6 +70,7 @@ struct FormateursListView: View {
             .task {
                 await viewModel.fetchFormateurs()
             }
+            .ltScreen()
         }
     }
 }
@@ -78,12 +82,12 @@ struct FormateurRowView: View {
         HStack(spacing: 12) {
             // Avatar avec initiales
             Circle()
-                .fill(formateur.exterieur ? Color.orange.opacity(0.2) : Color.green.opacity(0.2))
+                .fill(formateur.exterieur ? LT.ColorToken.accent.opacity(0.2) : LT.ColorToken.primary.opacity(0.2))
                 .frame(width: 50, height: 50)
                 .overlay(
                     Text(formateur.initiales)
                         .font(.headline)
-                        .foregroundColor(formateur.exterieur ? .orange : .green)
+                        .foregroundColor(formateur.exterieur ? LT.ColorToken.accent : LT.ColorToken.primary)
                 )
             
             VStack(alignment: .leading, spacing: 4) {
@@ -92,15 +96,15 @@ struct FormateurRowView: View {
                 
                 Text(formateur.specialite)
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(LT.ColorToken.textSecondary)
                 
                 // Badge type
                 Text(formateur.type)
                     .font(.caption)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 2)
-                    .background(formateur.exterieur ? Color.orange.opacity(0.2) : Color.green.opacity(0.2))
-                    .foregroundColor(formateur.exterieur ? .orange : .green)
+                    .background(formateur.exterieur ? LT.ColorToken.accent.opacity(0.2) : LT.ColorToken.primary.opacity(0.2))
+                    .foregroundColor(formateur.exterieur ? LT.ColorToken.accent : LT.ColorToken.primary)
                     .cornerRadius(4)
             }
             

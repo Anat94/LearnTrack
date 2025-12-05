@@ -20,11 +20,15 @@ struct ResetPasswordView: View {
         NavigationView {
             VStack(spacing: 24) {
                 // Icône
-                Image(systemName: "envelope.circle.fill")
-                    .resizable()
-                    .frame(width: 80, height: 80)
-                    .foregroundColor(.blue)
-                    .padding(.top, 40)
+                ZStack {
+                    Circle().fill(LT.ColorToken.primary.opacity(0.2)).frame(width: 120, height: 120)
+                    Image(systemName: "envelope.circle.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 70, height: 70)
+                        .foregroundColor(LT.ColorToken.primary)
+                }
+                .padding(.top, 40)
                 
                 Text("Réinitialiser le mot de passe")
                     .font(.title2)
@@ -37,16 +41,17 @@ struct ResetPasswordView: View {
                     .padding(.horizontal)
                 
                 // Champ email
-                VStack(alignment: .leading, spacing: 8) {
-                    Label("Email", systemImage: "envelope")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    
-                    TextField("votre@email.com", text: $email)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .textInputAutocapitalization(.never)
-                        .keyboardType(.emailAddress)
-                        .autocorrectionDisabled()
+                LT.SectionCard {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label("Email", systemImage: "envelope")
+                            .font(.subheadline)
+                            .foregroundColor(LT.ColorToken.textSecondary)
+                        TextField("votre@email.com", text: $email)
+                            .textFieldStyle(CustomTextFieldStyle())
+                            .textInputAutocapitalization(.never)
+                            .keyboardType(.emailAddress)
+                            .autocorrectionDisabled()
+                    }
                 }
                 .padding(.horizontal)
                 
@@ -74,29 +79,20 @@ struct ResetPasswordView: View {
                 Button(action: handleReset) {
                     HStack {
                         if isLoading {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            ProgressView().progressViewStyle(CircularProgressViewStyle(tint: .white))
                         } else {
-                            Text("Envoyer le lien")
-                                .fontWeight(.semibold)
+                            Text("Envoyer le lien").fontWeight(.semibold)
                         }
                     }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 50)
-                    .background(email.isEmpty ? Color.gray : Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
                 }
+                .buttonStyle(LT.PrimaryButtonStyle())
                 .disabled(isLoading || email.isEmpty)
                 .padding(.horizontal)
                 
                 Spacer()
             }
-            .navigationBarItems(
-                leading: Button("Annuler") {
-                    dismiss()
-                }
-            )
+            .navigationBarItems(leading: Button("Annuler") { dismiss() })
+            .ltScreen()
         }
     }
     

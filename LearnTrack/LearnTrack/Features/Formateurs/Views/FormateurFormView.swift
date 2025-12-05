@@ -37,45 +37,59 @@ struct FormateurFormView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                Section("Identité") {
-                    TextField("Prénom", text: $prenom)
-                    TextField("Nom", text: $nom)
-                }
-                
-                Section("Contact") {
-                    TextField("Email", text: $email)
-                        .keyboardType(.emailAddress)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                    
-                    TextField("Téléphone", text: $telephone)
-                        .keyboardType(.phonePad)
-                }
-                
-                Section("Informations professionnelles") {
-                    TextField("Spécialité", text: $specialite)
-                    
-                    TextField("Taux horaire (€)", text: $tauxHoraire)
-                        .keyboardType(.decimalPad)
-                    
-                    Toggle("Formateur externe", isOn: $exterieur)
-                }
-                
-                if exterieur {
-                    Section("Société") {
-                        TextField("Nom de la société", text: $societe)
-                        TextField("SIRET", text: $siret)
-                        TextField("NDA", text: $nda)
+            ScrollView {
+                VStack(spacing: 16) {
+                    LT.SectionCard {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Identité").font(.headline)
+                            TextField("Prénom", text: $prenom).textFieldStyle(LTTextFieldStyle())
+                            TextField("Nom", text: $nom).textFieldStyle(LTTextFieldStyle())
+                        }
                     }
+                    LT.SectionCard {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Contact").font(.headline)
+                            TextField("Email", text: $email)
+                                .keyboardType(.emailAddress)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                                .textFieldStyle(LTTextFieldStyle())
+                            TextField("Téléphone", text: $telephone)
+                                .keyboardType(.phonePad)
+                                .textFieldStyle(LTTextFieldStyle())
+                        }
+                    }
+                    LT.SectionCard {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Informations professionnelles").font(.headline)
+                            TextField("Spécialité", text: $specialite).textFieldStyle(LTTextFieldStyle())
+                            TextField("Taux horaire (€)", text: $tauxHoraire).keyboardType(.decimalPad).textFieldStyle(LTTextFieldStyle())
+                            Toggle("Formateur externe", isOn: $exterieur)
+                        }
+                    }
+                    if exterieur {
+                        LT.SectionCard {
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("Société").font(.headline)
+                                TextField("Nom de la société", text: $societe).textFieldStyle(LTTextFieldStyle())
+                                TextField("SIRET", text: $siret).textFieldStyle(LTTextFieldStyle())
+                                TextField("NDA", text: $nda).textFieldStyle(LTTextFieldStyle())
+                            }
+                        }
+                    }
+                    LT.SectionCard {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Adresse").font(.headline)
+                            TextField("Rue", text: $rue).textFieldStyle(LTTextFieldStyle())
+                            TextField("Code postal", text: $codePostal).keyboardType(.numberPad).textFieldStyle(LTTextFieldStyle())
+                            TextField("Ville", text: $ville).textFieldStyle(LTTextFieldStyle())
+                        }
+                    }
+                    if let errorMessage = errorMessage, showError { Text(errorMessage).foregroundColor(LT.ColorToken.danger).font(.caption) }
+                    Button(isEditing ? "Enregistrer" : "Créer") { saveFormateur() }.buttonStyle(LT.PrimaryButtonStyle())
                 }
-                
-                Section("Adresse") {
-                    TextField("Rue", text: $rue)
-                    TextField("Code postal", text: $codePostal)
-                        .keyboardType(.numberPad)
-                    TextField("Ville", text: $ville)
-                }
+                .padding()
+                .ltScreen()
             }
             .navigationTitle(isEditing ? "Modifier" : "Nouveau formateur")
             .navigationBarTitleDisplayMode(.inline)
@@ -85,24 +99,14 @@ struct FormateurFormView: View {
                         dismiss()
                     }
                 }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(isEditing ? "Enregistrer" : "Créer") {
-                        saveFormateur()
-                    }
-                    .disabled(prenom.isEmpty || nom.isEmpty || isLoading)
-                }
+                // Primary button integrated in content
             }
             .onAppear {
                 if let formateur = formateurToEdit {
                     loadFormateurData(formateur)
                 }
             }
-            .alert("Erreur", isPresented: $showError) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                Text(errorMessage)
-            }
+            .alert("Erreur", isPresented: $showError) { Button("OK", role: .cancel) { } } message: { Text(errorMessage) }
         }
     }
     

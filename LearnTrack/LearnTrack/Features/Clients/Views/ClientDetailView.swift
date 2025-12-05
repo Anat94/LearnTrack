@@ -23,12 +23,12 @@ struct ClientDetailView: View {
                 // En-tête
                 VStack(spacing: 12) {
                     Circle()
-                        .fill(Color.blue.opacity(0.2))
+                        .fill(LT.ColorToken.primary.opacity(0.2))
                         .frame(width: 100, height: 100)
                         .overlay(
                             Text(client.initiales)
                                 .font(.system(size: 36, weight: .bold))
-                                .foregroundColor(.blue)
+                                .foregroundColor(LT.ColorToken.primary)
                         )
                     
                     Text(client.raisonSociale)
@@ -41,11 +41,11 @@ struct ClientDetailView: View {
                 
                 // Boutons d'action rapide
                 HStack(spacing: 12) {
-                    ActionButton(icon: "phone.fill", title: "Appeler", color: .green) {
+                    ActionButton(icon: "phone.fill", title: "Appeler", color: LT.ColorToken.primary) {
                         ContactService.shared.call(phoneNumber: client.telephone)
                     }
                     
-                    ActionButton(icon: "envelope.fill", title: "Email", color: .blue) {
+                    ActionButton(icon: "envelope.fill", title: "Email", color: LT.ColorToken.secondary) {
                         ContactService.shared.sendEmail(to: client.email)
                     }
                 }
@@ -54,17 +54,12 @@ struct ClientDetailView: View {
                 Divider()
                 
                 // Contact principal
-                InfoSection(title: "Contact principal", icon: "person.fill") {
-                    Text(client.nomContact)
-                        .font(.headline)
-                        .padding(.bottom, 8)
-                    
-                    ContactRow(icon: "phone", label: "Téléphone", value: client.telephone) {
-                        ContactService.shared.call(phoneNumber: client.telephone)
-                    }
-                    
-                    ContactRow(icon: "envelope", label: "Email", value: client.email) {
-                        ContactService.shared.sendEmail(to: client.email)
+                LT.SectionCard {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label("Contact principal", systemImage: "person.fill").font(.headline).foregroundColor(LT.ColorToken.secondary)
+                        Text(client.nomContact).font(.headline).padding(.bottom, 4)
+                        ContactRow(icon: "phone", label: "Téléphone", value: client.telephone) { ContactService.shared.call(phoneNumber: client.telephone) }
+                        ContactRow(icon: "envelope", label: "Email", value: client.email) { ContactService.shared.sendEmail(to: client.email) }
                     }
                 }
                 
@@ -72,31 +67,28 @@ struct ClientDetailView: View {
                 
                 // Adresse
                 if let adresse = client.adresseComplete {
-                    InfoSection(title: "Adresse", icon: "mappin.circle.fill") {
-                        Text(adresse)
-                            .font(.body)
-                        
-                        Button(action: {
-                            ContactService.shared.openInMaps(address: adresse)
-                        }) {
-                            Label("Ouvrir dans Plans", systemImage: "map.fill")
-                                .font(.subheadline)
-                                .foregroundColor(.blue)
+                    LT.SectionCard {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Label("Adresse", systemImage: "mappin.circle.fill").font(.headline).foregroundColor(LT.ColorToken.secondary)
+                            Text(adresse).font(.body)
+                            Button(action: { ContactService.shared.openInMaps(address: adresse) }) {
+                                Label("Ouvrir dans Plans", systemImage: "map.fill")
+                                    .font(.subheadline)
+                                    .foregroundColor(LT.ColorToken.secondary)
+                            }
+                            .padding(.top, 4)
                         }
-                        .padding(.top, 4)
                     }
                     
                     Divider()
                 }
                 
                 // Informations fiscales
-                InfoSection(title: "Informations fiscales", icon: "doc.text.fill") {
-                    if let siret = client.siret, !siret.isEmpty {
-                        InfoRow(label: "SIRET", value: siret)
-                    }
-                    
-                    if let tva = client.numeroTva, !tva.isEmpty {
-                        InfoRow(label: "N° TVA", value: tva)
+                LT.SectionCard {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label("Informations fiscales", systemImage: "doc.text.fill").font(.headline).foregroundColor(LT.ColorToken.secondary)
+                        if let siret = client.siret, !siret.isEmpty { InfoRow(label: "SIRET", value: siret) }
+                        if let tva = client.numeroTva, !tva.isEmpty { InfoRow(label: "N° TVA", value: tva) }
                     }
                 }
                 
@@ -184,6 +176,7 @@ struct ClientDetailView: View {
                 .padding(.vertical)
             }
         }
+        .ltScreen()
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showingEditSheet, onDismiss: {
             Task { await refreshClient() }
