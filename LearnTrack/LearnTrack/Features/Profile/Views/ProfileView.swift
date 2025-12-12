@@ -94,7 +94,6 @@ struct ProfileView: View {
                         .winamaxCard()
                         .padding(.horizontal, 20)
                         
-                        // Informations
                         VStack(alignment: .leading, spacing: 16) {
                             Text("À propos")
                                 .font(.winamaxHeadline())
@@ -147,15 +146,18 @@ struct ProfileView: View {
                         .buttonStyle(WinamaxDangerButton())
                         .padding(.horizontal, 20)
                         
-                        // Footer
-                        VStack(spacing: 8) {
-                            Text("LearnTrack © 2025")
-                                .font(.winamaxCaption())
-                                .foregroundColor(theme.textSecondary)
+                        VStack(spacing: 16) {
+                            AppLogo(size: 60)
                             
-                            Text("Application de gestion de formations")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(theme.textSecondary.opacity(0.7))
+                            VStack(spacing: 8) {
+                                Text("LearnTrack © 2025")
+                                    .font(.winamaxCaption())
+                                    .foregroundColor(theme.textSecondary)
+                                
+                                Text("Application de gestion de formations")
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundColor(theme.textSecondary.opacity(0.7))
+                            }
                         }
                         .padding(.top, 20)
                         .padding(.bottom, 40)

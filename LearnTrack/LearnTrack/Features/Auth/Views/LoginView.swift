@@ -30,24 +30,8 @@ struct LoginView: View {
                     VStack(spacing: 32) {
                         Spacer(minLength: 40)
                         
-                        // Logo et branding
                         VStack(spacing: 16) {
-                            ZStack {
-                                Circle()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [theme.primaryGreen, theme.primaryGreen.opacity(0.7)],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
-                                    .frame(width: 120, height: 120)
-                                    .shadow(color: theme.primaryGreen.opacity(0.4), radius: 20, y: 10)
-                                
-                                Image(systemName: "book.closed.fill")
-                                    .font(.system(size: 50, weight: .bold))
-                                    .foregroundColor(.white)
-                            }
+                            AppLogo(size: 120)
                             
                             VStack(spacing: 8) {
                                 Text("LearnTrack")
