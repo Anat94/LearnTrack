@@ -10,6 +10,7 @@ import SwiftUI
 struct SessionsListView: View {
     @StateObject private var viewModel = SessionViewModel()
     @State private var showingAddSession = false
+    @State private var selectedDate = Date()
     
     var body: some View {
         NavigationView {
@@ -24,8 +25,11 @@ struct SessionsListView: View {
                         .padding(.top, LTSpacing.sm)
                     
                     // Month filter
-                    LTMonthFilter(selectedMonth: $viewModel.selectedMonth)
+                    LTMonthFilter(selectedMonth: $selectedDate)
                         .padding(.horizontal, LTSpacing.lg)
+                        .onChange(of: selectedDate) { _, newDate in
+                            viewModel.selectedMonth = Calendar.current.component(.month, from: newDate)
+                        }
                     
                     // Content
                     Group {
