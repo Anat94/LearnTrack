@@ -219,22 +219,12 @@ struct ProfileView: View {
     private var footerSection: some View {
         VStack(spacing: LTSpacing.md) {
             // Logo
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [.emerald400, .emerald600],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 60, height: 60)
-                
-                Image(systemName: "book.fill")
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundColor(.white)
-            }
-            .shadow(color: .emerald500.opacity(0.3), radius: 12, y: 6)
+            Image("image")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 48, height: 48)
+                .clipShape(RoundedRectangle(cornerRadius: LTRadius.md))
+                .shadow(color: .emerald500.opacity(0.2), radius: 8, y: 4)
             
             VStack(spacing: LTSpacing.xs) {
                 Text("LearnTrack © 2025")
