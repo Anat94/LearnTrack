@@ -25,6 +25,7 @@ struct EcolesListView: View {
                         .padding(.vertical, LTSpacing.md)
                         .opacity(hasAppeared ? 1 : 0)
                         .offset(y: hasAppeared ? 0 : -20)
+                        .animation(.easeOut(duration: 0.3), value: hasAppeared)
                     
                     // Content
                     contentSection
@@ -48,9 +49,7 @@ struct EcolesListView: View {
                 await viewModel.fetchEcoles()
             }
             .onAppear {
-                withAnimation(.easeOut(duration: 0.3).delay(0.1)) {
-                    hasAppeared = true
-                }
+                hasAppeared = true
             }
         }
     }
@@ -78,16 +77,7 @@ struct EcolesListView: View {
     @ViewBuilder
     private var contentSection: some View {
         if viewModel.isLoading {
-            ScrollView {
-                VStack(spacing: LTSpacing.md) {
-                    ForEach(0..<4, id: \.self) { index in
-                        LTSkeletonCard()
-                            .opacity(hasAppeared ? 1 : 0)
-                            .animation(.easeOut(duration: 0.4).delay(Double(index) * 0.1), value: hasAppeared)
-                    }
-                }
-                .padding(.horizontal, LTSpacing.lg)
-            }
+            loadingView
         } else if viewModel.filteredEcoles.isEmpty {
             LTEmptyState(
                 icon: "graduationcap",
@@ -96,9 +86,20 @@ struct EcolesListView: View {
                 actionTitle: "Ajouter",
                 action: { showingAddEcole = true }
             )
-            .opacity(hasAppeared ? 1 : 0)
         } else {
             ecolesList
+        }
+    }
+    
+    // MARK: - Loading
+    private var loadingView: some View {
+        ScrollView {
+            VStack(spacing: LTSpacing.md) {
+                ForEach(0..<4, id: \.self) { _ in
+                    LTSkeletonCard()
+                }
+            }
+            .padding(.horizontal, LTSpacing.lg)
         }
     }
     
@@ -108,13 +109,13 @@ struct EcolesListView: View {
             LazyVStack(spacing: LTSpacing.md) {
                 ForEach(Array(viewModel.filteredEcoles.enumerated()), id: \.element.id) { index, ecole in
                     NavigationLink(destination: EcoleDetailView(ecole: ecole)) {
-                        ecoleCard(ecole)
+                        LTEcoleCardContent(name: ecole.nom, ville: ecole.ville)
                     }
-                    .buttonStyle(PlainButtonStyle())
+                    .ltListCardStyle()
                     .opacity(hasAppeared ? 1 : 0)
-                    .offset(y: hasAppeared ? 0 : 30)
+                    .offset(y: hasAppeared ? 0 : 20)
                     .animation(
-                        .spring(response: 0.5, dampingFraction: 0.8).delay(Double(index) * 0.05),
+                        .easeOut(duration: 0.3).delay(Double(index) * 0.05),
                         value: hasAppeared
                     )
                 }
@@ -125,48 +126,6 @@ struct EcolesListView: View {
         .refreshable {
             await viewModel.fetchEcoles()
         }
-    }
-    
-    // MARK: - Card
-    private func ecoleCard(_ ecole: Ecole) -> some View {
-        LTInteractiveCard(action: {}) {
-            HStack(spacing: LTSpacing.md) {
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [.emerald500.opacity(0.2), .emerald600.opacity(0.1)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: LTHeight.avatarMedium, height: LTHeight.avatarMedium)
-                    
-                    Image(systemName: "graduationcap.fill")
-                        .font(.system(size: LTIconSize.lg))
-                        .foregroundColor(.emerald500)
-                }
-                
-                VStack(alignment: .leading, spacing: LTSpacing.xs) {
-                    Text(ecole.nom)
-                        .font(.ltBodySemibold)
-                        .foregroundColor(.ltText)
-                    
-                    if let ville = ecole.ville, !ville.isEmpty {
-                        Text(ville)
-                            .font(.ltCaption)
-                            .foregroundColor(.ltTextSecondary)
-                    }
-                }
-                
-                Spacer()
-                
-                Image(systemName: "chevron.right")
-                    .font(.system(size: LTIconSize.sm, weight: .semibold))
-                    .foregroundColor(.ltTextTertiary)
-            }
-        }
-        .allowsHitTesting(false)
     }
 }
 

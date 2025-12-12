@@ -25,6 +25,7 @@ struct ClientsListView: View {
                         .padding(.vertical, LTSpacing.md)
                         .opacity(hasAppeared ? 1 : 0)
                         .offset(y: hasAppeared ? 0 : -20)
+                        .animation(.easeOut(duration: 0.3), value: hasAppeared)
                     
                     // Content
                     contentSection
@@ -48,9 +49,7 @@ struct ClientsListView: View {
                 await viewModel.fetchClients()
             }
             .onAppear {
-                withAnimation(.easeOut(duration: 0.3).delay(0.1)) {
-                    hasAppeared = true
-                }
+                hasAppeared = true
             }
         }
     }
@@ -80,10 +79,8 @@ struct ClientsListView: View {
         if viewModel.isLoading {
             ScrollView {
                 VStack(spacing: LTSpacing.md) {
-                    ForEach(0..<4, id: \.self) { index in
+                    ForEach(0..<4, id: \.self) { _ in
                         LTSkeletonPersonRow()
-                            .opacity(hasAppeared ? 1 : 0)
-                            .animation(.easeOut(duration: 0.4).delay(Double(index) * 0.1), value: hasAppeared)
                     }
                 }
                 .padding(.horizontal, LTSpacing.lg)
@@ -96,7 +93,6 @@ struct ClientsListView: View {
                 actionTitle: "Ajouter",
                 action: { showingAddClient = true }
             )
-            .opacity(hasAppeared ? 1 : 0)
         } else {
             clientsList
         }
@@ -108,20 +104,18 @@ struct ClientsListView: View {
             LazyVStack(spacing: LTSpacing.md) {
                 ForEach(Array(viewModel.filteredClients.enumerated()), id: \.element.id) { index, client in
                     NavigationLink(destination: ClientDetailView(client: client)) {
-                        LTPersonCard(
+                        LTPersonCardContent(
                             name: client.raisonSociale,
                             subtitle: client.email.isEmpty ? (client.ville ?? "") : client.email,
                             initials: client.initiales,
-                            badgeColor: .info,
-                            action: {}
+                            badgeColor: .info
                         )
-                        .allowsHitTesting(false)
                     }
-                    .buttonStyle(PlainButtonStyle())
+                    .ltListCardStyle()
                     .opacity(hasAppeared ? 1 : 0)
-                    .offset(y: hasAppeared ? 0 : 30)
+                    .offset(y: hasAppeared ? 0 : 20)
                     .animation(
-                        .spring(response: 0.5, dampingFraction: 0.8).delay(Double(index) * 0.05),
+                        .easeOut(duration: 0.3).delay(Double(index) * 0.05),
                         value: hasAppeared
                     )
                 }

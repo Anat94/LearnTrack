@@ -2,7 +2,7 @@
 //  SessionsListView.swift
 //  LearnTrack
 //
-//  Liste des sessions - Design Premium avec animations
+//  Liste des sessions - Design Premium
 //
 
 import SwiftUI
@@ -20,10 +20,7 @@ struct SessionsListView: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    // Header
                     headerSection
-                    
-                    // Content
                     contentSection
                 }
             }
@@ -45,9 +42,7 @@ struct SessionsListView: View {
                 await viewModel.fetchSessions()
             }
             .onAppear {
-                withAnimation(.easeOut(duration: 0.3).delay(0.1)) {
-                    hasAppeared = true
-                }
+                hasAppeared = true
             }
         }
     }
@@ -55,11 +50,9 @@ struct SessionsListView: View {
     // MARK: - Header Section
     private var headerSection: some View {
         VStack(spacing: LTSpacing.md) {
-            // Search bar
             LTSearchBar(text: $viewModel.searchText, placeholder: "Rechercher...")
                 .padding(.horizontal, LTSpacing.lg)
             
-            // Month filter
             LTMonthFilter(selectedMonth: $selectedDate)
                 .padding(.horizontal, LTSpacing.lg)
                 .onChange(of: selectedDate) { _, newDate in
@@ -70,15 +63,29 @@ struct SessionsListView: View {
         .padding(.bottom, LTSpacing.md)
         .opacity(hasAppeared ? 1 : 0)
         .offset(y: hasAppeared ? 0 : -20)
+        .animation(.easeOut(duration: 0.3), value: hasAppeared)
     }
     
     // MARK: - Content Section
     @ViewBuilder
     private var contentSection: some View {
         if viewModel.isLoading {
-            loadingView
+            ScrollView {
+                VStack(spacing: LTSpacing.md) {
+                    ForEach(0..<4, id: \.self) { _ in
+                        LTSkeletonCard()
+                    }
+                }
+                .padding(.horizontal, LTSpacing.lg)
+            }
         } else if viewModel.filteredSessions.isEmpty {
-            emptyStateView
+            LTEmptyState(
+                icon: "calendar.badge.exclamationmark",
+                title: "Aucune session",
+                message: "Aucune session pour ce mois",
+                actionTitle: "Créer",
+                action: { showingAddSession = true }
+            )
         } else {
             sessionsList
         }
@@ -109,48 +116,26 @@ struct SessionsListView: View {
         }
     }
     
-    // MARK: - Loading View
-    private var loadingView: some View {
-        ScrollView {
-            VStack(spacing: LTSpacing.md) {
-                ForEach(0..<4, id: \.self) { index in
-                    LTSkeletonCard()
-                        .opacity(hasAppeared ? 1 : 0)
-                        .offset(y: hasAppeared ? 0 : 20)
-                        .animation(.easeOut(duration: 0.4).delay(Double(index) * 0.1), value: hasAppeared)
-                }
-            }
-            .padding(.horizontal, LTSpacing.lg)
-        }
-    }
-    
-    // MARK: - Empty State
-    private var emptyStateView: some View {
-        LTEmptyState(
-            icon: "calendar.badge.exclamationmark",
-            title: "Aucune session",
-            message: "Aucune session pour ce mois",
-            actionTitle: "Créer",
-            action: { showingAddSession = true }
-        )
-        .opacity(hasAppeared ? 1 : 0)
-        .scaleEffect(hasAppeared ? 1 : 0.9)
-    }
-    
     // MARK: - Sessions List
     private var sessionsList: some View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: LTSpacing.md) {
                 ForEach(Array(viewModel.filteredSessions.enumerated()), id: \.element.id) { index, session in
                     NavigationLink(destination: SessionDetailView(session: session)) {
-                        sessionCard(session)
+                        LTSessionCardContent(
+                            title: session.module,
+                            date: session.date.formatted(date: .abbreviated, time: .omitted),
+                            time: "\(session.debut) - \(session.fin)",
+                            formateur: session.formateur?.nomComplet,
+                            client: session.client?.raisonSociale,
+                            isPresentiel: session.modalite == .presentiel
+                        )
                     }
-                    .buttonStyle(PlainButtonStyle())
+                    .ltListCardStyle()
                     .opacity(hasAppeared ? 1 : 0)
-                    .offset(y: hasAppeared ? 0 : 30)
+                    .offset(y: hasAppeared ? 0 : 20)
                     .animation(
-                        .spring(response: 0.5, dampingFraction: 0.8)
-                        .delay(Double(index) * 0.05),
+                        .easeOut(duration: 0.3).delay(Double(index) * 0.05),
                         value: hasAppeared
                     )
                 }
@@ -161,48 +146,6 @@ struct SessionsListView: View {
         .refreshable {
             await viewModel.fetchSessions()
         }
-    }
-    
-    // MARK: - Session Card
-    private func sessionCard(_ session: Session) -> some View {
-        LTInteractiveCard(action: {}) {
-            VStack(alignment: .leading, spacing: LTSpacing.md) {
-                // Header
-                HStack(alignment: .top) {
-                    Text(session.module)
-                        .font(.ltH4)
-                        .foregroundColor(.ltText)
-                        .lineLimit(2)
-                    
-                    Spacer()
-                    
-                    LTModaliteBadge(isPresentiel: session.modalite == .presentiel)
-                }
-                
-                // Date & Time
-                HStack(spacing: LTSpacing.lg) {
-                    LTIconLabel(
-                        icon: "calendar",
-                        text: session.date.formatted(date: .abbreviated, time: .omitted)
-                    )
-                    LTIconLabel(
-                        icon: "clock",
-                        text: "\(session.debut) - \(session.fin)"
-                    )
-                }
-                
-                // Formateur
-                if let formateur = session.formateur {
-                    LTIconLabel(icon: "person.fill", text: formateur.nomComplet)
-                }
-                
-                // Client
-                if let client = session.client {
-                    LTIconLabel(icon: "building.2.fill", text: client.raisonSociale, color: .ltTextTertiary)
-                }
-            }
-        }
-        .allowsHitTesting(false) // Let NavigationLink handle tap
     }
 }
 

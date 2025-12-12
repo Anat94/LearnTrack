@@ -2,7 +2,7 @@
 //  LTCard.swift
 //  LearnTrack
 //
-//  Cartes avec effet 3D Press - Design Premium
+//  Cartes avec effets visuels - Design Premium
 //
 
 import SwiftUI
@@ -12,53 +12,30 @@ enum LTCardVariant {
     case `default`
     case outlined
     case elevated
-    case interactive
     case accent
     case glass
 }
 
-// MARK: - LTCard View
+// MARK: - LTCard View (Static)
 struct LTCard<Content: View>: View {
     let variant: LTCardVariant
     let padding: CGFloat
     let cornerRadius: CGFloat
-    let action: (() -> Void)?
     @ViewBuilder let content: Content
     
     init(
         variant: LTCardVariant = .default,
         padding: CGFloat = LTSpacing.lg,
         cornerRadius: CGFloat = LTRadius.xl,
-        action: (() -> Void)? = nil,
         @ViewBuilder content: () -> Content
     ) {
         self.variant = variant
         self.padding = padding
         self.cornerRadius = cornerRadius
-        self.action = action
         self.content = content()
     }
     
-    @State private var isPressed = false
-    @State private var pressLocation: CGPoint = .zero
-    
     var body: some View {
-        Group {
-            if let action = action {
-                Button(action: {
-                    triggerHaptic()
-                    action()
-                }) {
-                    cardContent
-                }
-                .buttonStyle(Card3DButtonStyle(isPressed: $isPressed, pressLocation: $pressLocation))
-            } else {
-                cardContent
-            }
-        }
-    }
-    
-    private var cardContent: some View {
         content
             .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -111,9 +88,6 @@ struct LTCard<Content: View>: View {
                     ),
                     lineWidth: 1
                 )
-        case .interactive:
-            RoundedRectangle(cornerRadius: cornerRadius)
-                .stroke(isPressed ? Color.emerald500.opacity(0.5) : Color.ltBorderSubtle, lineWidth: 1)
         default:
             EmptyView()
         }
@@ -146,145 +120,36 @@ struct LTCard<Content: View>: View {
         default: return 4
         }
     }
-    
-    private func triggerHaptic() {
-        let impact = UIImpactFeedbackGenerator(style: .light)
-        impact.impactOccurred()
-    }
 }
 
-// MARK: - 3D Button Style
-struct Card3DButtonStyle: ButtonStyle {
-    @Binding var isPressed: Bool
-    @Binding var pressLocation: CGPoint
-    
+// MARK: - List Card Style (For NavigationLink)
+struct LTListCardStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .rotation3DEffect(
-                .degrees(configuration.isPressed ? rotationAngle.x : 0),
-                axis: (x: 1, y: 0, z: 0),
-                perspective: 0.5
+            .padding(LTSpacing.lg)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(configuration.isPressed ? Color.ltCardHover : Color.ltCard)
+            .clipShape(RoundedRectangle(cornerRadius: LTRadius.xl))
+            .overlay(
+                RoundedRectangle(cornerRadius: LTRadius.xl)
+                    .stroke(
+                        configuration.isPressed ? Color.emerald500.opacity(0.4) : Color.ltBorderSubtle,
+                        lineWidth: 1
+                    )
             )
-            .rotation3DEffect(
-                .degrees(configuration.isPressed ? rotationAngle.y : 0),
-                axis: (x: 0, y: 1, z: 0),
-                perspective: 0.5
+            .shadow(
+                color: configuration.isPressed ? .emerald500.opacity(0.1) : .black.opacity(0.08),
+                radius: configuration.isPressed ? 12 : 8,
+                y: configuration.isPressed ? 2 : 4
             )
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
-            .brightness(configuration.isPressed ? 0.02 : 0)
-            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
-            .onChange(of: configuration.isPressed) { _, newValue in
-                isPressed = newValue
-            }
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { value in
-                        pressLocation = value.location
-                    }
-            )
-    }
-    
-    private var rotationAngle: (x: Double, y: Double) {
-        // Subtle 3D tilt based on press location
-        (x: 3, y: -3)
+            .animation(.spring(response: 0.25, dampingFraction: 0.7), value: configuration.isPressed)
     }
 }
 
-// MARK: - Interactive Card (Simplified)
-struct LTInteractiveCard<Content: View>: View {
-    let action: () -> Void
-    @ViewBuilder let content: Content
-    
-    @State private var isPressed = false
-    
-    var body: some View {
-        Button(action: {
-            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            action()
-        }) {
-            content
-                .padding(LTSpacing.lg)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(isPressed ? Color.ltCardHover : Color.ltCard)
-                .clipShape(RoundedRectangle(cornerRadius: LTRadius.xl))
-                .overlay(
-                    RoundedRectangle(cornerRadius: LTRadius.xl)
-                        .stroke(isPressed ? Color.emerald500.opacity(0.3) : Color.ltBorderSubtle, lineWidth: 1)
-                )
-                .shadow(color: .black.opacity(0.08), radius: 8, y: 4)
-                .scaleEffect(isPressed ? 0.98 : 1.0)
-                .rotation3DEffect(
-                    .degrees(isPressed ? 2 : 0),
-                    axis: (x: 1, y: 0, z: 0),
-                    perspective: 0.5
-                )
-        }
-        .buttonStyle(PlainButtonStyle())
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { _ in
-                    withAnimation(.spring(response: 0.2, dampingFraction: 0.6)) {
-                        isPressed = true
-                    }
-                }
-                .onEnded { _ in
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                        isPressed = false
-                    }
-                }
-        )
-    }
-}
-
-// MARK: - Person Card
-struct LTPersonCard: View {
-    let name: String
-    let subtitle: String
-    let initials: String
-    let badge: String?
-    let badgeColor: Color
-    let action: () -> Void
-    
-    init(
-        name: String,
-        subtitle: String,
-        initials: String,
-        badge: String? = nil,
-        badgeColor: Color = .emerald500,
-        action: @escaping () -> Void
-    ) {
-        self.name = name
-        self.subtitle = subtitle
-        self.initials = initials
-        self.badge = badge
-        self.badgeColor = badgeColor
-        self.action = action
-    }
-    
-    var body: some View {
-        LTInteractiveCard(action: action) {
-            HStack(spacing: LTSpacing.md) {
-                LTAvatar(initials: initials, size: .medium, color: badgeColor)
-                
-                VStack(alignment: .leading, spacing: LTSpacing.xs) {
-                    Text(name)
-                        .font(.ltBodySemibold)
-                        .foregroundColor(.ltText)
-                    Text(subtitle)
-                        .font(.ltCaption)
-                        .foregroundColor(.ltTextSecondary)
-                    if let badge = badge {
-                        LTBadge(text: badge, color: badgeColor, size: .small)
-                    }
-                }
-                
-                Spacer()
-                
-                Image(systemName: "chevron.right")
-                    .font(.system(size: LTIconSize.sm, weight: .semibold))
-                    .foregroundColor(.ltTextTertiary)
-            }
-        }
+extension View {
+    func ltListCardStyle() -> some View {
+        self.buttonStyle(LTListCardStyle())
     }
 }
 
@@ -305,27 +170,153 @@ struct LTIconLabel: View {
     }
 }
 
+// MARK: - Person Card Content (For use inside NavigationLink)
+struct LTPersonCardContent: View {
+    let name: String
+    let subtitle: String
+    let initials: String
+    let badge: String?
+    let badgeColor: Color
+    
+    init(
+        name: String,
+        subtitle: String,
+        initials: String,
+        badge: String? = nil,
+        badgeColor: Color = .emerald500
+    ) {
+        self.name = name
+        self.subtitle = subtitle
+        self.initials = initials
+        self.badge = badge
+        self.badgeColor = badgeColor
+    }
+    
+    var body: some View {
+        HStack(spacing: LTSpacing.md) {
+            LTAvatar(initials: initials, size: .medium, color: badgeColor)
+            
+            VStack(alignment: .leading, spacing: LTSpacing.xs) {
+                Text(name)
+                    .font(.ltBodySemibold)
+                    .foregroundColor(.ltText)
+                Text(subtitle)
+                    .font(.ltCaption)
+                    .foregroundColor(.ltTextSecondary)
+                if let badge = badge {
+                    LTBadge(text: badge, color: badgeColor, size: .small)
+                }
+            }
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .font(.system(size: LTIconSize.sm, weight: .semibold))
+                .foregroundColor(.ltTextTertiary)
+        }
+    }
+}
+
+// MARK: - Session Card Content
+struct LTSessionCardContent: View {
+    let title: String
+    let date: String
+    let time: String
+    let formateur: String?
+    let client: String?
+    let isPresentiel: Bool
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: LTSpacing.md) {
+            HStack(alignment: .top) {
+                Text(title)
+                    .font(.ltH4)
+                    .foregroundColor(.ltText)
+                    .lineLimit(2)
+                
+                Spacer()
+                
+                LTModaliteBadge(isPresentiel: isPresentiel)
+            }
+            
+            HStack(spacing: LTSpacing.lg) {
+                LTIconLabel(icon: "calendar", text: date)
+                LTIconLabel(icon: "clock", text: time)
+            }
+            
+            if let formateur = formateur {
+                LTIconLabel(icon: "person.fill", text: formateur)
+            }
+            
+            if let client = client {
+                LTIconLabel(icon: "building.2.fill", text: client, color: .ltTextTertiary)
+            }
+        }
+    }
+}
+
+// MARK: - Ecole Card Content
+struct LTEcoleCardContent: View {
+    let name: String
+    let ville: String?
+    
+    var body: some View {
+        HStack(spacing: LTSpacing.md) {
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [.emerald500.opacity(0.2), .emerald600.opacity(0.1)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: LTHeight.avatarMedium, height: LTHeight.avatarMedium)
+                
+                Image(systemName: "graduationcap.fill")
+                    .font(.system(size: LTIconSize.lg))
+                    .foregroundColor(.emerald500)
+            }
+            
+            VStack(alignment: .leading, spacing: LTSpacing.xs) {
+                Text(name)
+                    .font(.ltBodySemibold)
+                    .foregroundColor(.ltText)
+                
+                if let ville = ville, !ville.isEmpty {
+                    Text(ville)
+                        .font(.ltCaption)
+                        .foregroundColor(.ltTextSecondary)
+                }
+            }
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .font(.system(size: LTIconSize.sm, weight: .semibold))
+                .foregroundColor(.ltTextTertiary)
+        }
+    }
+}
+
 // MARK: - Preview
 #Preview {
     ScrollView {
         VStack(spacing: 16) {
-            LTCard { Text("Default Card").font(.ltH4) }
-            LTCard(variant: .glass) { Text("Glass Card").font(.ltH4) }
-            LTCard(variant: .accent) { Text("Accent Card").font(.ltH4) }
+            LTCard { Text("Default Card").font(.ltH4).foregroundColor(.ltText) }
+            LTCard(variant: .glass) { Text("Glass Card").font(.ltH4).foregroundColor(.ltText) }
+            LTCard(variant: .accent) { Text("Accent Card").font(.ltH4).foregroundColor(.ltText) }
             
-            LTInteractiveCard(action: {}) {
-                Text("Interactive - Tap me!")
-                    .font(.ltH4)
+            NavigationLink(destination: Text("Detail")) {
+                LTPersonCardContent(
+                    name: "Jean Dupont",
+                    subtitle: "Formateur Swift",
+                    initials: "JD",
+                    badge: "Externe",
+                    badgeColor: .warning
+                )
             }
-            
-            LTPersonCard(
-                name: "Jean Dupont",
-                subtitle: "Formateur Swift",
-                initials: "JD",
-                badge: "Externe",
-                badgeColor: .warning,
-                action: {}
-            )
+            .ltListCardStyle()
         }
         .padding()
     }

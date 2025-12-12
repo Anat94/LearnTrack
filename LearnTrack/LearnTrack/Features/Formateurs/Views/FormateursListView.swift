@@ -42,12 +42,10 @@ struct FormateursListView: View {
                 await viewModel.fetchFormateurs()
             }
             .onAppear {
-                withAnimation(.easeOut(duration: 0.3).delay(0.1)) {
-                    hasAppeared = true
-                }
+                hasAppeared = true
             }
             .onChange(of: selectedFilterIndex) { _, newValue in
-                withAnimation(.ltSpringSnappy) {
+                withAnimation(.easeOut(duration: 0.2)) {
                     switch newValue {
                     case 0: viewModel.filterType = .tous
                     case 1: viewModel.filterType = .internes
@@ -75,15 +73,29 @@ struct FormateursListView: View {
         .padding(.bottom, LTSpacing.md)
         .opacity(hasAppeared ? 1 : 0)
         .offset(y: hasAppeared ? 0 : -20)
+        .animation(.easeOut(duration: 0.3), value: hasAppeared)
     }
     
     // MARK: - Content
     @ViewBuilder
     private var contentSection: some View {
         if viewModel.isLoading {
-            loadingView
+            ScrollView {
+                VStack(spacing: LTSpacing.md) {
+                    ForEach(0..<4, id: \.self) { _ in
+                        LTSkeletonPersonRow()
+                    }
+                }
+                .padding(.horizontal, LTSpacing.lg)
+            }
         } else if viewModel.filteredFormateurs.isEmpty {
-            emptyStateView
+            LTEmptyState(
+                icon: "person.2.slash",
+                title: "Aucun formateur",
+                message: "Aucun formateur trouvé",
+                actionTitle: "Ajouter",
+                action: { showingAddFormateur = true }
+            )
         } else {
             formateursList
         }
@@ -108,54 +120,25 @@ struct FormateursListView: View {
         }
     }
     
-    // MARK: - Loading
-    private var loadingView: some View {
-        ScrollView {
-            VStack(spacing: LTSpacing.md) {
-                ForEach(0..<4, id: \.self) { index in
-                    LTSkeletonPersonRow()
-                        .opacity(hasAppeared ? 1 : 0)
-                        .animation(.easeOut(duration: 0.4).delay(Double(index) * 0.1), value: hasAppeared)
-                }
-            }
-            .padding(.horizontal, LTSpacing.lg)
-        }
-    }
-    
-    // MARK: - Empty State
-    private var emptyStateView: some View {
-        LTEmptyState(
-            icon: "person.2.slash",
-            title: "Aucun formateur",
-            message: "Aucun formateur trouvé",
-            actionTitle: "Ajouter",
-            action: { showingAddFormateur = true }
-        )
-        .opacity(hasAppeared ? 1 : 0)
-        .scaleEffect(hasAppeared ? 1 : 0.9)
-    }
-    
     // MARK: - List
     private var formateursList: some View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: LTSpacing.md) {
                 ForEach(Array(viewModel.filteredFormateurs.enumerated()), id: \.element.id) { index, formateur in
                     NavigationLink(destination: FormateurDetailView(formateur: formateur)) {
-                        LTPersonCard(
+                        LTPersonCardContent(
                             name: formateur.nomComplet,
                             subtitle: formateur.specialite.isEmpty ? formateur.email : formateur.specialite,
                             initials: formateur.initiales,
                             badge: formateur.exterieur ? "Externe" : "Interne",
-                            badgeColor: formateur.exterieur ? .warning : .emerald500,
-                            action: {}
+                            badgeColor: formateur.exterieur ? .warning : .emerald500
                         )
-                        .allowsHitTesting(false)
                     }
-                    .buttonStyle(PlainButtonStyle())
+                    .ltListCardStyle()
                     .opacity(hasAppeared ? 1 : 0)
-                    .offset(y: hasAppeared ? 0 : 30)
+                    .offset(y: hasAppeared ? 0 : 20)
                     .animation(
-                        .spring(response: 0.5, dampingFraction: 0.8).delay(Double(index) * 0.05),
+                        .easeOut(duration: 0.3).delay(Double(index) * 0.05),
                         value: hasAppeared
                     )
                 }
