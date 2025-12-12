@@ -2,7 +2,7 @@
 //  ClientDetailView.swift
 //  LearnTrack
 //
-//  Détail d'un client style Winamax - Design audacieux
+//  Détail client - Design SaaS compact
 //
 
 import SwiftUI
@@ -11,276 +11,59 @@ struct ClientDetailView: View {
     @State var client: Client
     @StateObject private var viewModel = ClientViewModel()
     @Environment(\.dismiss) var dismiss
-    @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var authService: AuthService
     
     @State private var showingEditSheet = false
     @State private var showingDeleteAlert = false
     @State private var sessions: [Session] = []
     
-    var theme: AppTheme {
-        colorScheme == .dark ? .dark : .light
-    }
-    
     var body: some View {
         ZStack {
-            WinamaxBackground()
+            Color.ltBackground.ignoresSafeArea()
             
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 0) {
-                    // Hero Header
-                    VStack(spacing: 20) {
-                        Spacer()
-                        
-                        // Avatar avec gradient
-                        ZStack {
-                            Circle()
-                                .fill(
-                                    LinearGradient(
-                                        colors: [theme.primaryGreen, theme.primaryGreen.opacity(0.7)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                                .frame(width: 120, height: 120)
-                                .shadow(color: theme.primaryGreen.opacity(0.4), radius: 20, y: 10)
-                            
-                            Text(client.initiales)
-                                .font(.system(size: 42, weight: .bold, design: .rounded))
-                                .foregroundColor(.white)
-                        }
-                        
-                        VStack(spacing: 8) {
-                            Text(client.raisonSociale)
-                                .font(.system(size: 28, weight: .bold, design: .rounded))
-                                .foregroundColor(theme.textPrimary)
-                                .multilineTextAlignment(.center)
-                                .lineLimit(2)
-                            
-                            if !client.villeDisplay.isEmpty {
-                                HStack(spacing: 6) {
-                                    Image(systemName: "mappin.circle.fill")
-                                        .font(.system(size: 14))
-                                    Text(client.villeDisplay)
-                                        .font(.winamaxHeadline())
-                                }
-                                .foregroundColor(theme.textSecondary)
-                            }
-                        }
-                        
-                        Spacer()
-                    }
-                    .frame(height: 280)
-                    .frame(maxWidth: .infinity)
-                    .background(
-                        LinearGradient(
-                            colors: [theme.primaryGreen.opacity(0.15), theme.primaryGreen.opacity(0.05), .clear],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                VStack(spacing: LTSpacing.md) {
+                    // Header
+                    headerCard
                     
-                    // Actions rapides
-                    HStack(spacing: 12) {
-                        QuickActionButton(
-                            icon: "phone.fill",
-                            title: "Appeler",
-                            color: theme.primaryGreen
-                        ) {
-                            ContactService.shared.call(phoneNumber: client.telephone)
-                        }
-                        
-                        QuickActionButton(
-                            icon: "envelope.fill",
-                            title: "Email",
-                            color: theme.accentOrange
-                        ) {
-                            ContactService.shared.sendEmail(to: client.email)
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 20)
+                    // Quick Actions
+                    quickActionsRow
                     
-                    // Contenu principal
-                    VStack(spacing: 20) {
-                        // Contact principal
-                        DetailCard(
-                            icon: "person.fill",
-                            iconColor: theme.primaryGreen,
-                            title: "Contact principal",
-                            content: {
-                                VStack(alignment: .leading, spacing: 16) {
-                                    Text(client.nomContact)
-                                        .font(.winamaxHeadline())
-                                        .foregroundColor(theme.textPrimary)
-                                    
-                                    VStack(spacing: 12) {
-                                        ContactDetailRow(
-                                            icon: "phone.fill",
-                                            label: "Téléphone",
-                                            value: client.telephone,
-                                            color: theme.primaryGreen
-                                        ) {
-                                            ContactService.shared.call(phoneNumber: client.telephone)
-                                        }
-                                        
-                                        ContactDetailRow(
-                                            icon: "envelope.fill",
-                                            label: "Email",
-                                            value: client.email,
-                                            color: theme.accentOrange
-                                        ) {
-                                            ContactService.shared.sendEmail(to: client.email)
-                                        }
-                                    }
-                                }
-                            }
-                        )
-                        
-                        // Adresse
-                        if let adresse = client.adresseComplete {
-                            DetailCard(
-                                icon: "mappin.circle.fill",
-                                iconColor: theme.accentOrange,
-                                title: "Adresse",
-                                content: {
-                                    VStack(alignment: .leading, spacing: 12) {
-                                        Text(adresse)
-                                            .font(.winamaxBody())
-                                            .foregroundColor(theme.textPrimary)
-                                        
-                                        Button(action: {
-                                            ContactService.shared.openInMaps(address: adresse)
-                                        }) {
-                                            HStack {
-                                                Image(systemName: "map.fill")
-                                                Text("Ouvrir dans Plans")
-                                            }
-                                            .font(.winamaxCaption())
-                                            .foregroundColor(theme.primaryGreen)
-                                        }
-                                    }
-                                }
-                            )
-                        }
-                        
-                        // Informations fiscales
-                        if let siret = client.siret, !siret.isEmpty, let tva = client.numeroTva, !tva.isEmpty {
-                            DetailCard(
-                                icon: "doc.text.fill",
-                                iconColor: theme.textSecondary,
-                                title: "Informations fiscales",
-                                content: {
-                                    VStack(spacing: 16) {
-                                        InfoDetailRow(
-                                            icon: "number.circle.fill",
-                                            label: "SIRET",
-                                            value: siret,
-                                            color: theme.textSecondary
-                                        )
-                                        
-                                        InfoDetailRow(
-                                            icon: "doc.text.fill",
-                                            label: "N° TVA",
-                                            value: tva,
-                                            color: theme.textSecondary
-                                        )
-                                    }
-                                }
-                            )
-                        }
-                        
-                        // Statistiques
-                        if !sessions.isEmpty {
-                            DetailCard(
-                                icon: "chart.bar.fill",
-                                iconColor: theme.primaryGreen,
-                                title: "Statistiques",
-                                content: {
-                                    HStack(spacing: 12) {
-                                        StatCardWinamax(
-                                            value: "\(sessions.count)",
-                                            label: "Sessions",
-                                            color: theme.primaryGreen,
-                                            icon: "calendar"
-                                        )
-                                        
-                                        StatCardWinamax(
-                                            value: "\(calculateTotalCA()) €",
-                                            label: "CA total",
-                                            color: theme.accentOrange,
-                                            icon: "eurosign.circle.fill"
-                                        )
-                                    }
-                                }
-                            )
-                        }
-                        
-                        // Historique des sessions
-                        if !sessions.isEmpty {
-                            DetailCard(
-                                icon: "calendar",
-                                iconColor: theme.accentOrange,
-                                title: "Historique des sessions",
-                                content: {
-                                    VStack(spacing: 12) {
-                                        ForEach(sessions.prefix(5)) { session in
-                                            HStack {
-                                                VStack(alignment: .leading, spacing: 4) {
-                                                    Text(session.module)
-                                                        .font(.winamaxBody())
-                                                        .foregroundColor(theme.textPrimary)
-                                                    
-                                                    Text(session.displayDate)
-                                                        .font(.winamaxCaption())
-                                                        .foregroundColor(theme.textSecondary)
-                                                }
-                                                
-                                                Spacer()
-                                                
-                                                Text("\(session.tarifClient) €")
-                                                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                                                    .foregroundColor(theme.primaryGreen)
-                                            }
-                                            
-                                            if session.id != sessions.prefix(5).last?.id {
-                                                Divider()
-                                                    .background(theme.borderColor)
-                                            }
-                                        }
-                                    }
-                                }
-                            )
-                        }
-                        
-                        // Boutons d'action
-                        VStack(spacing: 12) {
-                            Button(action: { showingEditSheet = true }) {
-                                HStack {
-                                    Image(systemName: "pencil.fill")
-                                    Text("Modifier")
-                                }
-                            }
-                            .buttonStyle(WinamaxPrimaryButton())
-                            
-                            if authService.userRole == .admin {
-                                Button(action: { showingDeleteAlert = true }) {
-                                    HStack {
-                                        Image(systemName: "trash.fill")
-                                        Text("Supprimer")
-                                    }
-                                }
-                                .buttonStyle(WinamaxDangerButton())
-                            }
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 40)
+                    // Contact
+                    contactCard
+                    
+                    // Adresse
+                    if let adresse = client.adresseComplete {
+                        adresseCard(adresse)
                     }
-                    .padding(.top, 20)
+                    
+                    // Infos fiscales
+                    if let siret = client.siret, !siret.isEmpty {
+                        infosFiscalesCard(siret: siret, tva: client.numeroTva)
+                    }
+                    
+                    // Stats
+                    if !sessions.isEmpty {
+                        statsCard
+                        sessionsCard
+                    }
+                    
+                    // Actions
+                    actionsSection
                 }
+                .padding(.horizontal, LTSpacing.lg)
+                .padding(.top, LTSpacing.md)
+                .padding(.bottom, 100)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Client")
+                    .font(.ltH4)
+                    .foregroundColor(.ltText)
+            }
+        }
         .sheet(isPresented: $showingEditSheet, onDismiss: {
             Task { await refreshClient() }
         }) {
@@ -302,6 +85,176 @@ struct ClientDetailView: View {
         }
     }
     
+    // MARK: - Header Card
+    private var headerCard: some View {
+        LTCard(variant: .accent) {
+            HStack(spacing: LTSpacing.md) {
+                LTAvatar(
+                    initials: client.initiales,
+                    size: .large,
+                    color: .info,
+                    showGradientBorder: true
+                )
+                
+                VStack(alignment: .leading, spacing: LTSpacing.xs) {
+                    Text(client.raisonSociale)
+                        .font(.ltH3)
+                        .foregroundColor(.ltText)
+                        .lineLimit(2)
+                    
+                    if !client.villeDisplay.isEmpty {
+                        HStack(spacing: LTSpacing.xs) {
+                            Image(systemName: "mappin")
+                                .font(.system(size: LTIconSize.xs))
+                            Text(client.villeDisplay)
+                                .font(.ltCaption)
+                        }
+                        .foregroundColor(.ltTextSecondary)
+                    }
+                }
+                
+                Spacer()
+            }
+        }
+    }
+    
+    // MARK: - Quick Actions
+    private var quickActionsRow: some View {
+        HStack(spacing: LTSpacing.sm) {
+            QuickActionCompact(icon: "phone.fill", title: "Appeler", color: .emerald500) {
+                ContactService.shared.call(phoneNumber: client.telephone)
+            }
+            
+            QuickActionCompact(icon: "envelope.fill", title: "Email", color: .warning) {
+                ContactService.shared.sendEmail(to: client.email)
+            }
+        }
+    }
+    
+    // MARK: - Contact Card
+    private var contactCard: some View {
+        LTCard {
+            VStack(alignment: .leading, spacing: LTSpacing.md) {
+                SectionHeader(icon: "person.fill", title: "Contact principal", color: .emerald500)
+                
+                if !client.nomContact.isEmpty {
+                    Text(client.nomContact)
+                        .font(.ltBodySemibold)
+                        .foregroundColor(.ltText)
+                }
+                
+                VStack(spacing: LTSpacing.sm) {
+                    ContactRowCompact(icon: "phone.fill", label: "Téléphone", value: client.telephone, color: .emerald500) {
+                        ContactService.shared.call(phoneNumber: client.telephone)
+                    }
+                    
+                    ContactRowCompact(icon: "envelope.fill", label: "Email", value: client.email, color: .warning) {
+                        ContactService.shared.sendEmail(to: client.email)
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Adresse Card
+    private func adresseCard(_ adresse: String) -> some View {
+        LTCard {
+            VStack(alignment: .leading, spacing: LTSpacing.sm) {
+                SectionHeader(icon: "mappin.circle.fill", title: "Adresse", color: .warning)
+                
+                Text(adresse)
+                    .font(.ltBody)
+                    .foregroundColor(.ltTextSecondary)
+                
+                Button(action: {
+                    ContactService.shared.openInMaps(address: adresse)
+                }) {
+                    HStack(spacing: LTSpacing.xs) {
+                        Image(systemName: "map")
+                        Text("Ouvrir dans Plans")
+                    }
+                    .font(.ltCaption)
+                    .foregroundColor(.emerald500)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Infos Fiscales Card
+    private func infosFiscalesCard(siret: String, tva: String?) -> some View {
+        LTCard {
+            VStack(alignment: .leading, spacing: LTSpacing.md) {
+                SectionHeader(icon: "doc.text.fill", title: "Informations fiscales", color: .ltTextSecondary)
+                
+                VStack(spacing: LTSpacing.sm) {
+                    InfoRowCompact(label: "SIRET", value: siret)
+                    
+                    if let tva = tva, !tva.isEmpty {
+                        InfoRowCompact(label: "N° TVA", value: tva)
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Stats Card
+    private var statsCard: some View {
+        HStack(spacing: LTSpacing.sm) {
+            StatCardCompact(value: "\(sessions.count)", label: "Sessions", color: .emerald500, icon: "calendar")
+            StatCardCompact(value: "\(calculateTotalCA()) €", label: "CA total", color: .warning, icon: "eurosign.circle.fill")
+        }
+    }
+    
+    // MARK: - Sessions Card
+    private var sessionsCard: some View {
+        LTCard {
+            VStack(alignment: .leading, spacing: LTSpacing.md) {
+                SectionHeader(icon: "calendar", title: "Sessions récentes", color: .warning)
+                
+                VStack(spacing: LTSpacing.sm) {
+                    ForEach(sessions.prefix(3)) { session in
+                        HStack {
+                            VStack(alignment: .leading, spacing: LTSpacing.xxs) {
+                                Text(session.module)
+                                    .font(.ltBodyMedium)
+                                    .foregroundColor(.ltText)
+                                    .lineLimit(1)
+                                Text(session.displayDate)
+                                    .font(.ltSmall)
+                                    .foregroundColor(.ltTextSecondary)
+                            }
+                            Spacer()
+                            Text("\(session.tarifClient) €")
+                                .font(.ltBodySemibold)
+                                .foregroundColor(.emerald500)
+                        }
+                        
+                        if session.id != sessions.prefix(3).last?.id {
+                            Divider()
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Actions
+    private var actionsSection: some View {
+        VStack(spacing: LTSpacing.sm) {
+            LTButton("Modifier", variant: .primary, icon: "pencil", isFullWidth: true) {
+                showingEditSheet = true
+            }
+            
+            if authService.userRole == .admin {
+                LTButton("Supprimer", variant: .destructive, icon: "trash", isFullWidth: true) {
+                    showingDeleteAlert = true
+                }
+            }
+        }
+        .padding(.top, LTSpacing.md)
+    }
+    
+    // MARK: - Helpers
     private func calculateTotalCA() -> Decimal {
         sessions.reduce(0) { $0 + $1.tarifClient }
     }
@@ -332,60 +285,55 @@ struct ClientDetailView: View {
     }
 }
 
-// Carte de statistique Winamax
-struct StatCardWinamax: View {
+// MARK: - Stat Card Compact
+
+struct StatCardCompact: View {
     let value: String
     let label: String
     let color: Color
     let icon: String
-    @Environment(\.colorScheme) var colorScheme
-    
-    var theme: AppTheme {
-        colorScheme == .dark ? .dark : .light
-    }
     
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: LTSpacing.sm) {
             ZStack {
                 Circle()
-                    .fill(color.opacity(0.2))
-                    .frame(width: 50, height: 50)
+                    .fill(color.opacity(0.1))
+                    .frame(width: 36, height: 36)
                 
                 Image(systemName: icon)
-                    .font(.system(size: 22, weight: .semibold))
+                    .font(.system(size: LTIconSize.md))
                     .foregroundColor(color)
             }
             
             Text(value)
-                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .font(.ltH4)
                 .foregroundColor(color)
             
             Text(label)
-                .font(.winamaxCaption())
-                .foregroundColor(theme.textSecondary)
+                .font(.ltSmall)
+                .foregroundColor(.ltTextSecondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
-        .background(theme.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .padding(.vertical, LTSpacing.md)
+        .background(Color.ltCard)
+        .clipShape(RoundedRectangle(cornerRadius: LTRadius.lg))
         .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(theme.borderColor, lineWidth: 1.5)
+            RoundedRectangle(cornerRadius: LTRadius.lg)
+                .stroke(Color.ltBorderSubtle, lineWidth: 0.5)
         )
-        .shadow(color: theme.shadowColor, radius: 8, y: 4)
     }
 }
 
 #Preview {
     NavigationView {
         ClientDetailView(client: Client(
-            raisonSociale: "Acme Corporation",
+            raisonSociale: "Acme Corp",
             rue: "123 rue de la Paix",
             codePostal: "75001",
             ville: "Paris",
             nomContact: "Marie Martin",
             email: "contact@acme.com",
-            telephone: "01 23 45 67 89",
+            telephone: "0123456789",
             siret: "12345678900001"
         ))
         .environmentObject(AuthService.shared)

@@ -2,7 +2,7 @@
 //  FormateurDetailView.swift
 //  LearnTrack
 //
-//  Détail d'un formateur style Winamax - Design audacieux
+//  Détail formateur - Design SaaS compact
 //
 
 import SwiftUI
@@ -11,264 +11,61 @@ struct FormateurDetailView: View {
     @State var formateur: Formateur
     @StateObject private var viewModel = FormateurViewModel()
     @Environment(\.dismiss) var dismiss
-    @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var authService: AuthService
     
     @State private var showingEditSheet = false
     @State private var showingDeleteAlert = false
     @State private var sessions: [Session] = []
     
-    var theme: AppTheme {
-        colorScheme == .dark ? .dark : .light
-    }
-    
     var body: some View {
         ZStack {
-            WinamaxBackground()
+            Color.ltBackground.ignoresSafeArea()
             
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 0) {
-                    // Hero Header
-                    VStack(spacing: 20) {
-                        Spacer()
-                        
-                        // Avatar avec gradient
-                        ZStack {
-                            Circle()
-                                .fill(
-                                    LinearGradient(
-                                        colors: formateur.exterieur ?
-                                            [theme.accentOrange, theme.accentOrange.opacity(0.7)] :
-                                            [theme.primaryGreen, theme.primaryGreen.opacity(0.7)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                                .frame(width: 120, height: 120)
-                                .shadow(
-                                    color: (formateur.exterieur ? theme.accentOrange : theme.primaryGreen).opacity(0.4),
-                                    radius: 20,
-                                    y: 10
-                                )
-                            
-                            Text(formateur.initiales)
-                                .font(.system(size: 42, weight: .bold, design: .rounded))
-                                .foregroundColor(.white)
-                        }
-                        
-                        VStack(spacing: 8) {
-                            Text(formateur.nomComplet)
-                                .font(.system(size: 28, weight: .bold, design: .rounded))
-                                .foregroundColor(theme.textPrimary)
-                            
-                            Text(formateur.specialite)
-                                .font(.winamaxHeadline())
-                                .foregroundColor(theme.textSecondary)
-                            
-                            WinamaxBadge(
-                                text: formateur.type,
-                                color: formateur.exterieur ? theme.accentOrange : theme.primaryGreen
-                            )
-                        }
-                        
-                        Spacer()
-                    }
-                    .frame(height: 280)
-                    .frame(maxWidth: .infinity)
-                    .background(
-                        LinearGradient(
-                            colors: formateur.exterieur ?
-                                [theme.accentOrange.opacity(0.15), theme.accentOrange.opacity(0.05), .clear] :
-                                [theme.primaryGreen.opacity(0.15), theme.primaryGreen.opacity(0.05), .clear],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                VStack(spacing: LTSpacing.md) {
+                    // Header
+                    headerCard
                     
-                    // Actions rapides
-                    HStack(spacing: 12) {
-                        QuickActionButton(
-                            icon: "phone.fill",
-                            title: "Appeler",
-                            color: theme.primaryGreen
-                        ) {
-                            ContactService.shared.call(phoneNumber: formateur.telephone)
-                        }
-                        
-                        QuickActionButton(
-                            icon: "envelope.fill",
-                            title: "Email",
-                            color: theme.accentOrange
-                        ) {
-                            ContactService.shared.sendEmail(to: formateur.email)
-                        }
-                        
-                        QuickActionButton(
-                            icon: "message.fill",
-                            title: "SMS",
-                            color: theme.primaryGreen
-                        ) {
-                            ContactService.shared.sendSMS(to: formateur.telephone)
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 20)
+                    // Quick Actions
+                    quickActionsRow
                     
-                    // Contenu principal
-                    VStack(spacing: 20) {
-                        // Coordonnées
-                        DetailCard(
-                            icon: "person.fill",
-                            iconColor: theme.primaryGreen,
-                            title: "Coordonnées",
-                            content: {
-                                VStack(spacing: 12) {
-                                    ContactDetailRow(
-                                        icon: "phone.fill",
-                                        label: "Téléphone",
-                                        value: formateur.telephone,
-                                        color: theme.primaryGreen
-                                    ) {
-                                        ContactService.shared.call(phoneNumber: formateur.telephone)
-                                    }
-                                    
-                                    ContactDetailRow(
-                                        icon: "envelope.fill",
-                                        label: "Email",
-                                        value: formateur.email,
-                                        color: theme.accentOrange
-                                    ) {
-                                        ContactService.shared.sendEmail(to: formateur.email)
-                                    }
-                                }
-                            }
-                        )
-                        
-                        // Informations professionnelles
-                        DetailCard(
-                            icon: "briefcase.fill",
-                            iconColor: theme.accentOrange,
-                            title: "Informations professionnelles",
-                            content: {
-                                VStack(spacing: 16) {
-                                    InfoDetailRow(
-                                        icon: "eurosign.circle.fill",
-                                        label: "Taux horaire",
-                                        value: "\(formateur.tauxHoraire) €/h",
-                                        color: theme.primaryGreen
-                                    )
-                                    
-                                    if let nda = formateur.nda, !nda.isEmpty {
-                                        InfoDetailRow(
-                                            icon: "doc.text.fill",
-                                            label: "NDA",
-                                            value: nda,
-                                            color: theme.textSecondary
-                                        )
-                                    }
-                                    
-                                    if let siret = formateur.siret, !siret.isEmpty {
-                                        InfoDetailRow(
-                                            icon: "number.circle.fill",
-                                            label: "SIRET",
-                                            value: siret,
-                                            color: theme.textSecondary
-                                        )
-                                    }
-                                }
-                            }
-                        )
-                        
-                        // Société (si externe)
-                        if formateur.exterieur, let societe = formateur.societe, !societe.isEmpty {
-                            DetailCard(
-                                icon: "building.2.fill",
-                                iconColor: theme.accentOrange,
-                                title: "Société",
-                                content: {
-                                    Text(societe)
-                                        .font(.winamaxBody())
-                                        .foregroundColor(theme.textPrimary)
-                                }
-                            )
-                        }
-                        
-                        // Adresse
-                        if let adresse = formateur.adresseComplete {
-                            DetailCard(
-                                icon: "mappin.circle.fill",
-                                iconColor: theme.primaryGreen,
-                                title: "Adresse",
-                                content: {
-                                    VStack(alignment: .leading, spacing: 12) {
-                                        Text(adresse)
-                                            .font(.winamaxBody())
-                                            .foregroundColor(theme.textPrimary)
-                                        
-                                        Button(action: {
-                                            ContactService.shared.openInMaps(address: adresse)
-                                        }) {
-                                            HStack {
-                                                Image(systemName: "map.fill")
-                                                Text("Ouvrir dans Plans")
-                                            }
-                                            .font(.winamaxCaption())
-                                            .foregroundColor(theme.primaryGreen)
-                                        }
-                                    }
-                                }
-                            )
-                        }
-                        
-                        // Historique des sessions
-                        if !sessions.isEmpty {
-                            DetailCard(
-                                icon: "calendar",
-                                iconColor: theme.accentOrange,
-                                title: "Historique des sessions",
-                                content: {
-                                    VStack(spacing: 12) {
-                                        ForEach(sessions.prefix(5)) { session in
-                                            SessionHistoryRow(session: session)
-                                            
-                                            if session.id != sessions.prefix(5).last?.id {
-                                                Divider()
-                                                    .background(theme.borderColor)
-                                            }
-                                        }
-                                    }
-                                }
-                            )
-                        }
-                        
-                        // Boutons d'action
-                        VStack(spacing: 12) {
-                            Button(action: { showingEditSheet = true }) {
-                                HStack {
-                                    Image(systemName: "pencil.fill")
-                                    Text("Modifier")
-                                }
-                            }
-                            .buttonStyle(WinamaxPrimaryButton())
-                            
-                            if authService.userRole == .admin {
-                                Button(action: { showingDeleteAlert = true }) {
-                                    HStack {
-                                        Image(systemName: "trash.fill")
-                                        Text("Supprimer")
-                                    }
-                                }
-                                .buttonStyle(WinamaxDangerButton())
-                            }
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 40)
+                    // Coordonnées
+                    coordonneesCard
+                    
+                    // Infos Pro
+                    infosProCard
+                    
+                    // Société (si externe)
+                    if formateur.exterieur, let societe = formateur.societe, !societe.isEmpty {
+                        societeCard(societe)
                     }
-                    .padding(.top, 20)
+                    
+                    // Adresse
+                    if let adresse = formateur.adresseComplete {
+                        adresseCard(adresse)
+                    }
+                    
+                    // Historique Sessions
+                    if !sessions.isEmpty {
+                        sessionsCard
+                    }
+                    
+                    // Actions
+                    actionsSection
                 }
+                .padding(.horizontal, LTSpacing.lg)
+                .padding(.top, LTSpacing.md)
+                .padding(.bottom, 100)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Formateur")
+                    .font(.ltH4)
+                    .foregroundColor(.ltText)
+            }
+        }
         .sheet(isPresented: $showingEditSheet, onDismiss: {
             Task { await refreshFormateur() }
         }) {
@@ -290,6 +87,186 @@ struct FormateurDetailView: View {
         }
     }
     
+    // MARK: - Header Card
+    private var headerCard: some View {
+        LTCard(variant: .accent) {
+            HStack(spacing: LTSpacing.md) {
+                LTAvatar(
+                    initials: formateur.initiales,
+                    size: .large,
+                    color: formateur.exterieur ? .warning : .emerald500,
+                    showGradientBorder: true
+                )
+                
+                VStack(alignment: .leading, spacing: LTSpacing.xs) {
+                    Text(formateur.nomComplet)
+                        .font(.ltH3)
+                        .foregroundColor(.ltText)
+                    
+                    if !formateur.specialite.isEmpty {
+                        Text(formateur.specialite)
+                            .font(.ltCaption)
+                            .foregroundColor(.ltTextSecondary)
+                    }
+                    
+                    LTTypeBadge(isExterne: formateur.exterieur)
+                }
+                
+                Spacer()
+            }
+        }
+    }
+    
+    // MARK: - Quick Actions
+    private var quickActionsRow: some View {
+        HStack(spacing: LTSpacing.sm) {
+            QuickActionCompact(icon: "phone.fill", title: "Appeler", color: .emerald500) {
+                ContactService.shared.call(phoneNumber: formateur.telephone)
+            }
+            
+            QuickActionCompact(icon: "envelope.fill", title: "Email", color: .warning) {
+                ContactService.shared.sendEmail(to: formateur.email)
+            }
+            
+            QuickActionCompact(icon: "message.fill", title: "SMS", color: .info) {
+                ContactService.shared.sendSMS(to: formateur.telephone)
+            }
+        }
+    }
+    
+    // MARK: - Coordonnées Card
+    private var coordonneesCard: some View {
+        LTCard {
+            VStack(alignment: .leading, spacing: LTSpacing.md) {
+                SectionHeader(icon: "person.fill", title: "Coordonnées", color: .emerald500)
+                
+                VStack(spacing: LTSpacing.sm) {
+                    ContactRowCompact(icon: "phone.fill", label: "Téléphone", value: formateur.telephone, color: .emerald500) {
+                        ContactService.shared.call(phoneNumber: formateur.telephone)
+                    }
+                    
+                    ContactRowCompact(icon: "envelope.fill", label: "Email", value: formateur.email, color: .warning) {
+                        ContactService.shared.sendEmail(to: formateur.email)
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Infos Pro Card
+    private var infosProCard: some View {
+        LTCard {
+            VStack(alignment: .leading, spacing: LTSpacing.md) {
+                SectionHeader(icon: "briefcase.fill", title: "Informations", color: .warning)
+                
+                VStack(spacing: LTSpacing.sm) {
+                    InfoRowCompact(label: "Taux horaire", value: "\(formateur.tauxHoraire) €/h")
+                    
+                    if let nda = formateur.nda, !nda.isEmpty {
+                        InfoRowCompact(label: "NDA", value: nda)
+                    }
+                    
+                    if let siret = formateur.siret, !siret.isEmpty {
+                        InfoRowCompact(label: "SIRET", value: siret)
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Société Card
+    private func societeCard(_ societe: String) -> some View {
+        LTCard {
+            HStack(spacing: LTSpacing.sm) {
+                Image(systemName: "building.2.fill")
+                    .font(.system(size: LTIconSize.md))
+                    .foregroundColor(.warning)
+                
+                VStack(alignment: .leading, spacing: LTSpacing.xxs) {
+                    Text("Société")
+                        .font(.ltSmall)
+                        .foregroundColor(.ltTextSecondary)
+                    Text(societe)
+                        .font(.ltBodyMedium)
+                        .foregroundColor(.ltText)
+                }
+                
+                Spacer()
+            }
+        }
+    }
+    
+    // MARK: - Adresse Card
+    private func adresseCard(_ adresse: String) -> some View {
+        LTCard {
+            VStack(alignment: .leading, spacing: LTSpacing.sm) {
+                SectionHeader(icon: "mappin.circle.fill", title: "Adresse", color: .emerald500)
+                
+                Text(adresse)
+                    .font(.ltBody)
+                    .foregroundColor(.ltTextSecondary)
+                
+                Button(action: {
+                    ContactService.shared.openInMaps(address: adresse)
+                }) {
+                    HStack(spacing: LTSpacing.xs) {
+                        Image(systemName: "map")
+                        Text("Ouvrir dans Plans")
+                    }
+                    .font(.ltCaption)
+                    .foregroundColor(.emerald500)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Sessions Card
+    private var sessionsCard: some View {
+        LTCard {
+            VStack(alignment: .leading, spacing: LTSpacing.md) {
+                SectionHeader(icon: "calendar", title: "Sessions récentes", color: .warning)
+                
+                VStack(spacing: LTSpacing.sm) {
+                    ForEach(sessions.prefix(3)) { session in
+                        HStack {
+                            VStack(alignment: .leading, spacing: LTSpacing.xxs) {
+                                Text(session.module)
+                                    .font(.ltBodyMedium)
+                                    .foregroundColor(.ltText)
+                                    .lineLimit(1)
+                                Text(session.displayDate)
+                                    .font(.ltSmall)
+                                    .foregroundColor(.ltTextSecondary)
+                            }
+                            Spacer()
+                        }
+                        
+                        if session.id != sessions.prefix(3).last?.id {
+                            Divider()
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Actions
+    private var actionsSection: some View {
+        VStack(spacing: LTSpacing.sm) {
+            LTButton("Modifier", variant: .primary, icon: "pencil", isFullWidth: true) {
+                showingEditSheet = true
+            }
+            
+            if authService.userRole == .admin {
+                LTButton("Supprimer", variant: .destructive, icon: "trash", isFullWidth: true) {
+                    showingDeleteAlert = true
+                }
+            }
+        }
+        .padding(.top, LTSpacing.md)
+    }
+    
+    // MARK: - Refresh
     private func refreshFormateur() async {
         guard let id = formateur.id else { return }
         do {
@@ -326,163 +303,137 @@ struct FormateurDetailView: View {
     }
 }
 
-// Bouton d'action rapide
-struct QuickActionButton: View {
+// MARK: - Compact Components
+
+struct QuickActionCompact: View {
     let icon: String
     let title: String
     let color: Color
     let action: () -> Void
-    @Environment(\.colorScheme) var colorScheme
-    
-    var theme: AppTheme {
-        colorScheme == .dark ? .dark : .light
-    }
+    @State private var isPressed = false
     
     var body: some View {
-        Button(action: action) {
-            VStack(spacing: 8) {
+        Button(action: {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            action()
+        }) {
+            VStack(spacing: LTSpacing.xs) {
                 ZStack {
                     Circle()
-                        .fill(color.opacity(0.2))
-                        .frame(width: 56, height: 56)
+                        .fill(color.opacity(0.1))
+                        .frame(width: 40, height: 40)
                     
                     Image(systemName: icon)
-                        .font(.system(size: 22, weight: .semibold))
+                        .font(.system(size: LTIconSize.md))
                         .foregroundColor(color)
                 }
                 
                 Text(title)
-                    .font(.winamaxCaption())
-                    .foregroundColor(theme.textPrimary)
+                    .font(.ltSmall)
+                    .foregroundColor(.ltText)
             }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, LTSpacing.md)
+            .background(Color.ltCard)
+            .clipShape(RoundedRectangle(cornerRadius: LTRadius.lg))
+            .overlay(
+                RoundedRectangle(cornerRadius: LTRadius.lg)
+                    .stroke(Color.ltBorderSubtle, lineWidth: 0.5)
+            )
+            .scaleEffect(isPressed ? 0.95 : 1.0)
+            .animation(.ltSpringSubtle, value: isPressed)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-        .background(theme.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(theme.borderColor, lineWidth: 1.5)
+        .buttonStyle(PlainButtonStyle())
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in isPressed = true }
+                .onEnded { _ in isPressed = false }
         )
-        .shadow(color: theme.shadowColor, radius: 8, y: 4)
     }
 }
 
-// Row de contact détaillé
-struct ContactDetailRow: View {
+struct SectionHeader: View {
+    let icon: String
+    let title: String
+    let color: Color
+    
+    var body: some View {
+        HStack(spacing: LTSpacing.sm) {
+            Image(systemName: icon)
+                .font(.system(size: LTIconSize.md))
+                .foregroundColor(color)
+            
+            Text(title)
+                .font(.ltBodySemibold)
+                .foregroundColor(.ltText)
+        }
+    }
+}
+
+struct ContactRowCompact: View {
     let icon: String
     let label: String
     let value: String
     let color: Color
     let action: () -> Void
-    @Environment(\.colorScheme) var colorScheme
-    
-    var theme: AppTheme {
-        colorScheme == .dark ? .dark : .light
-    }
+    @State private var isPressed = false
     
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 12) {
+            HStack(spacing: LTSpacing.md) {
                 ZStack {
                     Circle()
-                        .fill(color.opacity(0.15))
-                        .frame(width: 40, height: 40)
+                        .fill(color.opacity(0.1))
+                        .frame(width: 32, height: 32)
                     
                     Image(systemName: icon)
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: LTIconSize.sm))
                         .foregroundColor(color)
                 }
                 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: LTSpacing.xxs) {
                     Text(label)
-                        .font(.winamaxCaption())
-                        .foregroundColor(theme.textSecondary)
-                    
+                        .font(.ltSmall)
+                        .foregroundColor(.ltTextSecondary)
                     Text(value)
-                        .font(.winamaxBody())
-                        .foregroundColor(theme.textPrimary)
+                        .font(.ltBodyMedium)
+                        .foregroundColor(.ltText)
                 }
                 
                 Spacer()
                 
-                Image(systemName: "arrow.up.right.square.fill")
-                    .font(.system(size: 16))
+                Image(systemName: "arrow.up.right")
+                    .font(.system(size: LTIconSize.xs))
                     .foregroundColor(color)
             }
-            .padding(12)
-            .background(theme.cardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(theme.borderColor, lineWidth: 1)
-            )
+            .padding(LTSpacing.sm)
+            .background(Color.ltBackgroundSecondary)
+            .clipShape(RoundedRectangle(cornerRadius: LTRadius.md))
+            .scaleEffect(isPressed ? 0.98 : 1.0)
+            .animation(.ltSpringSubtle, value: isPressed)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PlainButtonStyle())
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in isPressed = true }
+                .onEnded { _ in isPressed = false }
+        )
     }
 }
 
-// Row d'information détaillée
-struct InfoDetailRow: View {
-    let icon: String
+struct InfoRowCompact: View {
     let label: String
     let value: String
-    let color: Color
-    @Environment(\.colorScheme) var colorScheme
-    
-    var theme: AppTheme {
-        colorScheme == .dark ? .dark : .light
-    }
     
     var body: some View {
-        HStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(color.opacity(0.15))
-                    .frame(width: 40, height: 40)
-                
-                Image(systemName: icon)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(color)
-            }
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(label)
-                    .font(.winamaxCaption())
-                    .foregroundColor(theme.textSecondary)
-                
-                Text(value)
-                    .font(.winamaxBody())
-                    .foregroundColor(theme.textPrimary)
-            }
-            
+        HStack {
+            Text(label)
+                .font(.ltBody)
+                .foregroundColor(.ltTextSecondary)
             Spacer()
-        }
-    }
-}
-
-// Row pour l'historique des sessions
-struct SessionHistoryRow: View {
-    let session: Session
-    @Environment(\.colorScheme) var colorScheme
-    
-    var theme: AppTheme {
-        colorScheme == .dark ? .dark : .light
-    }
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(session.module)
-                    .font(.winamaxBody())
-                    .foregroundColor(theme.textPrimary)
-                
-                Text(session.displayDate)
-                    .font(.winamaxCaption())
-                    .foregroundColor(theme.textSecondary)
-            }
-            
-            Spacer()
+            Text(value)
+                .font(.ltBodyMedium)
+                .foregroundColor(.ltText)
         }
     }
 }
@@ -492,9 +443,9 @@ struct SessionHistoryRow: View {
         FormateurDetailView(formateur: Formateur(
             prenom: "Jean",
             nom: "Dupont",
-            email: "jean.dupont@example.com",
-            telephone: "01 23 45 67 89",
-            specialite: "Swift & iOS",
+            email: "jean@example.com",
+            telephone: "0123456789",
+            specialite: "Swift",
             tauxHoraire: 50,
             exterieur: false
         ))
