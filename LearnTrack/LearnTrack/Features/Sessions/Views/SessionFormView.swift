@@ -2,7 +2,7 @@
 //  SessionFormView.swift
 //  LearnTrack
 //
-//  Formulaire de création/modification de session
+//  Formulaire de création/modification de session - Design Emerald
 //
 
 import SwiftUI
@@ -36,117 +36,47 @@ struct SessionFormView: View {
     @State private var selectedClientId: Int64?
     @State private var selectedEcoleId: Int64?
     
+    @State private var selectedModaliteIndex = 0
+    
     var isEditing: Bool {
         sessionToEdit != nil
     }
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 16) {
-                // Module
-                LT.SectionCard {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Informations générales").font(.headline)
-                        TextField("Module de formation", text: $module).autocorrectionDisabled().textFieldStyle(LTTextFieldStyle())
-                        DatePicker("Date", selection: $date, displayedComponents: .date)
-                        HStack { Text("Début"); Spacer(); TextField("09:00", text: $debut).keyboardType(.numbersAndPunctuation).multilineTextAlignment(.trailing).frame(width: 100).textFieldStyle(LTTextFieldStyle()) }
-                        HStack { Text("Fin"); Spacer(); TextField("17:00", text: $fin).keyboardType(.numbersAndPunctuation).multilineTextAlignment(.trailing).frame(width: 100).textFieldStyle(LTTextFieldStyle()) }
-                    }
-                }
+            ZStack {
+                Color.ltBackground
+                    .ignoresSafeArea()
                 
-                // Modalité et lieu
-                LT.SectionCard {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Modalité").font(.headline)
-                        Picker("Type", selection: $modalite) { ForEach(Session.Modalite.allCases, id: \.self) { mode in Text(mode.label).tag(mode) } }
-                        .pickerStyle(SegmentedPickerStyle())
-                        TextField(modalite == .presentiel ? "Adresse" : "Lien visio", text: $lieu).autocorrectionDisabled().textFieldStyle(LTTextFieldStyle())
-                    }
-                }
-                
-                // Intervenants
-                LT.SectionCard {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Intervenants").font(.headline)
-                    NavigationLink(destination: FormateurPickerView(
-                        formateurs: formateurViewModel.formateurs,
-                        selectedId: $selectedFormateurId
-                    )) {
-                        HStack {
-                            Text("Formateur")
-                            Spacer()
-                            if let id = selectedFormateurId,
-                               let formateur = formateurViewModel.formateurs.first(where: { $0.id == id }) {
-                                Text(formateur.nomComplet)
-                                    .foregroundColor(.secondary)
-                            } else {
-                                Text("Sélectionner")
-                                    .foregroundColor(.secondary)
-                            }
+                ScrollView {
+                    VStack(spacing: LTSpacing.lg) {
+                        // General info
+                        generalInfoSection
+                        
+                        // Modalité et lieu
+                        modaliteSection
+                        
+                        // Intervenants
+                        intervenantsSection
+                        
+                        // Tarifs
+                        tarifsSection
+                        
+                        // Référence
+                        referenceSection
+                        
+                        // Error message
+                        if showError && !errorMessage.isEmpty {
+                            errorBanner
                         }
+                        
+                        // Submit button
+                        submitButton
+                        
+                        Spacer(minLength: 40)
                     }
-                    
-                    NavigationLink(destination: ClientPickerView(
-                        clients: clientViewModel.clients,
-                        selectedId: $selectedClientId
-                    )) {
-                        HStack {
-                            Text("Client")
-                            Spacer()
-                            if let id = selectedClientId,
-                               let client = clientViewModel.clients.first(where: { $0.id == id }) {
-                                Text(client.raisonSociale)
-                                    .foregroundColor(.secondary)
-                            } else {
-                                Text("Sélectionner")
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                    }
-                    
-                    NavigationLink(destination: EcolePickerView(
-                        ecoles: ecoleViewModel.ecoles,
-                        selectedId: $selectedEcoleId
-                    )) {
-                        HStack {
-                            Text("École")
-                            Spacer()
-                            if let id = selectedEcoleId,
-                               let ecole = ecoleViewModel.ecoles.first(where: { $0.id == id }) {
-                                Text(ecole.nom)
-                                    .foregroundColor(.secondary)
-                            } else {
-                                Text("Sélectionner")
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                    }
-                    }
+                    .padding(LTSpacing.lg)
                 }
-                
-                // Tarifs
-                LT.SectionCard {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Tarifs (€)").font(.headline)
-                        TextField("Tarif client", text: $tarifClient).keyboardType(.decimalPad).textFieldStyle(LTTextFieldStyle())
-                        TextField("Tarif sous-traitant", text: $tarifSousTraitant).keyboardType(.decimalPad).textFieldStyle(LTTextFieldStyle())
-                        TextField("Frais à rembourser", text: $fraisRembourser).keyboardType(.decimalPad).textFieldStyle(LTTextFieldStyle())
-                    }
-                }
-                
-                // Référence
-                LT.SectionCard {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Référence").font(.headline)
-                        TextField("Référence contrat (optionnel)", text: $refContrat).autocorrectionDisabled().textFieldStyle(LTTextFieldStyle())
-                    }
-                }
-                if showError && !errorMessage.isEmpty { Text(errorMessage).foregroundColor(LT.ColorToken.danger).font(.caption) }
-                Button(isEditing ? "Enregistrer" : "Créer") { saveSession() }.buttonStyle(LT.PrimaryButtonStyle())
-            }
-            .padding()
-            .ltScreen()
             }
             .navigationTitle(isEditing ? "Modifier" : "Nouvelle session")
             .navigationBarTitleDisplayMode(.inline)
@@ -155,8 +85,8 @@ struct SessionFormView: View {
                     Button("Annuler") {
                         dismiss()
                     }
+                    .foregroundColor(.emerald500)
                 }
-                // Primary action integrated in content
             }
             .task {
                 await formateurViewModel.fetchFormateurs()
@@ -175,12 +105,201 @@ struct SessionFormView: View {
         }
     }
     
+    // MARK: - General Info Section
+    private var generalInfoSection: some View {
+        LTFormSection(title: "Informations générales", icon: "info.circle.fill") {
+            VStack(spacing: LTSpacing.md) {
+                LTTextField(
+                    label: "Module de formation",
+                    placeholder: "Ex: Swift & SwiftUI Avancé",
+                    text: $module
+                )
+                
+                // Date picker styled
+                VStack(alignment: .leading, spacing: LTSpacing.sm) {
+                    Text("Date")
+                        .font(.ltLabel)
+                        .foregroundColor(.ltTextSecondary)
+                    
+                    DatePicker("", selection: $date, displayedComponents: .date)
+                        .datePickerStyle(.compact)
+                        .labelsHidden()
+                        .tint(.emerald500)
+                }
+                
+                HStack(spacing: LTSpacing.md) {
+                    LTTextField(
+                        label: "Début",
+                        placeholder: "09:00",
+                        text: $debut,
+                        keyboardType: .numbersAndPunctuation
+                    )
+                    
+                    LTTextField(
+                        label: "Fin",
+                        placeholder: "17:00",
+                        text: $fin,
+                        keyboardType: .numbersAndPunctuation
+                    )
+                }
+            }
+        }
+    }
+    
+    // MARK: - Modalité Section
+    private var modaliteSection: some View {
+        LTFormSection(title: "Modalité & Lieu", icon: "location.circle.fill") {
+            VStack(spacing: LTSpacing.md) {
+                LTSegmentedControl(
+                    selectedIndex: $selectedModaliteIndex,
+                    items: ["Présentiel", "Distanciel"]
+                )
+                .onChange(of: selectedModaliteIndex) { _, newValue in
+                    modalite = newValue == 0 ? .presentiel : .distanciel
+                }
+                
+                LTTextField(
+                    label: modalite == .presentiel ? "Adresse" : "Lien visio",
+                    placeholder: modalite == .presentiel ? "123 rue de la Formation, Paris" : "https://meet.google.com/...",
+                    text: $lieu,
+                    icon: modalite == .presentiel ? "mappin" : "video"
+                )
+            }
+        }
+    }
+    
+    // MARK: - Intervenants Section
+    private var intervenantsSection: some View {
+        LTFormSection(title: "Intervenants", icon: "person.3.fill") {
+            VStack(spacing: LTSpacing.md) {
+                // Formateur picker
+                NavigationLink(destination: FormateurPickerViewNew(
+                    formateurs: formateurViewModel.formateurs,
+                    selectedId: $selectedFormateurId
+                )) {
+                    PickerRow(
+                        label: "Formateur",
+                        value: selectedFormateurId.flatMap { id in
+                            formateurViewModel.formateurs.first { $0.id == id }?.nomComplet
+                        } ?? "Sélectionner",
+                        icon: "person.fill"
+                    )
+                }
+                .buttonStyle(PlainButtonStyle())
+                
+                // Client picker
+                NavigationLink(destination: ClientPickerViewNew(
+                    clients: clientViewModel.clients,
+                    selectedId: $selectedClientId
+                )) {
+                    PickerRow(
+                        label: "Client",
+                        value: selectedClientId.flatMap { id in
+                            clientViewModel.clients.first { $0.id == id }?.raisonSociale
+                        } ?? "Sélectionner",
+                        icon: "building.2.fill"
+                    )
+                }
+                .buttonStyle(PlainButtonStyle())
+                
+                // École picker
+                NavigationLink(destination: EcolePickerViewNew(
+                    ecoles: ecoleViewModel.ecoles,
+                    selectedId: $selectedEcoleId
+                )) {
+                    PickerRow(
+                        label: "École",
+                        value: selectedEcoleId.flatMap { id in
+                            ecoleViewModel.ecoles.first { $0.id == id }?.nom
+                        } ?? "Sélectionner",
+                        icon: "graduationcap.fill"
+                    )
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+        }
+    }
+    
+    // MARK: - Tarifs Section
+    private var tarifsSection: some View {
+        LTFormSection(title: "Tarifs", icon: "eurosign.circle.fill") {
+            VStack(spacing: LTSpacing.md) {
+                LTTextField(
+                    label: "Tarif client (€)",
+                    placeholder: "1200",
+                    text: $tarifClient,
+                    icon: "eurosign",
+                    keyboardType: .decimalPad
+                )
+                
+                LTTextField(
+                    label: "Tarif sous-traitant (€)",
+                    placeholder: "800",
+                    text: $tarifSousTraitant,
+                    icon: "eurosign",
+                    keyboardType: .decimalPad
+                )
+                
+                LTTextField(
+                    label: "Frais à rembourser (€)",
+                    placeholder: "50",
+                    text: $fraisRembourser,
+                    icon: "eurosign",
+                    keyboardType: .decimalPad
+                )
+            }
+        }
+    }
+    
+    // MARK: - Reference Section
+    private var referenceSection: some View {
+        LTFormSection(title: "Référence", icon: "doc.text.fill") {
+            LTTextField(
+                label: "Référence contrat (optionnel)",
+                placeholder: "REF-2025-001",
+                text: $refContrat,
+                icon: "number"
+            )
+        }
+    }
+    
+    // MARK: - Error Banner
+    private var errorBanner: some View {
+        HStack(spacing: LTSpacing.sm) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: LTIconSize.md))
+            Text(errorMessage)
+                .font(.ltCaption)
+        }
+        .foregroundColor(.error)
+        .padding(LTSpacing.md)
+        .frame(maxWidth: .infinity)
+        .background(Color.error.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: LTRadius.md))
+    }
+    
+    // MARK: - Submit Button
+    private var submitButton: some View {
+        LTButton(
+            isEditing ? "Enregistrer les modifications" : "Créer la session",
+            variant: .primary,
+            icon: isEditing ? "checkmark" : "plus",
+            isFullWidth: true,
+            isLoading: isLoading
+        ) {
+            saveSession()
+        }
+        .padding(.top, LTSpacing.md)
+    }
+    
+    // MARK: - Helpers
     private func loadSessionData(_ session: Session) {
         module = session.module
         date = session.date
         debut = session.debut
         fin = session.fin
         modalite = session.modalite
+        selectedModaliteIndex = session.modalite == .presentiel ? 0 : 1
         lieu = session.lieu
         tarifClient = "\(session.tarifClient)"
         tarifSousTraitant = "\(session.tarifSousTraitant)"
@@ -194,12 +313,18 @@ struct SessionFormView: View {
     private func saveSession() {
         isLoading = true
         
+        let impact = UIImpactFeedbackGenerator(style: .medium)
+        impact.impactOccurred()
+        
         guard let tarifClientValue = Decimal(string: tarifClient),
               let tarifSTValue = Decimal(string: tarifSousTraitant),
               let fraisValue = Decimal(string: fraisRembourser) else {
             errorMessage = "Veuillez saisir des montants valides"
             showError = true
             isLoading = false
+            
+            let notification = UINotificationFeedbackGenerator()
+            notification.notificationOccurred(.error)
             return
         }
         
@@ -227,94 +352,291 @@ struct SessionFormView: View {
                 } else {
                     try await viewModel.createSession(session)
                 }
+                
+                let notification = UINotificationFeedbackGenerator()
+                notification.notificationOccurred(.success)
+                
                 dismiss()
             } catch {
                 await MainActor.run {
                     errorMessage = error.localizedDescription
                     showError = true
                     isLoading = false
+                    
+                    let notification = UINotificationFeedbackGenerator()
+                    notification.notificationOccurred(.error)
                 }
             }
         }
     }
 }
 
-// Pickers pour la sélection
-struct FormateurPickerView: View {
+// MARK: - Form Section Component
+struct LTFormSection<Content: View>: View {
+    let title: String
+    let icon: String
+    @ViewBuilder let content: Content
+    
+    var body: some View {
+        LTCard {
+            VStack(alignment: .leading, spacing: LTSpacing.lg) {
+                HStack(spacing: LTSpacing.sm) {
+                    Image(systemName: icon)
+                        .font(.system(size: LTIconSize.md, weight: .semibold))
+                        .foregroundColor(.emerald500)
+                    
+                    Text(title)
+                        .font(.ltH4)
+                        .foregroundColor(.ltText)
+                }
+                
+                content
+            }
+        }
+    }
+}
+
+// MARK: - Picker Row
+private struct PickerRow: View {
+    let label: String
+    let value: String
+    let icon: String
+    
+    @State private var isPressed = false
+    
+    var body: some View {
+        HStack(spacing: LTSpacing.md) {
+            Image(systemName: icon)
+                .font(.system(size: LTIconSize.md))
+                .foregroundColor(.emerald500)
+                .frame(width: 24)
+            
+            Text(label)
+                .font(.ltBody)
+                .foregroundColor(.ltText)
+            
+            Spacer()
+            
+            Text(value)
+                .font(.ltBodyMedium)
+                .foregroundColor(value == "Sélectionner" ? .ltTextTertiary : .ltText)
+            
+            Image(systemName: "chevron.right")
+                .font(.system(size: LTIconSize.sm))
+                .foregroundColor(.ltTextTertiary)
+        }
+        .padding(LTSpacing.md)
+        .background(Color.ltBackgroundSecondary)
+        .clipShape(RoundedRectangle(cornerRadius: LTRadius.md))
+        .scaleEffect(isPressed ? 0.98 : 1.0)
+        .animation(.ltSpringSubtle, value: isPressed)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in isPressed = true }
+                .onEnded { _ in isPressed = false }
+        )
+    }
+}
+
+// MARK: - Picker Views (Redesigned)
+struct FormateurPickerViewNew: View {
     let formateurs: [Formateur]
     @Binding var selectedId: Int64?
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        List(formateurs) { formateur in
-            Button(action: {
-                selectedId = formateur.id
-                dismiss()
-            }) {
-                HStack {
-                    Text(formateur.nomComplet)
-                    Spacer()
-                    if selectedId == formateur.id {
-                        Image(systemName: "checkmark")
-                            .foregroundColor(.blue)
+        ZStack {
+            Color.ltBackground
+                .ignoresSafeArea()
+            
+            ScrollView {
+                LazyVStack(spacing: LTSpacing.sm) {
+                    ForEach(formateurs) { formateur in
+                        Button(action: {
+                            selectedId = formateur.id
+                            let impact = UIImpactFeedbackGenerator(style: .light)
+                            impact.impactOccurred()
+                            dismiss()
+                        }) {
+                            HStack(spacing: LTSpacing.md) {
+                                LTAvatar(
+                                    initials: formateur.initiales,
+                                    size: .small,
+                                    color: formateur.exterieur ? .warning : .emerald500
+                                )
+                                
+                                VStack(alignment: .leading, spacing: LTSpacing.xxs) {
+                                    Text(formateur.nomComplet)
+                                        .font(.ltBodyMedium)
+                                        .foregroundColor(.ltText)
+                                    Text(formateur.specialite)
+                                        .font(.ltCaption)
+                                        .foregroundColor(.ltTextSecondary)
+                                }
+                                
+                                Spacer()
+                                
+                                if selectedId == formateur.id {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.system(size: LTIconSize.lg))
+                                        .foregroundColor(.emerald500)
+                                }
+                            }
+                            .padding(LTSpacing.md)
+                            .background(selectedId == formateur.id ? Color.emerald50 : Color.ltCard)
+                            .clipShape(RoundedRectangle(cornerRadius: LTRadius.lg))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: LTRadius.lg)
+                                    .stroke(
+                                        selectedId == formateur.id ? Color.emerald500 : Color.ltBorderSubtle,
+                                        lineWidth: selectedId == formateur.id ? 2 : 1
+                                    )
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                 }
+                .padding(LTSpacing.lg)
             }
-            .foregroundColor(.primary)
         }
         .navigationTitle("Sélectionner un formateur")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
-struct ClientPickerView: View {
+struct ClientPickerViewNew: View {
     let clients: [Client]
     @Binding var selectedId: Int64?
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        List(clients) { client in
-            Button(action: {
-                selectedId = client.id
-                dismiss()
-            }) {
-                HStack {
-                    Text(client.raisonSociale)
-                    Spacer()
-                    if selectedId == client.id {
-                        Image(systemName: "checkmark")
-                            .foregroundColor(.blue)
+        ZStack {
+            Color.ltBackground
+                .ignoresSafeArea()
+            
+            ScrollView {
+                LazyVStack(spacing: LTSpacing.sm) {
+                    ForEach(clients) { client in
+                        Button(action: {
+                            selectedId = client.id
+                            let impact = UIImpactFeedbackGenerator(style: .light)
+                            impact.impactOccurred()
+                            dismiss()
+                        }) {
+                            HStack(spacing: LTSpacing.md) {
+                                LTAvatar(
+                                    initials: client.initiales,
+                                    size: .small,
+                                    color: .info
+                                )
+                                
+                                VStack(alignment: .leading, spacing: LTSpacing.xxs) {
+                                    Text(client.raisonSociale)
+                                        .font(.ltBodyMedium)
+                                        .foregroundColor(.ltText)
+                                    Text(client.villeDisplay)
+                                        .font(.ltCaption)
+                                        .foregroundColor(.ltTextSecondary)
+                                }
+                                
+                                Spacer()
+                                
+                                if selectedId == client.id {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.system(size: LTIconSize.lg))
+                                        .foregroundColor(.emerald500)
+                                }
+                            }
+                            .padding(LTSpacing.md)
+                            .background(selectedId == client.id ? Color.emerald50 : Color.ltCard)
+                            .clipShape(RoundedRectangle(cornerRadius: LTRadius.lg))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: LTRadius.lg)
+                                    .stroke(
+                                        selectedId == client.id ? Color.emerald500 : Color.ltBorderSubtle,
+                                        lineWidth: selectedId == client.id ? 2 : 1
+                                    )
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                 }
+                .padding(LTSpacing.lg)
             }
-            .foregroundColor(.primary)
         }
         .navigationTitle("Sélectionner un client")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
-struct EcolePickerView: View {
+struct EcolePickerViewNew: View {
     let ecoles: [Ecole]
     @Binding var selectedId: Int64?
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        List(ecoles) { ecole in
-            Button(action: {
-                selectedId = ecole.id
-                dismiss()
-            }) {
-                HStack {
-                    Text(ecole.nom)
-                    Spacer()
-                    if selectedId == ecole.id {
-                        Image(systemName: "checkmark")
-                            .foregroundColor(.blue)
+        ZStack {
+            Color.ltBackground
+                .ignoresSafeArea()
+            
+            ScrollView {
+                LazyVStack(spacing: LTSpacing.sm) {
+                    ForEach(ecoles) { ecole in
+                        Button(action: {
+                            selectedId = ecole.id
+                            let impact = UIImpactFeedbackGenerator(style: .light)
+                            impact.impactOccurred()
+                            dismiss()
+                        }) {
+                            HStack(spacing: LTSpacing.md) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.emerald100)
+                                        .frame(width: LTHeight.avatarSmall, height: LTHeight.avatarSmall)
+                                    
+                                    Image(systemName: "graduationcap.fill")
+                                        .font(.system(size: LTIconSize.md))
+                                        .foregroundColor(.emerald600)
+                                }
+                                
+                                VStack(alignment: .leading, spacing: LTSpacing.xxs) {
+                                    Text(ecole.nom)
+                                        .font(.ltBodyMedium)
+                                        .foregroundColor(.ltText)
+                                    if let ville = ecole.ville {
+                                        Text(ville)
+                                            .font(.ltCaption)
+                                            .foregroundColor(.ltTextSecondary)
+                                    }
+                                }
+                                
+                                Spacer()
+                                
+                                if selectedId == ecole.id {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.system(size: LTIconSize.lg))
+                                        .foregroundColor(.emerald500)
+                                }
+                            }
+                            .padding(LTSpacing.md)
+                            .background(selectedId == ecole.id ? Color.emerald50 : Color.ltCard)
+                            .clipShape(RoundedRectangle(cornerRadius: LTRadius.lg))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: LTRadius.lg)
+                                    .stroke(
+                                        selectedId == ecole.id ? Color.emerald500 : Color.ltBorderSubtle,
+                                        lineWidth: selectedId == ecole.id ? 2 : 1
+                                    )
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                 }
+                .padding(LTSpacing.lg)
             }
-            .foregroundColor(.primary)
         }
         .navigationTitle("Sélectionner une école")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

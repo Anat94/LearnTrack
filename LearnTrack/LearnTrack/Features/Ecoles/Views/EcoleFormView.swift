@@ -2,7 +2,7 @@
 //  EcoleFormView.swift
 //  LearnTrack
 //
-//  Formulaire de création/modification d'école
+//  Formulaire de création/modification d'école - Design Emerald
 //
 
 import SwiftUI
@@ -31,41 +31,33 @@ struct EcoleFormView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 16) {
-                    LT.SectionCard {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Établissement").font(.headline)
-                            TextField("Nom de l'école", text: $nom).textFieldStyle(LTTextFieldStyle())
+            ZStack {
+                Color.ltBackground
+                    .ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(spacing: LTSpacing.lg) {
+                        // School info
+                        schoolSection
+                        
+                        // Contact
+                        contactSection
+                        
+                        // Address
+                        addressSection
+                        
+                        // Error
+                        if showError && !errorMessage.isEmpty {
+                            errorBanner
                         }
+                        
+                        // Submit
+                        submitButton
+                        
+                        Spacer(minLength: 40)
                     }
-                    LT.SectionCard {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Contact").font(.headline)
-                            TextField("Nom du contact", text: $nomContact).textFieldStyle(LTTextFieldStyle())
-                            TextField("Email", text: $email)
-                                .keyboardType(.emailAddress)
-                                .textInputAutocapitalization(.never)
-                                .autocorrectionDisabled()
-                                .textFieldStyle(LTTextFieldStyle())
-                            TextField("Téléphone", text: $telephone)
-                                .keyboardType(.phonePad)
-                                .textFieldStyle(LTTextFieldStyle())
-                        }
-                    }
-                    LT.SectionCard {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Adresse").font(.headline)
-                            TextField("Rue", text: $rue).textFieldStyle(LTTextFieldStyle())
-                            TextField("Code postal", text: $codePostal).keyboardType(.numberPad).textFieldStyle(LTTextFieldStyle())
-                            TextField("Ville", text: $ville).textFieldStyle(LTTextFieldStyle())
-                        }
-                    }
-                    if showError && !errorMessage.isEmpty { Text(errorMessage).foregroundColor(LT.ColorToken.danger).font(.caption) }
-                    Button(isEditing ? "Enregistrer" : "Créer") { saveEcole() }.buttonStyle(LT.PrimaryButtonStyle())
+                    .padding(LTSpacing.lg)
                 }
-                .padding()
-                .ltScreen()
             }
             .navigationTitle(isEditing ? "Modifier" : "Nouvelle école")
             .navigationBarTitleDisplayMode(.inline)
@@ -74,18 +66,124 @@ struct EcoleFormView: View {
                     Button("Annuler") {
                         dismiss()
                     }
+                    .foregroundColor(.emerald500)
                 }
-                // Primary action integrated in content
             }
             .onAppear {
                 if let ecole = ecoleToEdit {
                     loadEcoleData(ecole)
                 }
             }
-            .alert("Erreur", isPresented: $showError) { Button("OK", role: .cancel) { } } message: { Text(errorMessage) }
+            .alert("Erreur", isPresented: $showError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(errorMessage)
+            }
         }
     }
     
+    // MARK: - School Section
+    private var schoolSection: some View {
+        LTFormSection(title: "Établissement", icon: "graduationcap.fill") {
+            LTTextField(
+                label: "Nom de l'école",
+                placeholder: "École Supérieure de Formation",
+                text: $nom,
+                icon: "building.columns"
+            )
+        }
+    }
+    
+    // MARK: - Contact Section
+    private var contactSection: some View {
+        LTFormSection(title: "Contact", icon: "person.fill") {
+            VStack(spacing: LTSpacing.md) {
+                LTTextField(
+                    label: "Nom du responsable",
+                    placeholder: "Pierre Durand",
+                    text: $nomContact,
+                    icon: "person"
+                )
+                
+                LTTextField(
+                    label: "Email",
+                    placeholder: "contact@ecole.fr",
+                    text: $email,
+                    icon: "envelope",
+                    keyboardType: .emailAddress,
+                    autocapitalization: .never
+                )
+                
+                LTTextField(
+                    label: "Téléphone",
+                    placeholder: "01 45 67 89 01",
+                    text: $telephone,
+                    icon: "phone",
+                    keyboardType: .phonePad
+                )
+            }
+        }
+    }
+    
+    // MARK: - Address Section
+    private var addressSection: some View {
+        LTFormSection(title: "Adresse", icon: "mappin.circle.fill") {
+            VStack(spacing: LTSpacing.md) {
+                LTTextField(
+                    label: "Rue",
+                    placeholder: "45 avenue des Sciences",
+                    text: $rue,
+                    icon: "house"
+                )
+                
+                HStack(spacing: LTSpacing.md) {
+                    LTTextField(
+                        label: "Code postal",
+                        placeholder: "75013",
+                        text: $codePostal,
+                        keyboardType: .numberPad
+                    )
+                    
+                    LTTextField(
+                        label: "Ville",
+                        placeholder: "Paris",
+                        text: $ville
+                    )
+                }
+            }
+        }
+    }
+    
+    // MARK: - Error Banner
+    private var errorBanner: some View {
+        HStack(spacing: LTSpacing.sm) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: LTIconSize.md))
+            Text(errorMessage)
+                .font(.ltCaption)
+        }
+        .foregroundColor(.error)
+        .padding(LTSpacing.md)
+        .frame(maxWidth: .infinity)
+        .background(Color.error.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: LTRadius.md))
+    }
+    
+    // MARK: - Submit Button
+    private var submitButton: some View {
+        LTButton(
+            isEditing ? "Enregistrer les modifications" : "Créer l'école",
+            variant: .primary,
+            icon: isEditing ? "checkmark" : "plus",
+            isFullWidth: true,
+            isLoading: isLoading
+        ) {
+            saveEcole()
+        }
+        .padding(.top, LTSpacing.md)
+    }
+    
+    // MARK: - Helpers
     private func loadEcoleData(_ ecole: Ecole) {
         nom = ecole.nom
         nomContact = ecole.nomContact
@@ -98,6 +196,9 @@ struct EcoleFormView: View {
     
     private func saveEcole() {
         isLoading = true
+        
+        let impact = UIImpactFeedbackGenerator(style: .medium)
+        impact.impactOccurred()
         
         let ecole = Ecole(
             id: ecoleToEdit?.id,
@@ -117,12 +218,19 @@ struct EcoleFormView: View {
                 } else {
                     try await viewModel.createEcole(ecole)
                 }
+                
+                let notification = UINotificationFeedbackGenerator()
+                notification.notificationOccurred(.success)
+                
                 dismiss()
             } catch {
                 await MainActor.run {
                     errorMessage = error.localizedDescription
                     showError = true
                     isLoading = false
+                    
+                    let notification = UINotificationFeedbackGenerator()
+                    notification.notificationOccurred(.error)
                 }
             }
         }

@@ -2,7 +2,7 @@
 //  FormateurFormView.swift
 //  LearnTrack
 //
-//  Formulaire de création/modification de formateur
+//  Formulaire de création/modification de formateur - Design Emerald
 //
 
 import SwiftUI
@@ -37,59 +37,41 @@ struct FormateurFormView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 16) {
-                    LT.SectionCard {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Identité").font(.headline)
-                            TextField("Prénom", text: $prenom).textFieldStyle(LTTextFieldStyle())
-                            TextField("Nom", text: $nom).textFieldStyle(LTTextFieldStyle())
+            ZStack {
+                Color.ltBackground
+                    .ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(spacing: LTSpacing.lg) {
+                        // Identity
+                        identitySection
+                        
+                        // Contact
+                        contactSection
+                        
+                        // Professional info
+                        professionalSection
+                        
+                        // Company (if external)
+                        if exterieur {
+                            companySection
                         }
-                    }
-                    LT.SectionCard {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Contact").font(.headline)
-                            TextField("Email", text: $email)
-                                .keyboardType(.emailAddress)
-                                .textInputAutocapitalization(.never)
-                                .autocorrectionDisabled()
-                                .textFieldStyle(LTTextFieldStyle())
-                            TextField("Téléphone", text: $telephone)
-                                .keyboardType(.phonePad)
-                                .textFieldStyle(LTTextFieldStyle())
+                        
+                        // Address
+                        addressSection
+                        
+                        // Error
+                        if showError && !errorMessage.isEmpty {
+                            errorBanner
                         }
+                        
+                        // Submit
+                        submitButton
+                        
+                        Spacer(minLength: 40)
                     }
-                    LT.SectionCard {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Informations professionnelles").font(.headline)
-                            TextField("Spécialité", text: $specialite).textFieldStyle(LTTextFieldStyle())
-                            TextField("Taux horaire (€)", text: $tauxHoraire).keyboardType(.decimalPad).textFieldStyle(LTTextFieldStyle())
-                            Toggle("Formateur externe", isOn: $exterieur)
-                        }
-                    }
-                    if exterieur {
-                        LT.SectionCard {
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("Société").font(.headline)
-                                TextField("Nom de la société", text: $societe).textFieldStyle(LTTextFieldStyle())
-                                TextField("SIRET", text: $siret).textFieldStyle(LTTextFieldStyle())
-                                TextField("NDA", text: $nda).textFieldStyle(LTTextFieldStyle())
-                            }
-                        }
-                    }
-                    LT.SectionCard {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Adresse").font(.headline)
-                            TextField("Rue", text: $rue).textFieldStyle(LTTextFieldStyle())
-                            TextField("Code postal", text: $codePostal).keyboardType(.numberPad).textFieldStyle(LTTextFieldStyle())
-                            TextField("Ville", text: $ville).textFieldStyle(LTTextFieldStyle())
-                        }
-                    }
-                    if showError && !errorMessage.isEmpty { Text(errorMessage).foregroundColor(LT.ColorToken.danger).font(.caption) }
-                    Button(isEditing ? "Enregistrer" : "Créer") { saveFormateur() }.buttonStyle(LT.PrimaryButtonStyle())
+                    .padding(LTSpacing.lg)
                 }
-                .padding()
-                .ltScreen()
             }
             .navigationTitle(isEditing ? "Modifier" : "Nouveau formateur")
             .navigationBarTitleDisplayMode(.inline)
@@ -98,18 +80,208 @@ struct FormateurFormView: View {
                     Button("Annuler") {
                         dismiss()
                     }
+                    .foregroundColor(.emerald500)
                 }
-                // Primary button integrated in content
             }
             .onAppear {
                 if let formateur = formateurToEdit {
                     loadFormateurData(formateur)
                 }
             }
-            .alert("Erreur", isPresented: $showError) { Button("OK", role: .cancel) { } } message: { Text(errorMessage) }
+            .alert("Erreur", isPresented: $showError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(errorMessage)
+            }
         }
     }
     
+    // MARK: - Identity Section
+    private var identitySection: some View {
+        LTFormSection(title: "Identité", icon: "person.fill") {
+            HStack(spacing: LTSpacing.md) {
+                LTTextField(
+                    label: "Prénom",
+                    placeholder: "Jean",
+                    text: $prenom
+                )
+                
+                LTTextField(
+                    label: "Nom",
+                    placeholder: "Dupont",
+                    text: $nom
+                )
+            }
+        }
+    }
+    
+    // MARK: - Contact Section
+    private var contactSection: some View {
+        LTFormSection(title: "Contact", icon: "phone.fill") {
+            VStack(spacing: LTSpacing.md) {
+                LTTextField(
+                    label: "Email",
+                    placeholder: "jean.dupont@email.com",
+                    text: $email,
+                    icon: "envelope",
+                    keyboardType: .emailAddress,
+                    autocapitalization: .never
+                )
+                
+                LTTextField(
+                    label: "Téléphone",
+                    placeholder: "06 12 34 56 78",
+                    text: $telephone,
+                    icon: "phone",
+                    keyboardType: .phonePad
+                )
+            }
+        }
+    }
+    
+    // MARK: - Professional Section
+    private var professionalSection: some View {
+        LTFormSection(title: "Informations professionnelles", icon: "briefcase.fill") {
+            VStack(spacing: LTSpacing.md) {
+                LTTextField(
+                    label: "Spécialité",
+                    placeholder: "Swift, iOS, SwiftUI",
+                    text: $specialite,
+                    icon: "star"
+                )
+                
+                LTTextField(
+                    label: "Taux horaire (€)",
+                    placeholder: "50",
+                    text: $tauxHoraire,
+                    icon: "eurosign",
+                    keyboardType: .decimalPad
+                )
+                
+                // External toggle
+                HStack {
+                    HStack(spacing: LTSpacing.md) {
+                        ZStack {
+                            Circle()
+                                .fill(exterieur ? Color.warning.opacity(0.15) : Color.emerald500.opacity(0.15))
+                                .frame(width: 36, height: 36)
+                            
+                            Image(systemName: exterieur ? "building.2.fill" : "person.badge.shield.checkmark.fill")
+                                .font(.system(size: LTIconSize.md))
+                                .foregroundColor(exterieur ? .warning : .emerald500)
+                        }
+                        
+                        VStack(alignment: .leading, spacing: LTSpacing.xxs) {
+                            Text("Formateur externe")
+                                .font(.ltBodyMedium)
+                                .foregroundColor(.ltText)
+                            Text(exterieur ? "Sous-traitant" : "Employé interne")
+                                .font(.ltCaption)
+                                .foregroundColor(.ltTextSecondary)
+                        }
+                    }
+                    
+                    Spacer()
+                    
+                    Toggle("", isOn: $exterieur)
+                        .tint(.emerald500)
+                }
+                .padding(LTSpacing.md)
+                .background(Color.ltBackgroundSecondary)
+                .clipShape(RoundedRectangle(cornerRadius: LTRadius.md))
+            }
+        }
+        .animation(.ltSpringSmooth, value: exterieur)
+    }
+    
+    // MARK: - Company Section
+    private var companySection: some View {
+        LTFormSection(title: "Société", icon: "building.2.fill") {
+            VStack(spacing: LTSpacing.md) {
+                LTTextField(
+                    label: "Nom de la société",
+                    placeholder: "Ma Société SARL",
+                    text: $societe,
+                    icon: "building"
+                )
+                
+                LTTextField(
+                    label: "SIRET",
+                    placeholder: "123 456 789 00001",
+                    text: $siret,
+                    icon: "number"
+                )
+                
+                LTTextField(
+                    label: "NDA",
+                    placeholder: "Numéro de déclaration d'activité",
+                    text: $nda,
+                    icon: "doc.text"
+                )
+            }
+        }
+        .transition(.opacity.combined(with: .move(edge: .top)))
+    }
+    
+    // MARK: - Address Section
+    private var addressSection: some View {
+        LTFormSection(title: "Adresse", icon: "mappin.circle.fill") {
+            VStack(spacing: LTSpacing.md) {
+                LTTextField(
+                    label: "Rue",
+                    placeholder: "123 rue de la Formation",
+                    text: $rue,
+                    icon: "house"
+                )
+                
+                HStack(spacing: LTSpacing.md) {
+                    LTTextField(
+                        label: "Code postal",
+                        placeholder: "75001",
+                        text: $codePostal,
+                        keyboardType: .numberPad
+                    )
+                    
+                    LTTextField(
+                        label: "Ville",
+                        placeholder: "Paris",
+                        text: $ville
+                    )
+                }
+            }
+        }
+    }
+    
+    // MARK: - Error Banner
+    private var errorBanner: some View {
+        HStack(spacing: LTSpacing.sm) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: LTIconSize.md))
+            Text(errorMessage)
+                .font(.ltCaption)
+        }
+        .foregroundColor(.error)
+        .padding(LTSpacing.md)
+        .frame(maxWidth: .infinity)
+        .background(Color.error.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: LTRadius.md))
+    }
+    
+    // MARK: - Submit Button
+    private var submitButton: some View {
+        LTButton(
+            isEditing ? "Enregistrer les modifications" : "Créer le formateur",
+            variant: .primary,
+            icon: isEditing ? "checkmark" : "plus",
+            isFullWidth: true,
+            isLoading: isLoading
+        ) {
+            saveFormateur()
+        }
+        .padding(.top, LTSpacing.md)
+    }
+    
+    // MARK: - Helpers
     private func loadFormateurData(_ formateur: Formateur) {
         prenom = formateur.prenom
         nom = formateur.nom
@@ -129,10 +301,16 @@ struct FormateurFormView: View {
     private func saveFormateur() {
         isLoading = true
         
+        let impact = UIImpactFeedbackGenerator(style: .medium)
+        impact.impactOccurred()
+        
         guard let tauxValue = Decimal(string: tauxHoraire) else {
             errorMessage = "Veuillez saisir un taux horaire valide"
             showError = true
             isLoading = false
+            
+            let notification = UINotificationFeedbackGenerator()
+            notification.notificationOccurred(.error)
             return
         }
         
@@ -160,12 +338,19 @@ struct FormateurFormView: View {
                 } else {
                     try await viewModel.createFormateur(formateur)
                 }
+                
+                let notification = UINotificationFeedbackGenerator()
+                notification.notificationOccurred(.success)
+                
                 dismiss()
             } catch {
                 await MainActor.run {
                     errorMessage = error.localizedDescription
                     showError = true
                     isLoading = false
+                    
+                    let notification = UINotificationFeedbackGenerator()
+                    notification.notificationOccurred(.error)
                 }
             }
         }

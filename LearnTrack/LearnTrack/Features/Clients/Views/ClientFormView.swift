@@ -2,7 +2,7 @@
 //  ClientFormView.swift
 //  LearnTrack
 //
-//  Formulaire de création/modification de client
+//  Formulaire de création/modification de client - Design Emerald
 //
 
 import SwiftUI
@@ -33,53 +33,36 @@ struct ClientFormView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 16) {
-                    LT.SectionCard {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Entreprise").font(.headline)
-                            TextField("Raison sociale", text: $raisonSociale).textFieldStyle(LTTextFieldStyle())
+            ZStack {
+                Color.ltBackground
+                    .ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(spacing: LTSpacing.lg) {
+                        // Company
+                        companySection
+                        
+                        // Contact
+                        contactSection
+                        
+                        // Address
+                        addressSection
+                        
+                        // Fiscal
+                        fiscalSection
+                        
+                        // Error
+                        if showError && !errorMessage.isEmpty {
+                            errorBanner
                         }
+                        
+                        // Submit
+                        submitButton
+                        
+                        Spacer(minLength: 40)
                     }
-                    LT.SectionCard {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Contact principal").font(.headline)
-                            TextField("Nom du contact", text: $nomContact).textFieldStyle(LTTextFieldStyle())
-                            TextField("Email", text: $email)
-                                .keyboardType(.emailAddress)
-                                .textInputAutocapitalization(.never)
-                                .autocorrectionDisabled()
-                                .textFieldStyle(LTTextFieldStyle())
-                            TextField("Téléphone", text: $telephone)
-                                .keyboardType(.phonePad)
-                                .textFieldStyle(LTTextFieldStyle())
-                        }
-                    }
-                    LT.SectionCard {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Adresse").font(.headline)
-                            TextField("Rue", text: $rue).textFieldStyle(LTTextFieldStyle())
-                            TextField("Code postal", text: $codePostal).keyboardType(.numberPad).textFieldStyle(LTTextFieldStyle())
-                            TextField("Ville", text: $ville).textFieldStyle(LTTextFieldStyle())
-                        }
-                    }
-                    LT.SectionCard {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Informations fiscales").font(.headline)
-                            TextField("SIRET", text: $siret).keyboardType(.numberPad).textFieldStyle(LTTextFieldStyle())
-                            TextField("N° TVA intracommunautaire", text: $numeroTva).textFieldStyle(LTTextFieldStyle())
-                        }
-                    }
-                    
-                    if showError && !errorMessage.isEmpty {
-                        Text(errorMessage).foregroundColor(LT.ColorToken.danger).font(.caption)
-                    }
-                    
-                    Button(isEditing ? "Enregistrer" : "Créer") { saveClient() }
-                        .buttonStyle(LT.PrimaryButtonStyle())
+                    .padding(LTSpacing.lg)
                 }
-                .padding()
-                .ltScreen()
             }
             .navigationTitle(isEditing ? "Modifier" : "Nouveau client")
             .navigationBarTitleDisplayMode(.inline)
@@ -88,18 +71,146 @@ struct ClientFormView: View {
                     Button("Annuler") {
                         dismiss()
                     }
+                    .foregroundColor(.emerald500)
                 }
-                // Primary action button integrated in content
             }
             .onAppear {
                 if let client = clientToEdit {
                     loadClientData(client)
                 }
             }
-            .alert("Erreur", isPresented: $showError) { Button("OK", role: .cancel) { } } message: { Text(errorMessage) }
+            .alert("Erreur", isPresented: $showError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(errorMessage)
+            }
         }
     }
     
+    // MARK: - Company Section
+    private var companySection: some View {
+        LTFormSection(title: "Entreprise", icon: "building.2.fill") {
+            LTTextField(
+                label: "Raison sociale",
+                placeholder: "Acme Corporation",
+                text: $raisonSociale,
+                icon: "building"
+            )
+        }
+    }
+    
+    // MARK: - Contact Section
+    private var contactSection: some View {
+        LTFormSection(title: "Contact principal", icon: "person.fill") {
+            VStack(spacing: LTSpacing.md) {
+                LTTextField(
+                    label: "Nom du contact",
+                    placeholder: "Marie Martin",
+                    text: $nomContact,
+                    icon: "person"
+                )
+                
+                LTTextField(
+                    label: "Email",
+                    placeholder: "contact@acme.com",
+                    text: $email,
+                    icon: "envelope",
+                    keyboardType: .emailAddress,
+                    autocapitalization: .never
+                )
+                
+                LTTextField(
+                    label: "Téléphone",
+                    placeholder: "01 23 45 67 89",
+                    text: $telephone,
+                    icon: "phone",
+                    keyboardType: .phonePad
+                )
+            }
+        }
+    }
+    
+    // MARK: - Address Section
+    private var addressSection: some View {
+        LTFormSection(title: "Adresse", icon: "mappin.circle.fill") {
+            VStack(spacing: LTSpacing.md) {
+                LTTextField(
+                    label: "Rue",
+                    placeholder: "123 avenue des Champs-Élysées",
+                    text: $rue,
+                    icon: "house"
+                )
+                
+                HStack(spacing: LTSpacing.md) {
+                    LTTextField(
+                        label: "Code postal",
+                        placeholder: "75008",
+                        text: $codePostal,
+                        keyboardType: .numberPad
+                    )
+                    
+                    LTTextField(
+                        label: "Ville",
+                        placeholder: "Paris",
+                        text: $ville
+                    )
+                }
+            }
+        }
+    }
+    
+    // MARK: - Fiscal Section
+    private var fiscalSection: some View {
+        LTFormSection(title: "Informations fiscales", icon: "doc.text.fill") {
+            VStack(spacing: LTSpacing.md) {
+                LTTextField(
+                    label: "SIRET",
+                    placeholder: "123 456 789 00001",
+                    text: $siret,
+                    icon: "number",
+                    keyboardType: .numberPad
+                )
+                
+                LTTextField(
+                    label: "N° TVA intracommunautaire",
+                    placeholder: "FR 12 345678901",
+                    text: $numeroTva,
+                    icon: "eurosign"
+                )
+            }
+        }
+    }
+    
+    // MARK: - Error Banner
+    private var errorBanner: some View {
+        HStack(spacing: LTSpacing.sm) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: LTIconSize.md))
+            Text(errorMessage)
+                .font(.ltCaption)
+        }
+        .foregroundColor(.error)
+        .padding(LTSpacing.md)
+        .frame(maxWidth: .infinity)
+        .background(Color.error.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: LTRadius.md))
+    }
+    
+    // MARK: - Submit Button
+    private var submitButton: some View {
+        LTButton(
+            isEditing ? "Enregistrer les modifications" : "Créer le client",
+            variant: .primary,
+            icon: isEditing ? "checkmark" : "plus",
+            isFullWidth: true,
+            isLoading: isLoading
+        ) {
+            saveClient()
+        }
+        .padding(.top, LTSpacing.md)
+    }
+    
+    // MARK: - Helpers
     private func loadClientData(_ client: Client) {
         raisonSociale = client.raisonSociale
         nomContact = client.nomContact
@@ -114,6 +225,9 @@ struct ClientFormView: View {
     
     private func saveClient() {
         isLoading = true
+        
+        let impact = UIImpactFeedbackGenerator(style: .medium)
+        impact.impactOccurred()
         
         let client = Client(
             id: clientToEdit?.id,
@@ -135,12 +249,19 @@ struct ClientFormView: View {
                 } else {
                     try await viewModel.createClient(client)
                 }
+                
+                let notification = UINotificationFeedbackGenerator()
+                notification.notificationOccurred(.success)
+                
                 dismiss()
             } catch {
                 await MainActor.run {
                     errorMessage = error.localizedDescription
                     showError = true
                     isLoading = false
+                    
+                    let notification = UINotificationFeedbackGenerator()
+                    notification.notificationOccurred(.error)
                 }
             }
         }
