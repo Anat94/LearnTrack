@@ -278,7 +278,7 @@ struct SessionDetailView: View {
                 showingEditSheet = true
             }
             
-            LTButton("Partager", variant: .secondary, icon: "square.and.arrow.up", isFullWidth: true) {
+            LTButton("Partager", variant: .subtle, icon: "square.and.arrow.up", isFullWidth: true) {
                 showingShareSheet = true
             }
             
