@@ -10,7 +10,6 @@ import SwiftUI
 struct EcolesListView: View {
     @StateObject private var viewModel = EcoleViewModel()
     @State private var showingAddEcole = false
-    @State private var hasAppeared = false
     
     var body: some View {
         NavigationView {
@@ -23,9 +22,6 @@ struct EcolesListView: View {
                     LTSearchBar(text: $viewModel.searchText, placeholder: "Rechercher...")
                         .padding(.horizontal, LTSpacing.lg)
                         .padding(.vertical, LTSpacing.md)
-                        .opacity(hasAppeared ? 1 : 0)
-                        .offset(y: hasAppeared ? 0 : -20)
-                        .animation(.easeOut(duration: 0.3), value: hasAppeared)
                     
                     // Content
                     contentSection
@@ -48,9 +44,6 @@ struct EcolesListView: View {
             .task {
                 await viewModel.fetchEcoles()
             }
-            .onAppear {
-                hasAppeared = true
-            }
         }
     }
     
@@ -71,13 +64,22 @@ struct EcolesListView: View {
                     .foregroundColor(.white)
             }
         }
+        .ltScaleOnPress()
     }
     
     // MARK: - Content
     @ViewBuilder
     private var contentSection: some View {
         if viewModel.isLoading {
-            loadingView
+            ScrollView {
+                VStack(spacing: LTSpacing.md) {
+                    ForEach(0..<4, id: \.self) { index in
+                        LTSkeletonCard()
+                            .ltStaggered(index: index)
+                    }
+                }
+                .padding(.horizontal, LTSpacing.lg)
+            }
         } else if viewModel.filteredEcoles.isEmpty {
             LTEmptyState(
                 icon: "graduationcap",
@@ -91,33 +93,16 @@ struct EcolesListView: View {
         }
     }
     
-    // MARK: - Loading
-    private var loadingView: some View {
-        ScrollView {
-            VStack(spacing: LTSpacing.md) {
-                ForEach(0..<4, id: \.self) { _ in
-                    LTSkeletonCard()
-                }
-            }
-            .padding(.horizontal, LTSpacing.lg)
-        }
-    }
-    
     // MARK: - List
     private var ecolesList: some View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: LTSpacing.md) {
                 ForEach(Array(viewModel.filteredEcoles.enumerated()), id: \.element.id) { index, ecole in
                     NavigationLink(destination: EcoleDetailView(ecole: ecole)) {
-                        LTEcoleCardContent(name: ecole.nom, ville: ecole.ville)
+                        EcoleCardView(ecole: ecole)
                     }
-                    .ltListCardStyle()
-                    .opacity(hasAppeared ? 1 : 0)
-                    .offset(y: hasAppeared ? 0 : 20)
-                    .animation(
-                        .easeOut(duration: 0.3).delay(Double(index) * 0.05),
-                        value: hasAppeared
-                    )
+                    .buttonStyle(PlainButtonStyle())
+                    .ltStaggered(index: index)
                 }
             }
             .padding(.horizontal, LTSpacing.lg)
@@ -126,6 +111,65 @@ struct EcolesListView: View {
         .refreshable {
             await viewModel.fetchEcoles()
         }
+    }
+}
+
+// MARK: - Ecole Card
+struct EcoleCardView: View {
+    let ecole: Ecole
+    @State private var isPressed = false
+    
+    var body: some View {
+        HStack(spacing: LTSpacing.md) {
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [.emerald500.opacity(0.2), .emerald600.opacity(0.1)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: LTHeight.avatarMedium, height: LTHeight.avatarMedium)
+                
+                Image(systemName: "graduationcap.fill")
+                    .font(.system(size: LTIconSize.lg))
+                    .foregroundColor(.emerald500)
+            }
+            
+            VStack(alignment: .leading, spacing: LTSpacing.xs) {
+                Text(ecole.nom)
+                    .font(.ltBodySemibold)
+                    .foregroundColor(.ltText)
+                
+                if let ville = ecole.ville, !ville.isEmpty {
+                    Text(ville)
+                        .font(.ltCaption)
+                        .foregroundColor(.ltTextSecondary)
+                }
+            }
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .font(.system(size: LTIconSize.sm, weight: .semibold))
+                .foregroundColor(.ltTextTertiary)
+        }
+        .padding(LTSpacing.lg)
+        .background(Color.ltCard)
+        .clipShape(RoundedRectangle(cornerRadius: LTRadius.xl))
+        .overlay(
+            RoundedRectangle(cornerRadius: LTRadius.xl)
+                .stroke(Color.ltBorderSubtle, lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.08), radius: 8, y: 4)
+        .scaleEffect(isPressed ? 0.98 : 1.0)
+        .animation(.ltSpringSubtle, value: isPressed)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in isPressed = true }
+                .onEnded { _ in isPressed = false }
+        )
     }
 }
 

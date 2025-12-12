@@ -10,7 +10,6 @@ import SwiftUI
 struct ClientsListView: View {
     @StateObject private var viewModel = ClientViewModel()
     @State private var showingAddClient = false
-    @State private var hasAppeared = false
     
     var body: some View {
         NavigationView {
@@ -23,9 +22,6 @@ struct ClientsListView: View {
                     LTSearchBar(text: $viewModel.searchText, placeholder: "Rechercher...")
                         .padding(.horizontal, LTSpacing.lg)
                         .padding(.vertical, LTSpacing.md)
-                        .opacity(hasAppeared ? 1 : 0)
-                        .offset(y: hasAppeared ? 0 : -20)
-                        .animation(.easeOut(duration: 0.3), value: hasAppeared)
                     
                     // Content
                     contentSection
@@ -48,9 +44,6 @@ struct ClientsListView: View {
             .task {
                 await viewModel.fetchClients()
             }
-            .onAppear {
-                hasAppeared = true
-            }
         }
     }
     
@@ -71,6 +64,7 @@ struct ClientsListView: View {
                     .foregroundColor(.white)
             }
         }
+        .ltScaleOnPress()
     }
     
     // MARK: - Content
@@ -79,8 +73,9 @@ struct ClientsListView: View {
         if viewModel.isLoading {
             ScrollView {
                 VStack(spacing: LTSpacing.md) {
-                    ForEach(0..<4, id: \.self) { _ in
+                    ForEach(0..<4, id: \.self) { index in
                         LTSkeletonPersonRow()
+                            .ltStaggered(index: index)
                     }
                 }
                 .padding(.horizontal, LTSpacing.lg)
@@ -104,20 +99,10 @@ struct ClientsListView: View {
             LazyVStack(spacing: LTSpacing.md) {
                 ForEach(Array(viewModel.filteredClients.enumerated()), id: \.element.id) { index, client in
                     NavigationLink(destination: ClientDetailView(client: client)) {
-                        LTPersonCardContent(
-                            name: client.raisonSociale,
-                            subtitle: client.email.isEmpty ? (client.ville ?? "") : client.email,
-                            initials: client.initiales,
-                            badgeColor: .info
-                        )
+                        ClientCardView(client: client)
                     }
-                    .ltListCardStyle()
-                    .opacity(hasAppeared ? 1 : 0)
-                    .offset(y: hasAppeared ? 0 : 20)
-                    .animation(
-                        .easeOut(duration: 0.3).delay(Double(index) * 0.05),
-                        value: hasAppeared
-                    )
+                    .buttonStyle(PlainButtonStyle())
+                    .ltStaggered(index: index)
                 }
             }
             .padding(.horizontal, LTSpacing.lg)
@@ -126,6 +111,49 @@ struct ClientsListView: View {
         .refreshable {
             await viewModel.fetchClients()
         }
+    }
+}
+
+// MARK: - Client Card
+struct ClientCardView: View {
+    let client: Client
+    @State private var isPressed = false
+    
+    var body: some View {
+        HStack(spacing: LTSpacing.md) {
+            LTAvatar(initials: client.initiales, size: .medium, color: .info)
+            
+            VStack(alignment: .leading, spacing: LTSpacing.xs) {
+                Text(client.raisonSociale)
+                    .font(.ltBodySemibold)
+                    .foregroundColor(.ltText)
+                
+                Text(client.email.isEmpty ? (client.ville ?? "") : client.email)
+                    .font(.ltCaption)
+                    .foregroundColor(.ltTextSecondary)
+            }
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .font(.system(size: LTIconSize.sm, weight: .semibold))
+                .foregroundColor(.ltTextTertiary)
+        }
+        .padding(LTSpacing.lg)
+        .background(Color.ltCard)
+        .clipShape(RoundedRectangle(cornerRadius: LTRadius.xl))
+        .overlay(
+            RoundedRectangle(cornerRadius: LTRadius.xl)
+                .stroke(Color.ltBorderSubtle, lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.08), radius: 8, y: 4)
+        .scaleEffect(isPressed ? 0.98 : 1.0)
+        .animation(.ltSpringSubtle, value: isPressed)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in isPressed = true }
+                .onEnded { _ in isPressed = false }
+        )
     }
 }
 

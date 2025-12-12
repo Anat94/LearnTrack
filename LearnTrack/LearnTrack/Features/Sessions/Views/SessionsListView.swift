@@ -11,7 +11,6 @@ struct SessionsListView: View {
     @StateObject private var viewModel = SessionViewModel()
     @State private var showingAddSession = false
     @State private var selectedDate = Date()
-    @State private var hasAppeared = false
     
     var body: some View {
         NavigationView {
@@ -41,9 +40,6 @@ struct SessionsListView: View {
             .task {
                 await viewModel.fetchSessions()
             }
-            .onAppear {
-                hasAppeared = true
-            }
         }
     }
     
@@ -61,9 +57,6 @@ struct SessionsListView: View {
         }
         .padding(.top, LTSpacing.sm)
         .padding(.bottom, LTSpacing.md)
-        .opacity(hasAppeared ? 1 : 0)
-        .offset(y: hasAppeared ? 0 : -20)
-        .animation(.easeOut(duration: 0.3), value: hasAppeared)
     }
     
     // MARK: - Content Section
@@ -72,8 +65,9 @@ struct SessionsListView: View {
         if viewModel.isLoading {
             ScrollView {
                 VStack(spacing: LTSpacing.md) {
-                    ForEach(0..<4, id: \.self) { _ in
+                    ForEach(0..<4, id: \.self) { index in
                         LTSkeletonCard()
+                            .ltStaggered(index: index)
                     }
                 }
                 .padding(.horizontal, LTSpacing.lg)
@@ -114,6 +108,7 @@ struct SessionsListView: View {
                     .foregroundColor(.white)
             }
         }
+        .ltScaleOnPress()
     }
     
     // MARK: - Sessions List
@@ -122,22 +117,10 @@ struct SessionsListView: View {
             LazyVStack(spacing: LTSpacing.md) {
                 ForEach(Array(viewModel.filteredSessions.enumerated()), id: \.element.id) { index, session in
                     NavigationLink(destination: SessionDetailView(session: session)) {
-                        LTSessionCardContent(
-                            title: session.module,
-                            date: session.date.formatted(date: .abbreviated, time: .omitted),
-                            time: "\(session.debut) - \(session.fin)",
-                            formateur: session.formateur?.nomComplet,
-                            client: session.client?.raisonSociale,
-                            isPresentiel: session.modalite == .presentiel
-                        )
+                        SessionCardView(session: session)
                     }
-                    .ltListCardStyle()
-                    .opacity(hasAppeared ? 1 : 0)
-                    .offset(y: hasAppeared ? 0 : 20)
-                    .animation(
-                        .easeOut(duration: 0.3).delay(Double(index) * 0.05),
-                        value: hasAppeared
-                    )
+                    .buttonStyle(PlainButtonStyle())
+                    .ltStaggered(index: index)
                 }
             }
             .padding(.horizontal, LTSpacing.lg)
@@ -146,6 +129,65 @@ struct SessionsListView: View {
         .refreshable {
             await viewModel.fetchSessions()
         }
+    }
+}
+
+// MARK: - Session Card
+struct SessionCardView: View {
+    let session: Session
+    @State private var isPressed = false
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: LTSpacing.md) {
+            // Header
+            HStack(alignment: .top) {
+                Text(session.module)
+                    .font(.ltH4)
+                    .foregroundColor(.ltText)
+                    .lineLimit(2)
+                
+                Spacer()
+                
+                LTModaliteBadge(isPresentiel: session.modalite == .presentiel)
+            }
+            
+            // Date & Time
+            HStack(spacing: LTSpacing.lg) {
+                LTIconLabel(
+                    icon: "calendar",
+                    text: session.date.formatted(date: .abbreviated, time: .omitted)
+                )
+                LTIconLabel(
+                    icon: "clock",
+                    text: "\(session.debut) - \(session.fin)"
+                )
+            }
+            
+            // Formateur
+            if let formateur = session.formateur {
+                LTIconLabel(icon: "person.fill", text: formateur.nomComplet)
+            }
+            
+            // Client
+            if let client = session.client {
+                LTIconLabel(icon: "building.2.fill", text: client.raisonSociale, color: .ltTextTertiary)
+            }
+        }
+        .padding(LTSpacing.lg)
+        .background(Color.ltCard)
+        .clipShape(RoundedRectangle(cornerRadius: LTRadius.xl))
+        .overlay(
+            RoundedRectangle(cornerRadius: LTRadius.xl)
+                .stroke(Color.ltBorderSubtle, lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.08), radius: 8, y: 4)
+        .scaleEffect(isPressed ? 0.98 : 1.0)
+        .animation(.ltSpringSubtle, value: isPressed)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in isPressed = true }
+                .onEnded { _ in isPressed = false }
+        )
     }
 }
 

@@ -11,7 +11,6 @@ struct FormateursListView: View {
     @StateObject private var viewModel = FormateurViewModel()
     @State private var showingAddFormateur = false
     @State private var selectedFilterIndex = 0
-    @State private var hasAppeared = false
     
     var body: some View {
         NavigationView {
@@ -41,11 +40,8 @@ struct FormateursListView: View {
             .task {
                 await viewModel.fetchFormateurs()
             }
-            .onAppear {
-                hasAppeared = true
-            }
             .onChange(of: selectedFilterIndex) { _, newValue in
-                withAnimation(.easeOut(duration: 0.2)) {
+                withAnimation(.ltSpringSnappy) {
                     switch newValue {
                     case 0: viewModel.filterType = .tous
                     case 1: viewModel.filterType = .internes
@@ -71,9 +67,6 @@ struct FormateursListView: View {
         }
         .padding(.top, LTSpacing.sm)
         .padding(.bottom, LTSpacing.md)
-        .opacity(hasAppeared ? 1 : 0)
-        .offset(y: hasAppeared ? 0 : -20)
-        .animation(.easeOut(duration: 0.3), value: hasAppeared)
     }
     
     // MARK: - Content
@@ -82,8 +75,9 @@ struct FormateursListView: View {
         if viewModel.isLoading {
             ScrollView {
                 VStack(spacing: LTSpacing.md) {
-                    ForEach(0..<4, id: \.self) { _ in
+                    ForEach(0..<4, id: \.self) { index in
                         LTSkeletonPersonRow()
+                            .ltStaggered(index: index)
                     }
                 }
                 .padding(.horizontal, LTSpacing.lg)
@@ -118,6 +112,7 @@ struct FormateursListView: View {
                     .foregroundColor(.white)
             }
         }
+        .ltScaleOnPress()
     }
     
     // MARK: - List
@@ -126,21 +121,10 @@ struct FormateursListView: View {
             LazyVStack(spacing: LTSpacing.md) {
                 ForEach(Array(viewModel.filteredFormateurs.enumerated()), id: \.element.id) { index, formateur in
                     NavigationLink(destination: FormateurDetailView(formateur: formateur)) {
-                        LTPersonCardContent(
-                            name: formateur.nomComplet,
-                            subtitle: formateur.specialite.isEmpty ? formateur.email : formateur.specialite,
-                            initials: formateur.initiales,
-                            badge: formateur.exterieur ? "Externe" : "Interne",
-                            badgeColor: formateur.exterieur ? .warning : .emerald500
-                        )
+                        FormateurCardView(formateur: formateur)
                     }
-                    .ltListCardStyle()
-                    .opacity(hasAppeared ? 1 : 0)
-                    .offset(y: hasAppeared ? 0 : 20)
-                    .animation(
-                        .easeOut(duration: 0.3).delay(Double(index) * 0.05),
-                        value: hasAppeared
-                    )
+                    .buttonStyle(PlainButtonStyle())
+                    .ltStaggered(index: index)
                 }
             }
             .padding(.horizontal, LTSpacing.lg)
@@ -149,6 +133,59 @@ struct FormateursListView: View {
         .refreshable {
             await viewModel.fetchFormateurs()
         }
+    }
+}
+
+// MARK: - Formateur Card
+struct FormateurCardView: View {
+    let formateur: Formateur
+    @State private var isPressed = false
+    
+    var body: some View {
+        HStack(spacing: LTSpacing.md) {
+            LTAvatar(
+                initials: formateur.initiales,
+                size: .medium,
+                color: formateur.exterieur ? .warning : .emerald500
+            )
+            
+            VStack(alignment: .leading, spacing: LTSpacing.xs) {
+                Text(formateur.nomComplet)
+                    .font(.ltBodySemibold)
+                    .foregroundColor(.ltText)
+                
+                Text(formateur.specialite.isEmpty ? formateur.email : formateur.specialite)
+                    .font(.ltCaption)
+                    .foregroundColor(.ltTextSecondary)
+                
+                LTBadge(
+                    text: formateur.exterieur ? "Externe" : "Interne",
+                    color: formateur.exterieur ? .warning : .emerald500,
+                    size: .small
+                )
+            }
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .font(.system(size: LTIconSize.sm, weight: .semibold))
+                .foregroundColor(.ltTextTertiary)
+        }
+        .padding(LTSpacing.lg)
+        .background(Color.ltCard)
+        .clipShape(RoundedRectangle(cornerRadius: LTRadius.xl))
+        .overlay(
+            RoundedRectangle(cornerRadius: LTRadius.xl)
+                .stroke(Color.ltBorderSubtle, lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.08), radius: 8, y: 4)
+        .scaleEffect(isPressed ? 0.98 : 1.0)
+        .animation(.ltSpringSubtle, value: isPressed)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in isPressed = true }
+                .onEnded { _ in isPressed = false }
+        )
     }
 }
 
