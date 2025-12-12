@@ -2,15 +2,16 @@
 //  MainTabView.swift
 //  LearnTrack
 //
-//  Navigation principale avec TabBar révolutionnaire
+//  Navigation principale avec TabBar Custom
 //
 
 import SwiftUI
 
 struct MainTabView: View {
     @State private var selectedTab = 0
+    @Environment(\.colorScheme) var colorScheme
     
-    // Tabs - icônes seulement, zéro labels
+    // Tabs - icônes seulement
     private let tabs = [
         LTTabItem(icon: "calendar", selectedIcon: "calendar.badge.clock"),
         LTTabItem(icon: "person.2", selectedIcon: "person.2.fill"),
@@ -45,7 +46,13 @@ struct MainTabView: View {
     }
 }
 
-#Preview {
+#Preview("Light") {
+    MainTabView()
+        .environmentObject(AuthService.shared)
+        .preferredColorScheme(.light)
+}
+
+#Preview("Dark") {
     MainTabView()
         .environmentObject(AuthService.shared)
         .preferredColorScheme(.dark)
