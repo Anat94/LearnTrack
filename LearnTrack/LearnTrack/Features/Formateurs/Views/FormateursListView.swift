@@ -51,10 +51,10 @@ struct FormateursListView: View {
             .onChange(of: selectedFilterIndex) { _, newValue in
                 withAnimation(.ltSpringSnappy) {
                     switch newValue {
-                    case 0: viewModel.filterType = .all
-                    case 1: viewModel.filterType = .interne
-                    case 2: viewModel.filterType = .externe
-                    default: viewModel.filterType = .all
+                    case 0: viewModel.filterType = .tous
+                    case 1: viewModel.filterType = .internes
+                    case 2: viewModel.filterType = .externes
+                    default: viewModel.filterType = .tous
                     }
                 }
             }
