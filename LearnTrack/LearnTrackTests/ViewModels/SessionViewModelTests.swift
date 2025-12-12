@@ -69,7 +69,7 @@ class SessionViewModelTests: XCTestCase {
     
     func testDeleteSession() async throws {
         // Given
-        let session = APISession(id: 1, titre: "Delete Me", description: nil, dateDebut: "2023-10-01", dateFin: "2023-10-01", heureDebut: "09:00", heureFin: "17:00", clientId: nil, ecoleId: nil, formateurId: nil, nbParticipants: nil, statut: nil, prix: nil, notes: nil)
+        let session = APISession(id: 1, titre: "Delete Me", description: nil, dateDebut: "2023-10-01", dateFin: "2023-10-01", heureDebut: "09:00", heureFin: "17:00", clientId: nil, ecoleId: nil, formateurId: nil, nbParticipants: nil, statut: "PLANIFIEE", prix: nil, notes: nil)
         mockService.sessions = [session]
         await viewModel.fetchSessions() // Load into VM
         
@@ -88,8 +88,8 @@ class SessionViewModelTests: XCTestCase {
     
     func testFilterSessions_Search() async {
         // Given
-        let s1 = APISession(id: 1, titre: "Swift Basics", description: nil, dateDebut: "2023-10-01", dateFin: "2023-10-01", heureDebut: "09:00", heureFin: "17:00", clientId: nil, ecoleId: nil, formateurId: nil, nbParticipants: nil, statut: nil, prix: nil, notes: nil)
-        let s2 = APISession(id: 2, titre: "Advanced Python", description: nil, dateDebut: "2023-10-02", dateFin: "2023-10-02", heureDebut: "09:00", heureFin: "17:00", clientId: nil, ecoleId: nil, formateurId: nil, nbParticipants: nil, statut: nil, prix: nil, notes: nil)
+        let s1 = APISession(id: 1, titre: "Swift Basics", description: nil, dateDebut: "2023-10-01", dateFin: "2023-10-01", heureDebut: "09:00", heureFin: "17:00", clientId: nil, ecoleId: nil, formateurId: nil, nbParticipants: nil, statut: "PLANIFIEE", prix: nil, notes: nil)
+        let s2 = APISession(id: 2, titre: "Advanced Python", description: nil, dateDebut: "2023-10-02", dateFin: "2023-10-02", heureDebut: "09:00", heureFin: "17:00", clientId: nil, ecoleId: nil, formateurId: nil, nbParticipants: nil, statut: "PLANIFIEE", prix: nil, notes: nil)
         mockService.sessions = [s1, s2]
         await viewModel.fetchSessions()
         
