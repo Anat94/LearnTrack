@@ -167,7 +167,7 @@ struct EcoleDetailView: View {
                     .font(.ltBody)
                     .foregroundColor(.ltText)
                 
-                LTButton("Ouvrir dans Plans", variant: .subtle, icon: "map.fill", size: .small) {
+                LTButton("Ouvrir dans Plans", variant: .subtle, size: .small, icon: "map.fill") {
                     ContactService.shared.openInMaps(address: adresse)
                 }
             }
