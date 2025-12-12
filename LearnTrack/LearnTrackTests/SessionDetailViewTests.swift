@@ -56,7 +56,7 @@ struct SessionDetailViewTests {
             email: "jean@example.com",
             telephone: "0612345678",
             specialite: "Swift",
-            tauxHoraire: 55,
+            tarifJournalier: 55,
             exterieur: false
         )
     }

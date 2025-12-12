@@ -29,7 +29,7 @@ struct FormateursListViewTests {
             email: email,
             telephone: "0612345678",
             specialite: specialite,
-            tauxHoraire: 55.0,
+            tarifJournalier: 55.0,
             exterieur: exterieur
         )
     }

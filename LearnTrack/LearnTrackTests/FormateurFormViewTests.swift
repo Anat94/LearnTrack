@@ -21,7 +21,7 @@ struct FormateurFormViewTests {
         email: String = "jean@example.com",
         telephone: String = "0612345678",
         specialite: String = "Swift / iOS",
-        tauxHoraire: Decimal = 55.0,
+        tarifJournalier: Decimal = 55.0,
         exterieur: Bool = false,
         societe: String? = nil,
         siret: String? = nil,
@@ -37,7 +37,7 @@ struct FormateurFormViewTests {
             email: email,
             telephone: telephone,
             specialite: specialite,
-            tauxHoraire: tauxHoraire,
+            tarifJournalier: tarifJournalier,
             exterieur: exterieur,
             societe: societe,
             siret: siret,
@@ -98,34 +98,34 @@ struct FormateurFormViewTests {
         #expect(isDisabled == true)
     }
     
-    // MARK: - TauxHoraire Validation Tests
+    // MARK: - TarifJournalier Validation Tests
     
-    @Test("valid taux horaire parses correctly")
-    func testValidTauxHoraire() {
-        let tauxHoraire = "55.50"
-        let parsed = Decimal(string: tauxHoraire)
+    @Test("valid tarif journalier parses correctly")
+    func testValidTarifJournalier() {
+        let tarifJournalier = "55.50"
+        let parsed = Decimal(string: tarifJournalier)
         #expect(parsed != nil)
         #expect(parsed == 55.50)
     }
     
-    @Test("invalid taux horaire fails parsing")
-    func testInvalidTauxHoraire() {
-        let tauxHoraire = "abc"
-        let parsed = Decimal(string: tauxHoraire)
+    @Test("invalid tarif journalier fails parsing")
+    func testInvalidTarifJournalier() {
+        let tarifJournalier = "abc"
+        let parsed = Decimal(string: tarifJournalier)
         #expect(parsed == nil)
     }
     
-    @Test("empty taux horaire fails parsing")
-    func testEmptyTauxHoraire() {
-        let tauxHoraire = ""
-        let parsed = Decimal(string: tauxHoraire)
+    @Test("empty tarif journalier fails parsing")
+    func testEmptyTarifJournalier() {
+        let tarifJournalier = ""
+        let parsed = Decimal(string: tarifJournalier)
         #expect(parsed == nil)
     }
     
-    @Test("taux horaire zero is valid")
-    func testTauxHoraireZero() {
-        let tauxHoraire = "0"
-        let parsed = Decimal(string: tauxHoraire)
+    @Test("tarif journalier zero is valid")
+    func testTarifJournalierZero() {
+        let tarifJournalier = "0"
+        let parsed = Decimal(string: tarifJournalier)
         #expect(parsed != nil)
         #expect(parsed == 0)
     }
@@ -156,7 +156,7 @@ struct FormateurFormViewTests {
             email: "marie@test.com",
             telephone: "0698765432",
             specialite: "Python",
-            tauxHoraire: 65.0,
+            tarifJournalier: 65.0,
             exterieur: true,
             societe: "Tech Academy",
             siret: "98765432100001",
@@ -172,7 +172,7 @@ struct FormateurFormViewTests {
         let email = formateur.email
         let telephone = formateur.telephone
         let specialite = formateur.specialite
-        let tauxHoraire = "\(formateur.tauxHoraire)"
+        let tarifJournalier = "\(formateur.tarifJournalier)"
         let exterieur = formateur.exterieur
         let societe = formateur.societe ?? ""
         let siret = formateur.siret ?? ""
@@ -186,7 +186,7 @@ struct FormateurFormViewTests {
         #expect(email == "marie@test.com")
         #expect(telephone == "0698765432")
         #expect(specialite == "Python")
-        #expect(tauxHoraire == "65")
+        #expect(tarifJournalier == "65")
         #expect(exterieur == true)
         #expect(societe == "Tech Academy")
         #expect(siret == "98765432100001")
@@ -340,10 +340,10 @@ struct FormateurFormViewTests {
         #expect(placeholder == "Ex: Swift, iOS")
     }
     
-    @Test("taux horaire placeholder is correct")
-    func testTauxHorairePlaceholder() {
-        let placeholder = "50.00"
-        #expect(placeholder == "50.00")
+    @Test("tarif journalier placeholder is correct")
+    func testTarifJournalierPlaceholder() {
+        let placeholder = "400.00"
+        #expect(placeholder == "400.00")
     }
     
     @Test("société placeholder is correct")
@@ -384,10 +384,10 @@ struct FormateurFormViewTests {
     
     // MARK: - Error Handling Tests
     
-    @Test("error message for invalid taux horaire")
-    func testErrorMessageInvalidTauxHoraire() {
-        let errorMessage = "Veuillez saisir un taux horaire valide"
-        #expect(errorMessage == "Veuillez saisir un taux horaire valide")
+    @Test("error message for invalid tarif journalier")
+    func testErrorMessageInvalidTarifJournalier() {
+        let errorMessage = "Veuillez saisir un tarif journalier valide"
+        #expect(errorMessage == "Veuillez saisir un tarif journalier valide")
     }
     
     @Test("error alert title is correct")

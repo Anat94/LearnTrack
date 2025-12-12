@@ -20,7 +20,7 @@ struct FormateurDetailViewTests {
         email: String = "jean@example.com",
         telephone: String = "0612345678",
         specialite: String = "Swift / iOS",
-        tauxHoraire: Decimal = 55.0,
+        tarifJournalier: Decimal = 55.0,
         exterieur: Bool = false,
         societe: String? = nil,
         siret: String? = nil,
@@ -36,7 +36,7 @@ struct FormateurDetailViewTests {
             email: email,
             telephone: telephone,
             specialite: specialite,
-            tauxHoraire: tauxHoraire,
+            tarifJournalier: tarifJournalier,
             exterieur: exterieur,
             societe: societe,
             siret: siret,
@@ -135,24 +135,24 @@ struct FormateurDetailViewTests {
         #expect(formateur.adresseComplete == nil)
     }
     
-    // MARK: - TauxHoraire Tests
+    // MARK: - TarifJournalier Tests
     
-    @Test("tauxHoraire stores decimal value correctly")
-    func testTauxHoraire() {
-        let formateur = FormateurDetailViewTests.createTestFormateur(tauxHoraire: 55.50)
-        #expect(formateur.tauxHoraire == 55.50)
+    @Test("tarifJournalier stores decimal value correctly")
+    func testTarifJournalier() {
+        let formateur = FormateurDetailViewTests.createTestFormateur(tarifJournalier: 55.50)
+        #expect(formateur.tarifJournalier == 55.50)
     }
     
-    @Test("tauxHoraire handles zero value")
-    func testTauxHoraireZero() {
-        let formateur = FormateurDetailViewTests.createTestFormateur(tauxHoraire: 0)
-        #expect(formateur.tauxHoraire == 0)
+    @Test("tarifJournalier handles zero value")
+    func testTarifJournalierZero() {
+        let formateur = FormateurDetailViewTests.createTestFormateur(tarifJournalier: 0)
+        #expect(formateur.tarifJournalier == 0)
     }
     
-    @Test("tauxHoraire handles large value")
-    func testTauxHoraireLargeValue() {
-        let formateur = FormateurDetailViewTests.createTestFormateur(tauxHoraire: 999.99)
-        #expect(formateur.tauxHoraire == 999.99)
+    @Test("tarifJournalier handles large value")
+    func testTarifJournalierLargeValue() {
+        let formateur = FormateurDetailViewTests.createTestFormateur(tarifJournalier: 999.99)
+        #expect(formateur.tarifJournalier == 999.99)
     }
     
     // MARK: - External Formateur (Société) Tests
@@ -225,7 +225,7 @@ struct FormateurDetailViewTests {
         #expect(formateur.email == "")
         #expect(formateur.telephone == "")
         #expect(formateur.specialite == "")
-        #expect(formateur.tauxHoraire == 0)
+        #expect(formateur.tarifJournalier == 0)
         #expect(formateur.exterieur == false)
         #expect(formateur.societe == nil)
         #expect(formateur.siret == nil)
