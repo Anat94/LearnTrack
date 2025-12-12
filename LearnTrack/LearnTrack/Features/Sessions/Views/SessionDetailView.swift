@@ -13,6 +13,7 @@ struct SessionDetailView: View {
     @Environment(\.dismiss) var dismiss
     @State private var showingEditSheet = false
     @State private var showingDeleteAlert = false
+    @State private var showingShareSheet = false
     
     var body: some View {
         ZStack {
@@ -60,6 +61,9 @@ struct SessionDetailView: View {
         }
         .sheet(isPresented: $showingEditSheet) {
             SessionFormView(viewModel: viewModel, sessionToEdit: session)
+        }
+        .sheet(isPresented: $showingShareSheet) {
+            ShareSheet(items: [session.shareText()])
         }
         .alert("Supprimer la session ?", isPresented: $showingDeleteAlert) {
             Button("Annuler", role: .cancel) { }
@@ -272,6 +276,10 @@ struct SessionDetailView: View {
         VStack(spacing: LTSpacing.sm) {
             LTButton("Modifier", variant: .primary, icon: "pencil", isFullWidth: true) {
                 showingEditSheet = true
+            }
+            
+            LTButton("Partager", variant: .secondary, icon: "square.and.arrow.up", isFullWidth: true) {
+                showingShareSheet = true
             }
             
             LTButton("Supprimer", variant: .destructive, icon: "trash", isFullWidth: true) {
