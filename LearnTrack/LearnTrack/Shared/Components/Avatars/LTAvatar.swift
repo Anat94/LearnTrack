@@ -9,10 +9,11 @@ import SwiftUI
 
 // MARK: - Avatar Sizes
 enum LTAvatarSize {
-    case small, medium, large, xl
+    case xsmall, small, medium, large, xl
     
     var dimension: CGFloat {
         switch self {
+        case .xsmall: return 24
         case .small: return LTHeight.avatarSmall
         case .medium: return LTHeight.avatarMedium
         case .large: return LTHeight.avatarLarge
@@ -22,6 +23,7 @@ enum LTAvatarSize {
     
     var font: Font {
         switch self {
+        case .xsmall: return .ltSmall
         case .small: return .ltCaptionMedium
         case .medium: return .ltBodySemibold
         case .large: return .ltH4

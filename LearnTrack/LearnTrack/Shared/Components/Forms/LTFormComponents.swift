@@ -151,23 +151,6 @@ struct LTFormDatePicker: View {
     }
 }
 
-// MARK: - Form Row (horizontal)
-struct LTFormRow: View {
-    let spacing: CGFloat
-    let content: () -> AnyView
-    
-    init(spacing: CGFloat = LTSpacing.md, @ViewBuilder content: @escaping () -> some View) {
-        self.spacing = spacing
-        self.content = { AnyView(content()) }
-    }
-    
-    var body: some View {
-        HStack(spacing: spacing) {
-            content()
-        }
-    }
-}
-
 #Preview {
     ScrollView {
         VStack(spacing: 16) {
