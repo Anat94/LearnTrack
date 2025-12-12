@@ -309,19 +309,19 @@ struct FormateurDetailView: View {
         let extras = ExtrasStore.shared.getFormateurExtras(id: id64)
         return Formateur(
             id: id64,
-            prenom: api.prenom ?? "",
-            nom: api.nom ?? "",
-            email: api.email ?? "",
+            prenom: api.prenom,
+            nom: api.nom,
+            email: api.email,
             telephone: api.telephone ?? "",
             specialite: specialite,
             tauxHoraire: taux,
-            exterieur: api.externe ?? false,
+            exterieur: extras?.exterieur ?? false,
             societe: extras?.societe,
             siret: extras?.siret,
             nda: extras?.nda,
-            rue: extras?.rue,
-            codePostal: extras?.codePostal,
-            ville: extras?.ville
+            rue: api.adresse,
+            codePostal: api.codePostal,
+            ville: api.ville
         )
     }
 }
