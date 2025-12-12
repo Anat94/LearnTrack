@@ -111,6 +111,7 @@ struct SessionCardView: View {
                             Text(session.displayDate)
                                 .font(.winamaxCaption())
                                 .foregroundColor(theme.textSecondary)
+                                .lineLimit(1)
                         }
                         HStack(spacing: 5) {
                             Image(systemName: "clock")
@@ -119,6 +120,7 @@ struct SessionCardView: View {
                             Text(session.displayHoraires)
                                 .font(.winamaxCaption())
                                 .foregroundColor(theme.textSecondary)
+                                .lineLimit(1)
                         }
                     }
                 }
