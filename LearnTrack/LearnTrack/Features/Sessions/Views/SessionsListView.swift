@@ -92,12 +92,11 @@ struct SessionsListView: View {
                         sessionCard(session)
                     }
                     .buttonStyle(PlainButtonStyle())
-                    .opacity(1)
-                    .animation(.ltSpringSmooth.delay(Double(index) * 0.03), value: viewModel.filteredSessions.count)
+                    .ltStaggered(index: index)
                 }
             }
             .padding(.horizontal, LTSpacing.lg)
-            .padding(.bottom, 120) // Espace pour la TabBar
+            .padding(.bottom, 120)
         }
         .refreshable {
             await viewModel.fetchSessions()

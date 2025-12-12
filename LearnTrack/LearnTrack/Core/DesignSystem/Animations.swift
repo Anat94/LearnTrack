@@ -2,7 +2,7 @@
 //  Animations.swift
 //  LearnTrack
 //
-//  Design System - Animations et transitions
+//  Design System - Animations et transitions premium
 //
 
 import SwiftUI
@@ -17,6 +17,10 @@ extension Animation {
     static let ltSpringSmooth = Animation.spring(response: 0.4, dampingFraction: 0.75)
     static let ltSpringBouncy = Animation.spring(response: 0.5, dampingFraction: 0.65)
     static let ltSpringSnappy = Animation.spring(response: 0.25, dampingFraction: 0.85)
+    
+    // Page transitions
+    static let ltPageTransition = Animation.spring(response: 0.4, dampingFraction: 0.78)
+    static let ltPopIn = Animation.spring(response: 0.35, dampingFraction: 0.7)
 }
 
 // MARK: - Transition Presets
@@ -29,6 +33,16 @@ extension AnyTransition {
     static let ltFade = AnyTransition.opacity.animation(.ltNormal)
     
     static let ltScale = AnyTransition.scale(scale: 0.95).combined(with: .opacity)
+    
+    static let ltPopIn = AnyTransition.asymmetric(
+        insertion: .scale(scale: 0.9).combined(with: .opacity),
+        removal: .scale(scale: 1.05).combined(with: .opacity)
+    )
+    
+    static let ltSlideFromRight = AnyTransition.asymmetric(
+        insertion: .move(edge: .trailing).combined(with: .opacity),
+        removal: .move(edge: .leading).combined(with: .opacity)
+    )
 }
 
 // MARK: - Scale on Press Modifier
@@ -85,3 +99,83 @@ extension View {
         modifier(LTShimmerEffect())
     }
 }
+
+// MARK: - Staggered List Animation
+struct LTStaggeredList: ViewModifier {
+    let index: Int
+    let baseDelay: Double
+    @State private var isVisible = false
+    
+    init(index: Int, baseDelay: Double = 0.05) {
+        self.index = index
+        self.baseDelay = baseDelay
+    }
+    
+    func body(content: Content) -> some View {
+        content
+            .opacity(isVisible ? 1 : 0)
+            .offset(y: isVisible ? 0 : 20)
+            .scaleEffect(isVisible ? 1 : 0.95)
+            .onAppear {
+                withAnimation(.ltPopIn.delay(Double(index) * baseDelay)) {
+                    isVisible = true
+                }
+            }
+    }
+}
+
+extension View {
+    func ltStaggered(index: Int, delay: Double = 0.05) -> some View {
+        modifier(LTStaggeredList(index: index, baseDelay: delay))
+    }
+}
+
+// MARK: - Bounce on Tap
+struct LTBounceOnTap: ViewModifier {
+    @State private var isBouncing = false
+    let action: () -> Void
+    
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(isBouncing ? 0.92 : 1.0)
+            .animation(.ltSpringBouncy, value: isBouncing)
+            .onTapGesture {
+                isBouncing = true
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    isBouncing = false
+                    action()
+                }
+            }
+    }
+}
+
+extension View {
+    func ltBounceOnTap(action: @escaping () -> Void) -> some View {
+        modifier(LTBounceOnTap(action: action))
+    }
+}
+
+// MARK: - Pulse Glow Effect
+struct LTPulseGlow: ViewModifier {
+    @State private var isPulsing = false
+    let color: Color
+    
+    func body(content: Content) -> some View {
+        content
+            .shadow(color: color.opacity(isPulsing ? 0.6 : 0.3), radius: isPulsing ? 15 : 8, y: 4)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
+                    isPulsing = true
+                }
+            }
+    }
+}
+
+extension View {
+    func ltPulseGlow(color: Color = .emerald500) -> some View {
+        modifier(LTPulseGlow(color: color))
+    }
+}
+
