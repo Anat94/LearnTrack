@@ -12,25 +12,33 @@ struct SearchBar: View {
     var placeholder: String = "Rechercher..."
     
     var body: some View {
-        HStack {
+        HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(.gray)
+                .foregroundColor(.brandCyan.opacity(0.9))
             
             TextField(placeholder, text: $text)
                 .autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+                .foregroundColor(.white)
             
             if !text.isEmpty {
                 Button(action: {
                     text = ""
                 }) {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.gray)
+                        .foregroundColor(.brandPink.opacity(0.9))
                 }
+                .buttonStyle(.plain)
             }
         }
-        .padding(10)
-        .background(Color(.systemGray6))
-        .cornerRadius(10)
+        .padding(14)
+        .background(
+            Color.white.opacity(0.07)
+                .blur(radius: 0)
+        )
+        .neonBordered(radius: 14)
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .shadow(color: Color.black.opacity(0.2), radius: 12, x: 0, y: 8)
     }
 }
 

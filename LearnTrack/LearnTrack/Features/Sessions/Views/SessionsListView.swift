@@ -14,46 +14,61 @@ struct SessionsListView: View {
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
-                // Barre de recherche
-                SearchBar(text: $viewModel.searchText)
-                    .padding()
+            ZStack {
+                BrandBackground()
                 
-                // Filtres par mois
-                MonthFilterView(selectedMonth: $viewModel.selectedMonth)
-                    .padding(.horizontal)
-                
-                // Liste des sessions
-                if viewModel.isLoading {
-                    Spacer()
-                    ProgressView("Chargement...")
-                    Spacer()
-                } else if viewModel.filteredSessions.isEmpty {
-                    EmptyStateView(
-                        icon: "calendar.badge.exclamationmark",
-                        title: "Aucune session",
-                        message: "Aucune session trouvée pour ce mois"
-                    )
-                } else {
-                    List {
-                        ForEach(viewModel.filteredSessions) { session in
-                            NavigationLink(destination: SessionDetailView(session: session)) {
-                                SessionCardView(session: session)
+                VStack(spacing: 16) {
+                    // Barre de recherche
+                    SearchBar(text: $viewModel.searchText, placeholder: "Trouver une session ou un module")
+                        .padding(.horizontal)
+                        .padding(.top, 8)
+                    
+                    // Filtres par mois
+                    MonthFilterView(selectedMonth: $viewModel.selectedMonth)
+                        .padding(.horizontal)
+                    
+                    // Liste des sessions
+                    Group {
+                        if viewModel.isLoading {
+                            ProgressView("Chargement stylé...")
+                                .progressViewStyle(CircularProgressViewStyle(tint: .brandCyan))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        } else if viewModel.filteredSessions.isEmpty {
+                            EmptyStateView(
+                                icon: "calendar.badge.exclamationmark",
+                                title: "Aucune session",
+                                message: "Ajustez vos filtres ou ajoutez-en une nouvelle."
+                            )
+                        } else {
+                            ScrollView {
+                                LazyVStack(spacing: 14) {
+                                    ForEach(viewModel.filteredSessions) { session in
+                                        NavigationLink(destination: SessionDetailView(session: session)) {
+                                            SessionCardView(session: session)
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
+                                }
+                                .padding(.horizontal)
+                                .padding(.bottom, 12)
+                            }
+                            .refreshable {
+                                await viewModel.fetchSessions()
                             }
                         }
-                    }
-                    .listStyle(PlainListStyle())
-                    .refreshable {
-                        await viewModel.fetchSessions()
                     }
                 }
             }
             .navigationTitle("Sessions")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingAddSession = true }) {
-                        Image(systemName: "plus.circle.fill")
+                        Image(systemName: "plus.app.fill")
                             .font(.title2)
+                            .foregroundColor(.brandCyan)
+                            .shadow(color: .brandPink.opacity(0.35), radius: 10, y: 6)
                     }
                 }
             }
@@ -72,56 +87,62 @@ struct SessionCardView: View {
     let session: Session
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            // En-tête avec module et badge modalité
-            HStack {
-                Text(session.module)
-                    .font(.headline)
-                    .lineLimit(2)
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(session.module)
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .lineLimit(2)
+                    
+                    HStack(spacing: 12) {
+                        Label(session.displayDate, systemImage: "calendar")
+                        Label(session.displayHoraires, systemImage: "clock")
+                    }
+                    .font(.subheadline)
+                    .foregroundColor(.white.opacity(0.75))
+                }
                 
                 Spacer()
                 
                 // Badge Présentiel/Distanciel
-                HStack(spacing: 4) {
+                HStack(spacing: 6) {
                     Image(systemName: session.modalite.icon)
-                        .font(.caption)
                     Text(session.modalite.label)
-                        .font(.caption)
-                        .fontWeight(.medium)
+                        .fontWeight(.semibold)
                 }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(session.modalite == .presentiel ? Color.blue.opacity(0.2) : Color.green.opacity(0.2))
-                .foregroundColor(session.modalite == .presentiel ? .blue : .green)
-                .cornerRadius(8)
+                .font(.caption)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(
+                    LinearGradient(
+                        colors: session.modalite == .presentiel ? [.brandCyan, .brandIndigo] : [.green, .brandCyan],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .cornerRadius(12)
+                .foregroundColor(.white)
+                .shadow(color: .black.opacity(0.25), radius: 10, y: 8)
             }
             
-            // Date et horaires
-            HStack(spacing: 16) {
-                Label(session.displayDate, systemImage: "calendar")
-                    .font(.subheadline)
+            Divider()
+                .background(Color.white.opacity(0.1))
+            
+            HStack(spacing: 12) {
+                if let formateur = session.formateur {
+                    Label(formateur.nomComplet, systemImage: "person.fill")
+                }
                 
-                Label(session.displayHoraires, systemImage: "clock")
-                    .font(.subheadline)
+                if session.modalite == .presentiel {
+                    Label(session.lieu, systemImage: "mappin.circle.fill")
+                        .lineLimit(1)
+                }
             }
-            .foregroundColor(.secondary)
-            
-            // Formateur
-            if let formateur = session.formateur {
-                Label(formateur.nomComplet, systemImage: "person.fill")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            
-            // Lieu (si présentiel)
-            if session.modalite == .presentiel {
-                Label(session.lieu, systemImage: "mappin.circle.fill")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
-            }
+            .font(.subheadline)
+            .foregroundColor(.white.opacity(0.78))
         }
-        .padding(.vertical, 8)
+        .glassCard()
     }
 }
 
@@ -142,13 +163,29 @@ struct MonthFilterView: View {
                         selectedMonth = month
                     }) {
                         Text(months[month - 1])
-                            .font(.subheadline)
-                            .fontWeight(selectedMonth == month ? .semibold : .regular)
+                            .font(.subheadline.weight(.semibold))
                             .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(selectedMonth == month ? Color.blue : Color.gray.opacity(0.2))
-                            .foregroundColor(selectedMonth == month ? .white : .primary)
-                            .cornerRadius(20)
+                            .padding(.vertical, 10)
+                            .background(
+                                Group {
+                                    if selectedMonth == month {
+                                        LinearGradient(
+                                            colors: [.brandCyan, .brandPink],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    } else {
+                                        Color.white.opacity(0.08)
+                                    }
+                                }
+                            )
+                            .foregroundColor(selectedMonth == month ? .white : .white.opacity(0.8))
+                            .clipShape(Capsule(style: .continuous))
+                            .overlay(
+                                Capsule(style: .continuous)
+                                    .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                            )
+                            .shadow(color: Color.brandCyan.opacity(selectedMonth == month ? 0.25 : 0), radius: 10, y: 6)
                     }
                 }
             }
