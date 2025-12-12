@@ -114,6 +114,7 @@ struct LTCard<Content: View>: View {
     private struct ShadowModifier: ViewModifier {
         let variant: LTCardVariant
         
+        @ViewBuilder
         func body(content: Content) -> some View {
             switch variant {
             case .default:

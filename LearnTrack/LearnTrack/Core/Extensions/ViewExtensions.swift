@@ -2,81 +2,14 @@
 //  ViewExtensions.swift
 //  LearnTrack
 //
-//  Extensions View utilitaires pour le Design System Emerald
+//  Extensions View supplémentaires pour le Design System Emerald
+//  Note: Les extensions de base (if, hideKeyboard) sont dans Extensions.swift
 //
 
 import SwiftUI
 
-// MARK: - Conditional Modifier
-extension View {
-    /// Applies a modifier conditionally
-    @ViewBuilder
-    func `if`<Transform: View>(_ condition: Bool, transform: (Self) -> Transform) -> some View {
-        if condition {
-            transform(self)
-        } else {
-            self
-        }
-    }
-    
-    /// Applies a modifier conditionally with an else branch
-    @ViewBuilder
-    func `if`<TrueContent: View, FalseContent: View>(
-        _ condition: Bool,
-        if ifTransform: (Self) -> TrueContent,
-        else elseTransform: (Self) -> FalseContent
-    ) -> some View {
-        if condition {
-            ifTransform(self)
-        } else {
-            elseTransform(self)
-        }
-    }
-}
-
-// MARK: - Hide Keyboard
-extension UIApplication {
-    func hideKeyboard() {
-        sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-    }
-}
-
 // MARK: - Screen Modifiers
-extension View {
-    /// Standard screen background
-    func ltScreen() -> some View {
-        self
-            .background(Color.ltBackground)
-    }
-    
-    /// Card padding preset
-    func ltCardPadding() -> some View {
-        self.padding(LTSpacing.lg)
-    }
-    
-    /// Section padding preset
-    func ltSectionPadding() -> some View {
-        self.padding(.horizontal, LTSpacing.lg)
-    }
-    
-    /// Full screen padding preset
-    func ltScreenPadding() -> some View {
-        self.padding(LTSpacing.xl)
-    }
-}
-
-// MARK: - Staggered Animation
-extension View {
-    /// Applies staggered entrance animation for list items
-    func ltStaggered(index: Int, baseDelay: Double = 0.03) -> some View {
-        self
-            .opacity(1)
-            .animation(
-                .ltSpringSmooth.delay(Double(index) * baseDelay),
-                value: true
-            )
-    }
-}
+// Note: ltScreen() est défini dans Spacing.swift, ces helpers sont EN PLUS
 
 // MARK: - Share Sheet
 struct ShareSheet: UIViewControllerRepresentable {
@@ -134,5 +67,18 @@ extension View {
                 impact.impactOccurred()
             }
         )
+    }
+}
+
+// MARK: - Staggered Animation Helper
+extension View {
+    /// Applies staggered entrance animation for list items
+    func ltStaggered(index: Int, baseDelay: Double = 0.03) -> some View {
+        self
+            .opacity(1)
+            .animation(
+                .ltSpringSmooth.delay(Double(index) * baseDelay),
+                value: true
+            )
     }
 }
