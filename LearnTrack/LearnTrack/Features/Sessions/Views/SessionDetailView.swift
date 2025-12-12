@@ -2,7 +2,7 @@
 //  SessionDetailView.swift
 //  LearnTrack
 //
-//  Détail d'une session style Winamax - Design audacieux
+//  Détail session - Design SaaS compact
 //
 
 import SwiftUI
@@ -11,264 +11,55 @@ struct SessionDetailView: View {
     let session: Session
     @StateObject private var viewModel = SessionViewModel()
     @Environment(\.dismiss) var dismiss
-    @Environment(\.colorScheme) var colorScheme
     @State private var showingEditSheet = false
     @State private var showingDeleteAlert = false
-    @State private var showingShareSheet = false
-    
-    var theme: AppTheme {
-        colorScheme == .dark ? .dark : .light
-    }
     
     var body: some View {
         ZStack {
-            WinamaxBackground()
+            Color.ltBackground.ignoresSafeArea()
             
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 0) {
-                    // Hero Header avec gradient
-                    VStack(spacing: 20) {
-                        // Badge modalité en haut
-                        HStack {
-                            Spacer()
-                            WinamaxBadge(
-                                text: session.modalite.label,
-                                color: session.modalite == .presentiel ? theme.primaryGreen : theme.accentOrange
-                            )
-                            .padding(.trailing, 20)
-                            .padding(.top, 8)
-                        }
-                        
-                        Spacer()
-                        
-                        // Module avec style hero
-                        VStack(spacing: 12) {
-                            Text(session.module)
-                                .font(.system(size: 32, weight: .bold, design: .rounded))
-                                .foregroundColor(theme.textPrimary)
-                                .multilineTextAlignment(.center)
-                                .lineLimit(3)
-                            
-                            // Date et horaires en highlight
-                            HStack(spacing: 20) {
-                                VStack(spacing: 4) {
-                                    Image(systemName: "calendar")
-                                        .font(.system(size: 20, weight: .semibold))
-                                        .foregroundColor(theme.primaryGreen)
-                                    Text(session.displayDate)
-                                        .font(.winamaxHeadline())
-                                        .foregroundColor(theme.textPrimary)
-                                }
-                                
-                                Divider()
-                                    .frame(height: 40)
-                                    .background(theme.borderColor)
-                                
-                                VStack(spacing: 4) {
-                                    Image(systemName: "clock")
-                                        .font(.system(size: 20, weight: .semibold))
-                                        .foregroundColor(theme.accentOrange)
-                                    Text("\(session.debut) - \(session.fin)")
-                                        .font(.winamaxHeadline())
-                                        .foregroundColor(theme.textPrimary)
-                                }
-                            }
-                            .padding(.vertical, 16)
-                            .padding(.horizontal, 24)
-                            .background(
-                                LinearGradient(
-                                    colors: [
-                                        theme.cardBackground,
-                                        theme.cardBackground.opacity(0.7)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                    .stroke(
-                                        LinearGradient(
-                                            colors: [theme.primaryGreen.opacity(0.3), theme.accentOrange.opacity(0.3)],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        ),
-                                        lineWidth: 2
-                                    )
-                            )
-                            .shadow(color: theme.shadowColor, radius: 15, y: 8)
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 30)
-                    }
-                    .frame(height: 280)
-                    .background(
-                        LinearGradient(
-                            colors: session.modalite == .presentiel ?
-                                [theme.primaryGreen.opacity(0.15), theme.primaryGreen.opacity(0.05), .clear] :
-                                [theme.accentOrange.opacity(0.15), theme.accentOrange.opacity(0.05), .clear],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                VStack(spacing: LTSpacing.md) {
+                    // Header Card
+                    headerCard
                     
-                    // Contenu principal
-                    VStack(spacing: 20) {
-                        // Lieu
-                        if session.modalite == .presentiel && !session.lieu.isEmpty && session.lieu != "À distance" {
-                            DetailCard(
-                                icon: "mappin.circle.fill",
-                                iconColor: theme.primaryGreen,
-                                title: "Lieu",
-                                content: {
-                                    VStack(alignment: .leading, spacing: 12) {
-                                        Text(session.lieu)
-                                            .font(.winamaxBody())
-                                            .foregroundColor(theme.textPrimary)
-                                        
-                                        Button(action: {
-                                            ContactService.shared.openInMaps(address: session.lieu)
-                                        }) {
-                                            HStack {
-                                                Image(systemName: "map.fill")
-                                                Text("Ouvrir dans Plans")
-                                            }
-                                            .font(.winamaxCaption())
-                                            .foregroundColor(theme.primaryGreen)
-                                        }
-                                    }
-                                }
-                            )
-                        }
-                        
-                        // Intervenants
-                        DetailCard(
-                            icon: "person.3.fill",
-                            iconColor: theme.accentOrange,
-                            title: "Intervenants",
-                            content: {
-                                VStack(spacing: 12) {
-                                    if let formateur = session.formateur {
-                                        NavigationLink(destination: FormateurDetailView(formateur: formateur)) {
-                                            IntervenantRow(
-                                                label: "Formateur",
-                                                name: formateur.nomComplet,
-                                                color: theme.primaryGreen
-                                            )
-                                        }
-                                        .buttonStyle(.plain)
-                                    }
-                                    
-                                    if let client = session.client {
-                                        NavigationLink(destination: ClientDetailView(client: client)) {
-                                            IntervenantRow(
-                                                label: "Client",
-                                                name: client.raisonSociale,
-                                                color: theme.accentOrange
-                                            )
-                                        }
-                                        .buttonStyle(.plain)
-                                    }
-                                    
-                                    if let ecole = session.ecole {
-                                        NavigationLink(destination: EcoleDetailView(ecole: ecole)) {
-                                            IntervenantRow(
-                                                label: "École",
-                                                name: ecole.nom,
-                                                color: theme.primaryGreen
-                                            )
-                                        }
-                                        .buttonStyle(.plain)
-                                    }
-                                }
-                            }
-                        )
-                        
-                        // Tarifs avec style financier
-                        DetailCard(
-                            icon: "eurosign.circle.fill",
-                            iconColor: theme.primaryGreen,
-                            title: "Tarifs",
-                            content: {
-                                VStack(spacing: 16) {
-                                    TarifRow(label: "Tarif client", value: "\(session.tarifClient) €", color: theme.primaryGreen)
-                                    TarifRow(label: "Tarif sous-traitant", value: "\(session.tarifSousTraitant) €", color: theme.textSecondary)
-                                    TarifRow(label: "Frais à rembourser", value: "\(session.fraisRembourser) €", color: theme.textSecondary)
-                                    
-                                    Divider()
-                                        .background(theme.borderColor)
-                                    
-                                    // Marge en highlight
-                                    HStack {
-                                        Text("Marge")
-                                            .font(.winamaxHeadline())
-                                            .foregroundColor(theme.textPrimary)
-                                        
-                                        Spacer()
-                                        
-                                        Text("\(session.marge) €")
-                                            .font(.system(size: 24, weight: .bold, design: .rounded))
-                                            .foregroundColor(session.marge >= 0 ? theme.primaryGreen : Color.red)
-                                    }
-                                    .padding(.top, 8)
-                                }
-                            }
-                        )
-                        
-                        // Référence contrat
-                        if let refContrat = session.refContrat, !refContrat.isEmpty {
-                            DetailCard(
-                                icon: "doc.text.fill",
-                                iconColor: theme.textSecondary,
-                                title: "Référence contrat",
-                                content: {
-                                    Text(refContrat)
-                                        .font(.winamaxBody())
-                                        .foregroundColor(theme.textPrimary)
-                                }
-                            )
-                        }
-                        
-                        // Boutons d'action
-                        VStack(spacing: 12) {
-                            Button(action: { showingShareSheet = true }) {
-                                HStack {
-                                    Image(systemName: "square.and.arrow.up.fill")
-                                    Text("Partager")
-                                }
-                            }
-                            .buttonStyle(WinamaxSecondaryButton())
-                            
-                            Button(action: { showingEditSheet = true }) {
-                                HStack {
-                                    Image(systemName: "pencil.fill")
-                                    Text("Modifier")
-                                }
-                            }
-                            .buttonStyle(WinamaxPrimaryButton())
-                            
-                            Button(action: { showingDeleteAlert = true }) {
-                                HStack {
-                                    Image(systemName: "trash.fill")
-                                    Text("Supprimer")
-                                }
-                            }
-                            .buttonStyle(WinamaxDangerButton())
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 40)
+                    // Date & Horaires
+                    dateTimeCard
+                    
+                    // Lieu
+                    if session.modalite == .presentiel && !session.lieu.isEmpty {
+                        lieuCard
                     }
-                    .padding(.top, 20)
+                    
+                    // Intervenants
+                    intervenantsCard
+                    
+                    // Tarifs
+                    tarifsCard
+                    
+                    // Référence contrat
+                    if let refContrat = session.refContrat, !refContrat.isEmpty {
+                        refContratCard(refContrat)
+                    }
+                    
+                    // Actions
+                    actionsSection
                 }
+                .padding(.horizontal, LTSpacing.lg)
+                .padding(.top, LTSpacing.md)
+                .padding(.bottom, 100)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Session")
+                    .font(.ltH4)
+                    .foregroundColor(.ltText)
+            }
+        }
         .sheet(isPresented: $showingEditSheet) {
             SessionFormView(viewModel: viewModel, sessionToEdit: session)
-        }
-        .sheet(isPresented: $showingShareSheet) {
-            ShareSheet(items: [session.shareText()])
         }
         .alert("Supprimer la session ?", isPresented: $showingDeleteAlert) {
             Button("Annuler", role: .cancel) { }
@@ -282,135 +73,292 @@ struct SessionDetailView: View {
             Text("Cette action est irréversible.")
         }
     }
-}
-
-// Carte de détail réutilisable
-struct DetailCard<Content: View>: View {
-    let icon: String
-    let iconColor: Color
-    let title: String
-    @ViewBuilder let content: Content
-    @Environment(\.colorScheme) var colorScheme
     
-    var theme: AppTheme {
-        colorScheme == .dark ? .dark : .light
-    }
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 12) {
-                ZStack {
-                    Circle()
-                        .fill(iconColor.opacity(0.2))
-                        .frame(width: 40, height: 40)
+    // MARK: - Header Card
+    private var headerCard: some View {
+        LTCard(variant: .accent) {
+            VStack(spacing: LTSpacing.sm) {
+                HStack {
+                    Text(session.module)
+                        .font(.ltH3)
+                        .foregroundColor(.ltText)
+                        .lineLimit(3)
                     
-                    Image(systemName: icon)
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(iconColor)
+                    Spacer()
                 }
                 
-                Text(title)
-                    .font(.winamaxHeadline())
-                    .foregroundColor(theme.textPrimary)
+                HStack {
+                    LTModaliteBadge(isPresentiel: session.modalite == .presentiel)
+                    Spacer()
+                }
+            }
+        }
+    }
+    
+    // MARK: - Date & Time Card
+    private var dateTimeCard: some View {
+        LTCard {
+            HStack(spacing: LTSpacing.xl) {
+                // Date
+                HStack(spacing: LTSpacing.sm) {
+                    Image(systemName: "calendar")
+                        .font(.system(size: LTIconSize.md))
+                        .foregroundColor(.emerald500)
+                    
+                    VStack(alignment: .leading, spacing: LTSpacing.xxs) {
+                        Text("Date")
+                            .font(.ltSmall)
+                            .foregroundColor(.ltTextSecondary)
+                        Text(session.displayDate)
+                            .font(.ltBodySemibold)
+                            .foregroundColor(.ltText)
+                    }
+                }
+                
+                Divider().frame(height: 36)
+                
+                // Horaires
+                HStack(spacing: LTSpacing.sm) {
+                    Image(systemName: "clock")
+                        .font(.system(size: LTIconSize.md))
+                        .foregroundColor(.warning)
+                    
+                    VStack(alignment: .leading, spacing: LTSpacing.xxs) {
+                        Text("Horaires")
+                            .font(.ltSmall)
+                            .foregroundColor(.ltTextSecondary)
+                        Text("\(session.debut) - \(session.fin)")
+                            .font(.ltBodySemibold)
+                            .foregroundColor(.ltText)
+                    }
+                }
+                
+                Spacer()
+            }
+        }
+    }
+    
+    // MARK: - Lieu Card
+    private var lieuCard: some View {
+        LTCard {
+            VStack(alignment: .leading, spacing: LTSpacing.sm) {
+                HStack(spacing: LTSpacing.sm) {
+                    Image(systemName: "mappin.circle.fill")
+                        .font(.system(size: LTIconSize.md))
+                        .foregroundColor(.emerald500)
+                    
+                    Text("Lieu")
+                        .font(.ltBodySemibold)
+                        .foregroundColor(.ltText)
+                }
+                
+                Text(session.lieu)
+                    .font(.ltBody)
+                    .foregroundColor(.ltTextSecondary)
+                
+                Button(action: {
+                    ContactService.shared.openInMaps(address: session.lieu)
+                }) {
+                    HStack(spacing: LTSpacing.xs) {
+                        Image(systemName: "map")
+                        Text("Ouvrir dans Plans")
+                    }
+                    .font(.ltCaption)
+                    .foregroundColor(.emerald500)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Intervenants Card
+    private var intervenantsCard: some View {
+        LTCard {
+            VStack(alignment: .leading, spacing: LTSpacing.md) {
+                HStack(spacing: LTSpacing.sm) {
+                    Image(systemName: "person.3.fill")
+                        .font(.system(size: LTIconSize.md))
+                        .foregroundColor(.warning)
+                    
+                    Text("Intervenants")
+                        .font(.ltBodySemibold)
+                        .foregroundColor(.ltText)
+                }
+                
+                VStack(spacing: LTSpacing.sm) {
+                    if let formateur = session.formateur {
+                        NavigationLink(destination: FormateurDetailView(formateur: formateur)) {
+                            IntervenantRowCompact(label: "Formateur", name: formateur.nomComplet, color: .emerald500)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                    
+                    if let client = session.client {
+                        NavigationLink(destination: ClientDetailView(client: client)) {
+                            IntervenantRowCompact(label: "Client", name: client.raisonSociale, color: .info)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                    
+                    if let ecole = session.ecole {
+                        NavigationLink(destination: EcoleDetailView(ecole: ecole)) {
+                            IntervenantRowCompact(label: "École", name: ecole.nom, color: .warning)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Tarifs Card
+    private var tarifsCard: some View {
+        LTCard {
+            VStack(alignment: .leading, spacing: LTSpacing.md) {
+                HStack(spacing: LTSpacing.sm) {
+                    Image(systemName: "eurosign.circle.fill")
+                        .font(.system(size: LTIconSize.md))
+                        .foregroundColor(.emerald500)
+                    
+                    Text("Tarifs")
+                        .font(.ltBodySemibold)
+                        .foregroundColor(.ltText)
+                }
+                
+                VStack(spacing: LTSpacing.sm) {
+                    TarifRowCompact(label: "Tarif client", value: "\(session.tarifClient) €")
+                    TarifRowCompact(label: "Tarif sous-traitant", value: "\(session.tarifSousTraitant) €")
+                    TarifRowCompact(label: "Frais à rembourser", value: "\(session.fraisRembourser) €")
+                    
+                    Divider()
+                    
+                    HStack {
+                        Text("Marge")
+                            .font(.ltBodySemibold)
+                            .foregroundColor(.ltText)
+                        Spacer()
+                        Text("\(session.marge) €")
+                            .font(.ltH4)
+                            .foregroundColor(session.marge >= 0 ? .emerald500 : .error)
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Ref Contrat Card
+    private func refContratCard(_ ref: String) -> some View {
+        LTCard {
+            HStack(spacing: LTSpacing.sm) {
+                Image(systemName: "doc.text.fill")
+                    .font(.system(size: LTIconSize.md))
+                    .foregroundColor(.ltTextSecondary)
+                
+                VStack(alignment: .leading, spacing: LTSpacing.xxs) {
+                    Text("Référence contrat")
+                        .font(.ltSmall)
+                        .foregroundColor(.ltTextSecondary)
+                    Text(ref)
+                        .font(.ltBodyMedium)
+                        .foregroundColor(.ltText)
+                }
+                
+                Spacer()
+            }
+        }
+    }
+    
+    // MARK: - Actions
+    private var actionsSection: some View {
+        VStack(spacing: LTSpacing.sm) {
+            LTButton("Modifier", variant: .primary, icon: "pencil", isFullWidth: true) {
+                showingEditSheet = true
             }
             
-            content
+            LTButton("Supprimer", variant: .destructive, icon: "trash", isFullWidth: true) {
+                showingDeleteAlert = true
+            }
         }
-        .winamaxCard()
-        .padding(.horizontal, 20)
+        .padding(.top, LTSpacing.md)
     }
 }
 
-// Row pour les intervenants
-struct IntervenantRow: View {
+// MARK: - Compact Components
+
+struct IntervenantRowCompact: View {
     let label: String
     let name: String
     let color: Color
-    @Environment(\.colorScheme) var colorScheme
-    
-    var theme: AppTheme {
-        colorScheme == .dark ? .dark : .light
-    }
+    @State private var isPressed = false
     
     var body: some View {
-        HStack(spacing: 12) {
-            Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [color, color.opacity(0.7)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: 44, height: 44)
-                .overlay(
-                    Text(String(name.prefix(2)).uppercased())
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
-                )
-                .shadow(color: color.opacity(0.3), radius: 8, y: 4)
+        HStack(spacing: LTSpacing.md) {
+            LTAvatar(initials: String(name.prefix(2)).uppercased(), size: .small, color: color)
             
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: LTSpacing.xxs) {
                 Text(label)
-                    .font(.winamaxCaption())
-                    .foregroundColor(theme.textSecondary)
-                
+                    .font(.ltSmall)
+                    .foregroundColor(.ltTextSecondary)
                 Text(name)
-                    .font(.winamaxBody())
-                    .foregroundColor(theme.textPrimary)
+                    .font(.ltBodyMedium)
+                    .foregroundColor(.ltText)
             }
             
             Spacer()
             
             Image(systemName: "chevron.right")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(theme.textSecondary)
+                .font(.system(size: LTIconSize.xs))
+                .foregroundColor(.ltTextTertiary)
         }
-        .padding(12)
-        .background(theme.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(theme.borderColor, lineWidth: 1)
+        .padding(LTSpacing.sm)
+        .background(Color.ltBackgroundSecondary)
+        .clipShape(RoundedRectangle(cornerRadius: LTRadius.md))
+        .scaleEffect(isPressed ? 0.98 : 1.0)
+        .animation(.ltSpringSubtle, value: isPressed)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in isPressed = true }
+                .onEnded { _ in isPressed = false }
         )
     }
 }
 
-// Row pour les tarifs
-struct TarifRow: View {
+struct TarifRowCompact: View {
     let label: String
     let value: String
-    let color: Color
-    @Environment(\.colorScheme) var colorScheme
-    
-    var theme: AppTheme {
-        colorScheme == .dark ? .dark : .light
-    }
     
     var body: some View {
         HStack {
             Text(label)
-                .font(.winamaxBody())
-                .foregroundColor(theme.textSecondary)
-            
+                .font(.ltBody)
+                .foregroundColor(.ltTextSecondary)
             Spacer()
-            
             Text(value)
-                .font(.system(size: 18, weight: .bold, design: .rounded))
-                .foregroundColor(color)
+                .font(.ltBodyMedium)
+                .foregroundColor(.ltText)
         }
     }
+}
+
+// MARK: - Share Sheet
+struct ShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+    
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 #Preview {
     NavigationView {
         SessionDetailView(session: Session(
-            module: "Swift avancé et développement iOS",
+            module: "Swift avancé",
             date: Date(),
             debut: "09:00",
             fin: "17:00",
             modalite: .presentiel,
-            lieu: "Paris, 123 rue de la Paix",
+            lieu: "Paris",
             tarifClient: 1200,
             tarifSousTraitant: 800,
             fraisRembourser: 50
