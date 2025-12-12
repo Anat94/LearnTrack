@@ -2,7 +2,7 @@
 //  LTCard.swift
 //  LearnTrack
 //
-//  Composant carte custom avec ombres et bordures
+//  Composant carte custom avec ombres et bordures - Design Emerald
 //
 
 import SwiftUI
@@ -39,7 +39,6 @@ struct LTCard<Content: View>: View {
     }
     
     @State private var isPressed = false
-    @State private var isHovered = false
     
     var body: some View {
         Group {
@@ -70,7 +69,7 @@ struct LTCard<Content: View>: View {
             .background(backgroundColor)
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
             .overlay(borderOverlay)
-            .modifier(ShadowModifier(variant: variant))
+            .shadow(color: shadowColor, radius: shadowRadius, x: 0, y: shadowY)
             .scaleEffect(isPressed && action != nil ? 0.98 : 1.0)
             .animation(.ltSpringSubtle, value: isPressed)
     }
@@ -111,23 +110,43 @@ struct LTCard<Content: View>: View {
         }
     }
     
-    private struct ShadowModifier: ViewModifier {
-        let variant: LTCardVariant
-        
-        @ViewBuilder
-        func body(content: Content) -> some View {
-            switch variant {
-            case .default:
-                content.ltCardShadow()
-            case .elevated:
-                content.ltElevatedShadow()
-            case .outlined:
-                content
-            case .interactive:
-                content.ltCardShadow()
-            case .accent:
-                content.ltShadow(.glowSubtle)
-            }
+    // Shadow properties based on variant
+    private var shadowColor: Color {
+        switch variant {
+        case .default, .interactive:
+            return Color.black.opacity(0.08)
+        case .elevated:
+            return Color.black.opacity(0.12)
+        case .accent:
+            return Color.emerald500.opacity(0.15)
+        case .outlined:
+            return Color.clear
+        }
+    }
+    
+    private var shadowRadius: CGFloat {
+        switch variant {
+        case .default, .interactive:
+            return 8
+        case .elevated:
+            return 16
+        case .accent:
+            return 12
+        case .outlined:
+            return 0
+        }
+    }
+    
+    private var shadowY: CGFloat {
+        switch variant {
+        case .default, .interactive:
+            return 4
+        case .elevated:
+            return 8
+        case .accent:
+            return 6
+        case .outlined:
+            return 0
         }
     }
 }

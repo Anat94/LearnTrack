@@ -3,25 +3,11 @@
 //  LearnTrack
 //
 //  Extensions View supplémentaires pour le Design System Emerald
-//  Note: Les extensions de base (if, hideKeyboard) sont dans Extensions.swift
+//  Note: ShareSheet est dans Shared/Components/ShareSheet.swift
+//  Note: Les extensions if/hideKeyboard sont dans Extensions.swift
 //
 
 import SwiftUI
-
-// MARK: - Screen Modifiers
-// Note: ltScreen() est défini dans Spacing.swift, ces helpers sont EN PLUS
-
-// MARK: - Share Sheet
-struct ShareSheet: UIViewControllerRepresentable {
-    let items: [Any]
-    
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        let controller = UIActivityViewController(activityItems: items, applicationActivities: nil)
-        return controller
-    }
-    
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
-}
 
 // MARK: - Safe Area Insets
 extension View {
