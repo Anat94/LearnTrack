@@ -137,50 +137,103 @@ struct SessionCardView: View {
     let session: Session
     @State private var isPressed = false
     
+    var accentColor: Color {
+        session.modalite == .presentiel ? .emerald500 : .warning
+    }
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: LTSpacing.md) {
-            // Header
-            HStack(alignment: .top) {
-                Text(session.module)
-                    .font(.ltH4)
-                    .foregroundColor(.ltText)
-                    .lineLimit(2)
-                
-                Spacer()
-                
-                LTModaliteBadge(isPresentiel: session.modalite == .presentiel)
-            }
-            
-            // Date & Time
-            HStack(spacing: LTSpacing.lg) {
-                LTIconLabel(
-                    icon: "calendar",
-                    text: session.date.formatted(date: .abbreviated, time: .omitted)
+        HStack(spacing: 0) {
+            // Bande colorée à gauche
+            Rectangle()
+                .fill(
+                    LinearGradient(
+                        colors: [accentColor, accentColor.opacity(0.7)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
                 )
-                LTIconLabel(
-                    icon: "clock",
-                    text: "\(session.debut) - \(session.fin)"
-                )
-            }
+                .frame(width: 4)
             
-            // Formateur
-            if let formateur = session.formateur {
-                LTIconLabel(icon: "person.fill", text: formateur.nomComplet)
+            VStack(alignment: .leading, spacing: LTSpacing.md) {
+                // Header avec badge
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: LTSpacing.xs) {
+                        Text(session.module)
+                            .font(.ltH4)
+                            .foregroundColor(.ltText)
+                            .lineLimit(2)
+                        
+                        // Date & Heure sur une ligne
+                        HStack(spacing: LTSpacing.md) {
+                            HStack(spacing: LTSpacing.xs) {
+                                Image(systemName: "calendar")
+                                    .font(.system(size: LTIconSize.sm))
+                                    .foregroundColor(accentColor)
+                                Text(session.date.formatted(date: .abbreviated, time: .omitted))
+                                    .font(.ltCaption)
+                                    .foregroundColor(.ltTextSecondary)
+                            }
+                            
+                            HStack(spacing: LTSpacing.xs) {
+                                Image(systemName: "clock")
+                                    .font(.system(size: LTIconSize.sm))
+                                    .foregroundColor(accentColor)
+                                Text("\(session.debut) - \(session.fin)")
+                                    .font(.ltCaption)
+                                    .foregroundColor(.ltTextSecondary)
+                            }
+                        }
+                    }
+                    
+                    Spacer()
+                    
+                    LTModaliteBadge(isPresentiel: session.modalite == .presentiel)
+                }
+                
+                Divider()
+                    .background(Color.ltBorder)
+                
+                // Infos intervenants
+                HStack(spacing: LTSpacing.lg) {
+                    if let formateur = session.formateur {
+                        HStack(spacing: LTSpacing.xs) {
+                            LTAvatar(initials: formateur.initiales, size: .xsmall, color: .emerald500)
+                            Text(formateur.nomComplet)
+                                .font(.ltSmall)
+                                .foregroundColor(.ltText)
+                                .lineLimit(1)
+                        }
+                    }
+                    
+                    if let client = session.client {
+                        HStack(spacing: LTSpacing.xs) {
+                            Image(systemName: "building.2.fill")
+                                .font(.system(size: LTIconSize.xs))
+                                .foregroundColor(.info)
+                            Text(client.raisonSociale)
+                                .font(.ltSmall)
+                                .foregroundColor(.ltTextSecondary)
+                                .lineLimit(1)
+                        }
+                    }
+                    
+                    Spacer()
+                    
+                    // Tarif
+                    Text("\(session.tarifClient) €")
+                        .font(.ltCaptionMedium)
+                        .foregroundColor(accentColor)
+                }
             }
-            
-            // Client
-            if let client = session.client {
-                LTIconLabel(icon: "building.2.fill", text: client.raisonSociale, color: .ltTextTertiary)
-            }
+            .padding(LTSpacing.lg)
         }
-        .padding(LTSpacing.lg)
         .background(Color.ltCard)
         .clipShape(RoundedRectangle(cornerRadius: LTRadius.xl))
         .overlay(
             RoundedRectangle(cornerRadius: LTRadius.xl)
-                .stroke(Color.ltBorderSubtle, lineWidth: 1)
+                .stroke(Color.ltBorderSubtle, lineWidth: 0.5)
         )
-        .shadow(color: .black.opacity(0.08), radius: 8, y: 4)
+        .shadow(color: .black.opacity(0.06), radius: 8, y: 4)
         .scaleEffect(isPressed ? 0.98 : 1.0)
         .animation(.ltSpringSubtle, value: isPressed)
         .simultaneousGesture(
