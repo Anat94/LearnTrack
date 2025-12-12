@@ -15,6 +15,11 @@ class SessionViewModel: ObservableObject {
     @Published var searchText = ""
     @Published var selectedMonth: Int = Calendar.current.component(.month, from: Date())
     
+    private let service: APIServiceProtocol
+    
+    init(service: APIServiceProtocol = APIService.shared) {
+        self.service = service
+    }
     
     // Charger toutes les sessions
     func fetchSessions() async {
@@ -22,7 +27,7 @@ class SessionViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            let response: [APISession] = try await APIService.shared.getSessions()
+            let response: [APISession] = try await self.service.getSessions()
             sessions = response.compactMap { self.mapAPISession($0) }
             // Enrichir avec relations (formateur/client/ecole) si possible
             await enrichRelations()
@@ -37,7 +42,7 @@ class SessionViewModel: ObservableObject {
     // Créer une session
     func createSession(_ session: Session) async throws {
         let payload = mapToAPISessionCreate(session)
-        let created = try await APIService.shared.createSession(payload)
+        let created = try await self.service.createSession(payload)
         let id64 = Int64(created.id)
         let extras = SessionExtras(
             modalite: session.modalite == .presentiel ? "P" : "D",
@@ -55,7 +60,7 @@ class SessionViewModel: ObservableObject {
         guard let id64 = session.id else { return }
         let id = Int(id64)
         let payload = mapToAPISessionUpdate(session)
-        _ = try await APIService.shared.updateSession(id: id, payload)
+        _ = try await self.service.updateSession(id: id, payload)
         let extras = SessionExtras(
             modalite: session.modalite == .presentiel ? "P" : "D",
             lieu: session.lieu,
@@ -71,7 +76,7 @@ class SessionViewModel: ObservableObject {
     func deleteSession(_ session: Session) async throws {
         guard let id64 = session.id else { return }
         let id = Int(id64)
-        try await APIService.shared.deleteSession(id: id)
+        try await self.service.deleteSession(id: id)
         await fetchSessions()
     }
     
@@ -143,7 +148,7 @@ class SessionViewModel: ObservableObject {
         await withTaskGroup(of: Void.self) { group in
             for fid in formateurIds {
                 group.addTask {
-                    if let api = try? await APIService.shared.getFormateur(id: Int(fid)) {
+                    if let api = try? await self.service.getFormateur(id: Int(fid)) {
                         await MainActor.run {
                             let f = self.mapAPIFormateur(api)
                             formateurs[fid] = f
@@ -153,7 +158,7 @@ class SessionViewModel: ObservableObject {
             }
             for cid in clientIds {
                 group.addTask {
-                    if let api = try? await APIService.shared.getClient(id: Int(cid)) {
+                    if let api = try? await self.service.getClient(id: Int(cid)) {
                         await MainActor.run {
                             let c = self.mapAPIClient(api)
                             clientsMap[cid] = c
@@ -163,7 +168,7 @@ class SessionViewModel: ObservableObject {
             }
             for eid in ecoleIds {
                 group.addTask {
-                    if let api = try? await APIService.shared.getEcole(id: Int(eid)) {
+                    if let api = try? await self.service.getEcole(id: Int(eid)) {
                         await MainActor.run {
                             let e = self.mapAPIEcole(api)
                             ecoles[eid] = e
@@ -197,7 +202,7 @@ class SessionViewModel: ObservableObject {
             email: api.email,
             telephone: api.telephone ?? "",
             specialite: specialite,
-            tauxHoraire: taux,
+            tarifJournalier: taux,
             exterieur: extras?.exterieur ?? false,
             societe: extras?.societe,
             siret: extras?.siret,

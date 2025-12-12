@@ -2,7 +2,7 @@
 //  FormateursListView.swift
 //  LearnTrack
 //
-//  Liste des formateurs
+//  Liste des formateurs - Design Premium
 //
 
 import SwiftUI
@@ -10,55 +10,30 @@ import SwiftUI
 struct FormateursListView: View {
     @StateObject private var viewModel = FormateurViewModel()
     @State private var showingAddFormateur = false
+    @State private var selectedFilterIndex = 0
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
-                // Barre de recherche
-                SearchBar(text: $viewModel.searchText)
-                    .padding()
+            ZStack {
+                LTGradientBackground()
                 
-                // Filtre type
-                Picker("Type", selection: $viewModel.filterType) {
-                    ForEach(FormateurViewModel.FilterType.allCases, id: \.self) { type in
-                        Text(type.rawValue).tag(type)
-                    }
-                }
-                .pickerStyle(SegmentedPickerStyle())
-                .padding(.horizontal)
-                
-                // Liste
-                if viewModel.isLoading {
-                    Spacer()
-                    ProgressView("Chargement...")
-                    Spacer()
-                } else if viewModel.filteredFormateurs.isEmpty {
-                    EmptyStateView(
-                        icon: "person.2.slash",
-                        title: "Aucun formateur",
-                        message: "Aucun formateur trouvé"
-                    )
-                } else {
-                    List {
-                        ForEach(viewModel.filteredFormateurs) { formateur in
-                            NavigationLink(destination: FormateurDetailView(formateur: formateur)) {
-                                FormateurRowView(formateur: formateur)
-                            }
-                        }
-                    }
-                    .listStyle(PlainListStyle())
-                    .refreshable {
-                        await viewModel.fetchFormateurs()
+                VStack(spacing: 0) {
+                    headerSection
+                    
+                    ScrollView(showsIndicators: false) {
+                        contentSection
                     }
                 }
             }
-            .navigationTitle("Formateurs")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Formateurs")
+                        .font(.ltH3)
+                        .foregroundColor(.ltText)
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingAddFormateur = true }) {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title2)
-                    }
+                    addButton
                 }
             }
             .sheet(isPresented: $showingAddFormateur) {
@@ -67,49 +42,156 @@ struct FormateursListView: View {
             .task {
                 await viewModel.fetchFormateurs()
             }
+            .onChange(of: selectedFilterIndex) { _, newValue in
+                withAnimation(.ltSpringSnappy) {
+                    switch newValue {
+                    case 0: viewModel.filterType = .tous
+                    case 1: viewModel.filterType = .internes
+                    case 2: viewModel.filterType = .externes
+                    default: viewModel.filterType = .tous
+                    }
+                }
+            }
         }
+    }
+    
+    // MARK: - Header
+    private var headerSection: some View {
+        VStack(spacing: LTSpacing.md) {
+            LTSearchBar(text: $viewModel.searchText, placeholder: "Rechercher...")
+                .padding(.horizontal, LTSpacing.lg)
+            
+            LTSegmentedControl(
+                selectedIndex: $selectedFilterIndex,
+                items: ["Tous", "Internes", "Externes"]
+            )
+            .padding(.horizontal, LTSpacing.lg)
+        }
+        .padding(.top, LTSpacing.sm)
+        .padding(.bottom, LTSpacing.md)
+    }
+    
+    // MARK: - Content
+    @ViewBuilder
+    private var contentSection: some View {
+        if viewModel.isLoading {
+            VStack(spacing: LTSpacing.md) {
+                ForEach(0..<4, id: \.self) { index in
+                    LTSkeletonPersonRow()
+                        .ltStaggered(index: index)
+                }
+            }
+            .padding(.horizontal, LTSpacing.lg)
+            .padding(.bottom, 100)
+        } else if viewModel.filteredFormateurs.isEmpty {
+            VStack {
+                Spacer(minLength: 80)
+                LTEmptyState(
+                    icon: "person.2.slash",
+                    title: "Aucun formateur",
+                    message: "Aucun formateur trouvé",
+                    actionTitle: "Ajouter",
+                    action: { showingAddFormateur = true }
+                )
+                Spacer()
+            }
+            .frame(minHeight: 400)
+        } else {
+            formateursList
+        }
+    }
+    
+    // MARK: - Add Button
+    private var addButton: some View {
+        Button {
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            showingAddFormateur = true
+        } label: {
+            ZStack {
+                Circle()
+                    .fill(LinearGradient(colors: [.emerald400, .emerald600], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .frame(width: 36, height: 36)
+                    .shadow(color: .emerald500.opacity(0.4), radius: 8, y: 2)
+                
+                Image(systemName: "plus")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.white)
+            }
+        }
+        .ltScaleOnPress()
+    }
+    
+    // MARK: - List
+    private var formateursList: some View {
+        LazyVStack(spacing: LTSpacing.md) {
+            ForEach(Array(viewModel.filteredFormateurs.enumerated()), id: \.element.id) { index, formateur in
+                NavigationLink(destination: FormateurDetailView(formateur: formateur)) {
+                    FormateurCardView(formateur: formateur)
+                }
+                .buttonStyle(PlainButtonStyle())
+                .ltStaggered(index: index)
+            }
+        }
+        .padding(.horizontal, LTSpacing.lg)
+        .padding(.bottom, 100)
     }
 }
 
-struct FormateurRowView: View {
+// MARK: - Formateur Card
+struct FormateurCardView: View {
     let formateur: Formateur
+    @State private var isPressed = false
     
     var body: some View {
-        HStack(spacing: 12) {
-            // Avatar avec initiales
-            Circle()
-                .fill(formateur.exterieur ? Color.orange.opacity(0.2) : Color.green.opacity(0.2))
-                .frame(width: 50, height: 50)
-                .overlay(
-                    Text(formateur.initiales)
-                        .font(.headline)
-                        .foregroundColor(formateur.exterieur ? .orange : .green)
-                )
+        HStack(spacing: LTSpacing.md) {
+            LTAvatar(
+                initials: formateur.initiales,
+                size: .medium,
+                color: formateur.exterieur ? .warning : .emerald500
+            )
             
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: LTSpacing.xs) {
                 Text(formateur.nomComplet)
-                    .font(.headline)
+                    .font(.ltBodySemibold)
+                    .foregroundColor(.ltText)
                 
-                Text(formateur.specialite)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                Text(formateur.specialite.isEmpty ? formateur.email : formateur.specialite)
+                    .font(.ltCaption)
+                    .foregroundColor(.ltTextSecondary)
                 
-                // Badge type
-                Text(formateur.type)
-                    .font(.caption)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 2)
-                    .background(formateur.exterieur ? Color.orange.opacity(0.2) : Color.green.opacity(0.2))
-                    .foregroundColor(formateur.exterieur ? .orange : .green)
-                    .cornerRadius(4)
+                LTBadge(
+                    text: formateur.exterieur ? "Externe" : "Interne",
+                    color: formateur.exterieur ? .warning : .emerald500,
+                    size: .small
+                )
             }
             
             Spacer()
+            
+            Image(systemName: "chevron.right")
+                .font(.system(size: LTIconSize.sm, weight: .semibold))
+                .foregroundColor(.ltTextTertiary)
         }
-        .padding(.vertical, 4)
+        .padding(LTSpacing.lg)
+        .background(Color.ltCard)
+        .clipShape(RoundedRectangle(cornerRadius: LTRadius.xl))
+        .overlay(
+            RoundedRectangle(cornerRadius: LTRadius.xl)
+                .stroke(Color.ltBorderSubtle, lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.08), radius: 8, y: 4)
+        .scaleEffect(isPressed ? 0.98 : 1.0)
+        .animation(.ltSpringSubtle, value: isPressed)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in isPressed = true }
+                .onEnded { _ in isPressed = false }
+        )
     }
 }
 
 #Preview {
     FormateursListView()
+        .environmentObject(AuthService.shared)
+        .preferredColorScheme(.dark)
 }

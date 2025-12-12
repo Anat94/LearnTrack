@@ -15,6 +15,11 @@ class FormateurViewModel: ObservableObject {
     @Published var searchText = ""
     @Published var filterType: FilterType = .tous
     
+    private let service: APIServiceProtocol
+    
+    init(service: APIServiceProtocol = APIService.shared) {
+        self.service = service
+    }
     
     enum FilterType: String, CaseIterable {
         case tous = "Tous"
@@ -28,7 +33,7 @@ class FormateurViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            let response: [APIFormateur] = try await APIService.shared.getFormateurs()
+            let response: [APIFormateur] = try await self.service.getFormateurs()
             let mapped = response.map { self.mapAPIFormateur($0) }
             formateurs = mapped.sorted { $0.nom.localizedCaseInsensitiveCompare($1.nom) == .orderedAscending }
             isLoading = false
@@ -42,7 +47,7 @@ class FormateurViewModel: ObservableObject {
     // Créer un formateur
     func createFormateur(_ formateur: Formateur) async throws {
         let payload = mapToAPIFormateurCreate(formateur)
-        let created = try await APIService.shared.createFormateur(payload)
+        let created = try await self.service.createFormateur(payload)
         let id64 = Int64(created.id)
         let extras = FormateurExtras(
             exterieur: formateur.exterieur,
@@ -59,7 +64,7 @@ class FormateurViewModel: ObservableObject {
         guard let id64 = formateur.id else { return }
         let id = Int(id64)
         let payload = mapToAPIFormateurUpdate(formateur)
-        _ = try await APIService.shared.updateFormateur(id: id, payload)
+        _ = try await self.service.updateFormateur(id: id, payload)
         let extras = FormateurExtras(
             exterieur: formateur.exterieur,
             societe: formateur.societe,
@@ -74,7 +79,7 @@ class FormateurViewModel: ObservableObject {
     func deleteFormateur(_ formateur: Formateur) async throws {
         guard let id64 = formateur.id else { return }
         let id = Int(id64)
-        try await APIService.shared.deleteFormateur(id: id)
+        try await self.service.deleteFormateur(id: id)
         await fetchFormateurs()
     }
     
@@ -102,7 +107,7 @@ class FormateurViewModel: ObservableObject {
     // Charger les sessions d'un formateur
     func fetchSessionsForFormateur(_ formateurId: Int64) async -> [Session] {
         do {
-            let apiSessions: [APISession] = try await APIService.shared.getFormateurSessions(formateurId: Int(formateurId))
+            let apiSessions: [APISession] = try await self.service.getFormateurSessions(formateurId: Int(formateurId))
             return apiSessions.compactMap { self.mapAPISession($0) }
         } catch {
             print("Erreur chargement sessions: \(error)")
@@ -123,7 +128,7 @@ class FormateurViewModel: ObservableObject {
             email: api.email,
             telephone: api.telephone ?? "",
             specialite: specialite,
-            tauxHoraire: taux,
+            tarifJournalier: taux,
             exterieur: extras?.exterieur ?? false,
             societe: extras?.societe,
             siret: extras?.siret,
@@ -141,7 +146,7 @@ class FormateurViewModel: ObservableObject {
             email: f.email,
             telephone: f.telephone,
             specialites: f.specialite.isEmpty ? nil : [f.specialite],
-            tarifJournalier: NSDecimalNumber(decimal: f.tauxHoraire).doubleValue,
+            tarifJournalier: NSDecimalNumber(decimal: f.tarifJournalier).doubleValue,
             adresse: f.rue,
             ville: f.ville,
             codePostal: f.codePostal,
@@ -156,7 +161,7 @@ class FormateurViewModel: ObservableObject {
             email: f.email,
             telephone: f.telephone,
             specialites: f.specialite.isEmpty ? nil : [f.specialite],
-            tarifJournalier: NSDecimalNumber(decimal: f.tauxHoraire).doubleValue,
+            tarifJournalier: NSDecimalNumber(decimal: f.tarifJournalier).doubleValue,
             adresse: f.rue,
             ville: f.ville,
             codePostal: f.codePostal,

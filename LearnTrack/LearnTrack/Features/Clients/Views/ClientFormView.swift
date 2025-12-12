@@ -2,7 +2,7 @@
 //  ClientFormView.swift
 //  LearnTrack
 //
-//  Formulaire de création/modification de client
+//  Formulaire client - Design SaaS compact
 //
 
 import SwiftUI
@@ -27,62 +27,71 @@ struct ClientFormView: View {
     @State private var showError = false
     @State private var errorMessage = ""
     
-    var isEditing: Bool {
-        clientToEdit != nil
-    }
+    var isEditing: Bool { clientToEdit != nil }
     
     var body: some View {
         NavigationView {
-            Form {
-                Section("Entreprise") {
-                    TextField("Raison sociale", text: $raisonSociale)
-                }
+            ZStack {
+                LTGradientBackground()
                 
-                Section("Contact principal") {
-                    TextField("Nom du contact", text: $nomContact)
-                    
-                    TextField("Email", text: $email)
-                        .keyboardType(.emailAddress)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                    
-                    TextField("Téléphone", text: $telephone)
-                        .keyboardType(.phonePad)
-                }
-                
-                Section("Adresse") {
-                    TextField("Rue", text: $rue)
-                    TextField("Code postal", text: $codePostal)
-                        .keyboardType(.numberPad)
-                    TextField("Ville", text: $ville)
-                }
-                
-                Section("Informations fiscales") {
-                    TextField("SIRET", text: $siret)
-                        .keyboardType(.numberPad)
-                    TextField("N° TVA intracommunautaire", text: $numeroTva)
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: LTSpacing.md) {
+                        // Entreprise
+                        LTFormSection(title: "Entreprise") {
+                            LTFormField(label: "Raison sociale", text: $raisonSociale, placeholder: "Nom de l'entreprise")
+                        }
+                        
+                        // Contact
+                        LTFormSection(title: "Contact principal") {
+                            LTFormField(label: "Nom du contact", text: $nomContact, placeholder: "Prénom Nom")
+                            LTFormField(label: "Email", text: $email, placeholder: "contact@entreprise.com", keyboardType: .emailAddress)
+                            LTFormField(label: "Téléphone", text: $telephone, placeholder: "0123456789", keyboardType: .phonePad)
+                        }
+                        
+                        // Adresse
+                        LTFormSection(title: "Adresse") {
+                            LTFormField(label: "Rue", text: $rue, placeholder: "123 rue de la Paix")
+                            HStack(spacing: LTSpacing.md) {
+                                LTFormField(label: "Code postal", text: $codePostal, placeholder: "75001", keyboardType: .numberPad)
+                                LTFormField(label: "Ville", text: $ville, placeholder: "Paris")
+                            }
+                        }
+                        
+                        // Infos fiscales
+                        LTFormSection(title: "Informations fiscales") {
+                            LTFormField(label: "SIRET", text: $siret, placeholder: "12345678900001", keyboardType: .numberPad)
+                            LTFormField(label: "N° TVA intracommunautaire", text: $numeroTva, placeholder: "FR12345678901")
+                        }
+                        
+                        // Bouton
+                        LTButton(
+                            isEditing ? "Enregistrer" : "Créer",
+                            variant: .primary,
+                            icon: isEditing ? "checkmark" : "plus",
+                            isFullWidth: true,
+                            isLoading: isLoading,
+                            isDisabled: raisonSociale.isEmpty || nomContact.isEmpty
+                        ) {
+                            saveClient()
+                        }
+                        .padding(.top, LTSpacing.md)
+                    }
+                    .padding(.horizontal, LTSpacing.lg)
+                    .padding(.top, LTSpacing.md)
+                    .padding(.bottom, 40)
                 }
             }
             .navigationTitle(isEditing ? "Modifier" : "Nouveau client")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Annuler") {
-                        dismiss()
-                    }
-                }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(isEditing ? "Enregistrer" : "Créer") {
-                        saveClient()
-                    }
-                    .disabled(raisonSociale.isEmpty || nomContact.isEmpty || isLoading)
+                    Button("Annuler") { dismiss() }
+                        .foregroundColor(.ltText)
+                        .font(.ltBody)
                 }
             }
             .onAppear {
-                if let client = clientToEdit {
-                    loadClientData(client)
-                }
+                if let c = clientToEdit { loadData(c) }
             }
             .alert("Erreur", isPresented: $showError) {
                 Button("OK", role: .cancel) { }
@@ -92,16 +101,16 @@ struct ClientFormView: View {
         }
     }
     
-    private func loadClientData(_ client: Client) {
-        raisonSociale = client.raisonSociale
-        nomContact = client.nomContact
-        email = client.email
-        telephone = client.telephone
-        rue = client.rue ?? ""
-        codePostal = client.codePostal ?? ""
-        ville = client.ville ?? ""
-        siret = client.siret ?? ""
-        numeroTva = client.numeroTva ?? ""
+    private func loadData(_ c: Client) {
+        raisonSociale = c.raisonSociale
+        nomContact = c.nomContact
+        email = c.email
+        telephone = c.telephone
+        rue = c.rue ?? ""
+        codePostal = c.codePostal ?? ""
+        ville = c.ville ?? ""
+        siret = c.siret ?? ""
+        numeroTva = c.numeroTva ?? ""
     }
     
     private func saveClient() {
@@ -141,4 +150,5 @@ struct ClientFormView: View {
 
 #Preview {
     ClientFormView(viewModel: ClientViewModel())
+        .preferredColorScheme(.dark)
 }

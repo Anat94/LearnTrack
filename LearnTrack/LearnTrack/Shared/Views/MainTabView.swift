@@ -2,56 +2,58 @@
 //  MainTabView.swift
 //  LearnTrack
 //
-//  Navigation principale avec TabBar
+//  Navigation principale avec TabBar Custom
 //
 
 import SwiftUI
 
 struct MainTabView: View {
     @State private var selectedTab = 0
+    @Environment(\.colorScheme) var colorScheme
+    
+    // Tabs - icônes seulement
+    private let tabs = [
+        LTTabItem(icon: "calendar", selectedIcon: "calendar.badge.clock"),
+        LTTabItem(icon: "person.2", selectedIcon: "person.2.fill"),
+        LTTabItem(icon: "building.2", selectedIcon: "building.2.fill"),
+        LTTabItem(icon: "graduationcap", selectedIcon: "graduationcap.fill"),
+        LTTabItem(icon: "gearshape", selectedIcon: "gearshape.fill")
+    ]
     
     var body: some View {
-        TabView(selection: $selectedTab) {
-            // Sessions
-            SessionsListView()
-                .tabItem {
-                    Label("Sessions", systemImage: "calendar")
-                }
-                .tag(0)
-            
-            // Formateurs
-            FormateursListView()
-                .tabItem {
-                    Label("Formateurs", systemImage: "person.2.fill")
-                }
-                .tag(1)
-            
-            // Clients
-            ClientsListView()
-                .tabItem {
-                    Label("Clients", systemImage: "building.2.fill")
-                }
-                .tag(2)
-            
-            // Écoles
-            EcolesListView()
-                .tabItem {
-                    Label("Écoles", systemImage: "graduationcap.fill")
-                }
-                .tag(3)
-            
-            // Profil
-            ProfileView()
-                .tabItem {
-                    Label("Profil", systemImage: "person.circle.fill")
-                }
-                .tag(4)
+        LTTabView(selectedIndex: $selectedTab, items: tabs) { index in
+            pageForIndex(index)
         }
-        .accentColor(.blue)
+        .ltToasts()
+    }
+    
+    @ViewBuilder
+    private func pageForIndex(_ index: Int) -> some View {
+        switch index {
+        case 0:
+            SessionsListView()
+        case 1:
+            FormateursListView()
+        case 2:
+            ClientsListView()
+        case 3:
+            EcolesListView()
+        case 4:
+            ProfileView()
+        default:
+            SessionsListView()
+        }
     }
 }
 
-#Preview {
+#Preview("Light") {
     MainTabView()
         .environmentObject(AuthService.shared)
+        .preferredColorScheme(.light)
+}
+
+#Preview("Dark") {
+    MainTabView()
+        .environmentObject(AuthService.shared)
+        .preferredColorScheme(.dark)
 }

@@ -14,6 +14,12 @@ class EcoleViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var searchText = ""
     
+    private let service: APIServiceProtocol
+    
+    init(service: APIServiceProtocol = APIService.shared) {
+        self.service = service
+    }
+    
     
     // Charger toutes les écoles
     func fetchEcoles() async {
@@ -21,7 +27,7 @@ class EcoleViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            let response: [APIEcole] = try await APIService.shared.getEcoles()
+            let response: [APIEcole] = try await self.service.getEcoles()
             let mapped = response.map { self.mapAPIEcole($0) }
             ecoles = mapped.sorted { $0.nom.localizedCaseInsensitiveCompare($1.nom) == .orderedAscending }
             isLoading = false
@@ -35,7 +41,7 @@ class EcoleViewModel: ObservableObject {
     // Créer une école
     func createEcole(_ ecole: Ecole) async throws {
         let payload = mapToAPIEcoleCreate(ecole)
-        _ = try await APIService.shared.createEcole(payload)
+        _ = try await self.service.createEcole(payload)
         await fetchEcoles()
     }
     
@@ -44,7 +50,7 @@ class EcoleViewModel: ObservableObject {
         guard let id64 = ecole.id else { return }
         let id = Int(id64)
         let payload = mapToAPIEcoleUpdate(ecole)
-        _ = try await APIService.shared.updateEcole(id: id, payload)
+        _ = try await self.service.updateEcole(id: id, payload)
         await fetchEcoles()
     }
     
@@ -52,7 +58,7 @@ class EcoleViewModel: ObservableObject {
     func deleteEcole(_ ecole: Ecole) async throws {
         guard let id64 = ecole.id else { return }
         let id = Int(id64)
-        try await APIService.shared.deleteEcole(id: id)
+        try await self.service.deleteEcole(id: id)
         await fetchEcoles()
     }
     

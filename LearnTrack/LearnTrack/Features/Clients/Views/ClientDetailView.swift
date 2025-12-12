@@ -2,7 +2,7 @@
 //  ClientDetailView.swift
 //  LearnTrack
 //
-//  Détail d'un client
+//  Détail client - Design SaaS compact
 //
 
 import SwiftUI
@@ -18,173 +18,52 @@ struct ClientDetailView: View {
     @State private var sessions: [Session] = []
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                // En-tête
-                VStack(spacing: 12) {
-                    Circle()
-                        .fill(Color.blue.opacity(0.2))
-                        .frame(width: 100, height: 100)
-                        .overlay(
-                            Text(client.initiales)
-                                .font(.system(size: 36, weight: .bold))
-                                .foregroundColor(.blue)
-                        )
+        ZStack {
+            LTGradientBackground()
+            
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: LTSpacing.md) {
+                    // Header
+                    headerCard
                     
-                    Text(client.raisonSociale)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .multilineTextAlignment(.center)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.top)
-                
-                // Boutons d'action rapide
-                HStack(spacing: 12) {
-                    ActionButton(icon: "phone.fill", title: "Appeler", color: .green) {
-                        ContactService.shared.call(phoneNumber: client.telephone)
+                    // Quick Actions
+                    quickActionsRow
+                    
+                    // Contact
+                    contactCard
+                    
+                    // Adresse
+                    if let adresse = client.adresseComplete {
+                        adresseCard(adresse)
                     }
                     
-                    ActionButton(icon: "envelope.fill", title: "Email", color: .blue) {
-                        ContactService.shared.sendEmail(to: client.email)
-                    }
-                }
-                .padding(.horizontal)
-                
-                Divider()
-                
-                // Contact principal
-                InfoSection(title: "Contact principal", icon: "person.fill") {
-                    Text(client.nomContact)
-                        .font(.headline)
-                        .padding(.bottom, 8)
-                    
-                    ContactRow(icon: "phone", label: "Téléphone", value: client.telephone) {
-                        ContactService.shared.call(phoneNumber: client.telephone)
-                    }
-                    
-                    ContactRow(icon: "envelope", label: "Email", value: client.email) {
-                        ContactService.shared.sendEmail(to: client.email)
-                    }
-                }
-                
-                Divider()
-                
-                // Adresse
-                if let adresse = client.adresseComplete {
-                    InfoSection(title: "Adresse", icon: "mappin.circle.fill") {
-                        Text(adresse)
-                            .font(.body)
-                        
-                        Button(action: {
-                            ContactService.shared.openInMaps(address: adresse)
-                        }) {
-                            Label("Ouvrir dans Plans", systemImage: "map.fill")
-                                .font(.subheadline)
-                                .foregroundColor(.blue)
-                        }
-                        .padding(.top, 4)
-                    }
-                    
-                    Divider()
-                }
-                
-                // Informations fiscales
-                InfoSection(title: "Informations fiscales", icon: "doc.text.fill") {
+                    // Infos fiscales
                     if let siret = client.siret, !siret.isEmpty {
-                        InfoRow(label: "SIRET", value: siret)
+                        infosFiscalesCard(siret: siret, tva: client.numeroTva)
                     }
                     
-                    if let tva = client.numeroTva, !tva.isEmpty {
-                        InfoRow(label: "N° TVA", value: tva)
-                    }
-                }
-                
-                // Statistiques
-                if !sessions.isEmpty {
-                    Divider()
-                    
-                    InfoSection(title: "Statistiques", icon: "chart.bar.fill") {
-                        HStack {
-                            StatCard(
-                                value: "\(sessions.count)",
-                                label: "Sessions",
-                                color: .blue
-                            )
-                            
-                            StatCard(
-                                value: "\(calculateTotalCA()) €",
-                                label: "CA total",
-                                color: .green
-                            )
-                        }
-                    }
-                }
-                
-                // Historique des sessions
-                if !sessions.isEmpty {
-                    Divider()
-                    
-                    VStack(alignment: .leading, spacing: 12) {
-                        Label("Historique des sessions", systemImage: "calendar")
-                            .font(.headline)
-                            .foregroundColor(.blue)
-                        
-                        ForEach(sessions.prefix(5)) { session in
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(session.module)
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                                
-                                HStack {
-                                    Text(session.displayDate)
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                    
-                                    Spacer()
-                                    
-                                    Text("\(session.tarifClient) €")
-                                        .font(.caption)
-                                        .foregroundColor(.green)
-                                }
-                            }
-                            .padding(.vertical, 4)
-                            
-                            if session.id != sessions.prefix(5).last?.id {
-                                Divider()
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
-                }
-                
-                // Boutons d'action
-                VStack(spacing: 12) {
-                    Button(action: { showingEditSheet = true }) {
-                        Label("Modifier", systemImage: "pencil")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.orange)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
+                    // Stats
+                    if !sessions.isEmpty {
+                        statsCard
+                        sessionsCard
                     }
                     
-                    if authService.userRole == .admin {
-                        Button(action: { showingDeleteAlert = true }) {
-                            Label("Supprimer", systemImage: "trash")
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.red)
-                                .foregroundColor(.white)
-                                .cornerRadius(12)
-                        }
-                    }
+                    // Actions
+                    actionsSection
                 }
-                .padding(.horizontal)
-                .padding(.vertical)
+                .padding(.horizontal, LTSpacing.lg)
+                .padding(.top, LTSpacing.md)
+                .padding(.bottom, 100)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Client")
+                    .font(.ltH4)
+                    .foregroundColor(.ltText)
+            }
+        }
         .sheet(isPresented: $showingEditSheet, onDismiss: {
             Task { await refreshClient() }
         }) {
@@ -206,12 +85,180 @@ struct ClientDetailView: View {
         }
     }
     
+    // MARK: - Header Card
+    private var headerCard: some View {
+        LTCard(variant: .accent) {
+            HStack(spacing: LTSpacing.md) {
+                LTAvatar(
+                    initials: client.initiales,
+                    size: .large,
+                    color: .info,
+                    showGradientBorder: true
+                )
+                
+                VStack(alignment: .leading, spacing: LTSpacing.xs) {
+                    Text(client.raisonSociale)
+                        .font(.ltH3)
+                        .foregroundColor(.ltText)
+                        .lineLimit(2)
+                    
+                    if !client.villeDisplay.isEmpty {
+                        HStack(spacing: LTSpacing.xs) {
+                            Image(systemName: "mappin")
+                                .font(.system(size: LTIconSize.xs))
+                            Text(client.villeDisplay)
+                                .font(.ltCaption)
+                        }
+                        .foregroundColor(.ltTextSecondary)
+                    }
+                }
+                
+                Spacer()
+            }
+        }
+    }
+    
+    // MARK: - Quick Actions
+    private var quickActionsRow: some View {
+        HStack(spacing: LTSpacing.sm) {
+            QuickActionCompact(icon: "phone.fill", title: "Appeler", color: .emerald500) {
+                ContactService.shared.call(phoneNumber: client.telephone)
+            }
+            
+            QuickActionCompact(icon: "envelope.fill", title: "Email", color: .warning) {
+                ContactService.shared.sendEmail(to: client.email)
+            }
+        }
+    }
+    
+    // MARK: - Contact Card
+    private var contactCard: some View {
+        LTCard {
+            VStack(alignment: .leading, spacing: LTSpacing.md) {
+                SectionHeader(icon: "person.fill", title: "Contact principal", color: .emerald500)
+                
+                if !client.nomContact.isEmpty {
+                    Text(client.nomContact)
+                        .font(.ltBodySemibold)
+                        .foregroundColor(.ltText)
+                }
+                
+                VStack(spacing: LTSpacing.sm) {
+                    ContactRowCompact(icon: "phone.fill", label: "Téléphone", value: client.telephone, color: .emerald500) {
+                        ContactService.shared.call(phoneNumber: client.telephone)
+                    }
+                    
+                    ContactRowCompact(icon: "envelope.fill", label: "Email", value: client.email, color: .warning) {
+                        ContactService.shared.sendEmail(to: client.email)
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Adresse Card
+    private func adresseCard(_ adresse: String) -> some View {
+        LTCard {
+            VStack(alignment: .leading, spacing: LTSpacing.sm) {
+                SectionHeader(icon: "mappin.circle.fill", title: "Adresse", color: .warning)
+                
+                Text(adresse)
+                    .font(.ltBody)
+                    .foregroundColor(.ltTextSecondary)
+                
+                Button(action: {
+                    ContactService.shared.openInMaps(address: adresse)
+                }) {
+                    HStack(spacing: LTSpacing.xs) {
+                        Image(systemName: "map")
+                        Text("Ouvrir dans Plans")
+                    }
+                    .font(.ltCaption)
+                    .foregroundColor(.emerald500)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Infos Fiscales Card
+    private func infosFiscalesCard(siret: String, tva: String?) -> some View {
+        LTCard {
+            VStack(alignment: .leading, spacing: LTSpacing.md) {
+                SectionHeader(icon: "doc.text.fill", title: "Informations fiscales", color: .ltTextSecondary)
+                
+                VStack(spacing: LTSpacing.sm) {
+                    InfoRowCompact(label: "SIRET", value: siret)
+                    
+                    if let tva = tva, !tva.isEmpty {
+                        InfoRowCompact(label: "N° TVA", value: tva)
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Stats Card
+    private var statsCard: some View {
+        HStack(spacing: LTSpacing.sm) {
+            StatCardCompact(value: "\(sessions.count)", label: "Sessions", color: .emerald500, icon: "calendar")
+            StatCardCompact(value: "\(calculateTotalCA()) €", label: "CA total", color: .warning, icon: "eurosign.circle.fill")
+        }
+    }
+    
+    // MARK: - Sessions Card
+    private var sessionsCard: some View {
+        LTCard {
+            VStack(alignment: .leading, spacing: LTSpacing.md) {
+                SectionHeader(icon: "calendar", title: "Sessions récentes", color: .warning)
+                
+                VStack(spacing: LTSpacing.sm) {
+                    ForEach(sessions.prefix(3)) { session in
+                        HStack {
+                            VStack(alignment: .leading, spacing: LTSpacing.xxs) {
+                                Text(session.module)
+                                    .font(.ltBodyMedium)
+                                    .foregroundColor(.ltText)
+                                    .lineLimit(1)
+                                Text(session.displayDate)
+                                    .font(.ltSmall)
+                                    .foregroundColor(.ltTextSecondary)
+                            }
+                            Spacer()
+                            Text("\(session.tarifClient) €")
+                                .font(.ltBodySemibold)
+                                .foregroundColor(.emerald500)
+                        }
+                        
+                        if session.id != sessions.prefix(3).last?.id {
+                            Divider()
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Actions
+    private var actionsSection: some View {
+        VStack(spacing: LTSpacing.sm) {
+            LTButton("Modifier", variant: .primary, icon: "pencil", isFullWidth: true) {
+                showingEditSheet = true
+            }
+            
+            if authService.userRole == .admin {
+                LTButton("Supprimer", variant: .destructive, icon: "trash", isFullWidth: true) {
+                    showingDeleteAlert = true
+                }
+            }
+        }
+        .padding(.top, LTSpacing.md)
+    }
+    
+    // MARK: - Helpers
     private func calculateTotalCA() -> Decimal {
         sessions.reduce(0) { $0 + $1.tarifClient }
     }
-}
-
-extension ClientDetailView {
+    
     private func refreshClient() async {
         guard let id = client.id else { return }
         do {
@@ -219,6 +266,7 @@ extension ClientDetailView {
             await MainActor.run { self.client = mapAPIClient(api) }
         } catch { print("Erreur refresh client: \(error)") }
     }
+    
     private func mapAPIClient(_ api: APIClient) -> Client {
         let id64 = Int64(api.id)
         let extras = ExtrasStore.shared.getClientExtras(id: id64)
@@ -237,27 +285,42 @@ extension ClientDetailView {
     }
 }
 
-// Carte de statistique
-struct StatCard: View {
+// MARK: - Stat Card Compact
+
+struct StatCardCompact: View {
     let value: String
     let label: String
     let color: Color
+    let icon: String
     
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: LTSpacing.sm) {
+            ZStack {
+                Circle()
+                    .fill(color.opacity(0.1))
+                    .frame(width: 36, height: 36)
+                
+                Image(systemName: icon)
+                    .font(.system(size: LTIconSize.md))
+                    .foregroundColor(color)
+            }
+            
             Text(value)
-                .font(.title)
-                .fontWeight(.bold)
+                .font(.ltH4)
                 .foregroundColor(color)
             
             Text(label)
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(.ltSmall)
+                .foregroundColor(.ltTextSecondary)
         }
         .frame(maxWidth: .infinity)
-        .padding()
-        .background(color.opacity(0.1))
-        .cornerRadius(12)
+        .padding(.vertical, LTSpacing.md)
+        .background(Color.ltCard)
+        .clipShape(RoundedRectangle(cornerRadius: LTRadius.lg))
+        .overlay(
+            RoundedRectangle(cornerRadius: LTRadius.lg)
+                .stroke(Color.ltBorderSubtle, lineWidth: 0.5)
+        )
     }
 }
 
@@ -270,9 +333,10 @@ struct StatCard: View {
             ville: "Paris",
             nomContact: "Marie Martin",
             email: "contact@acme.com",
-            telephone: "01 23 45 67 89",
+            telephone: "0123456789",
             siret: "12345678900001"
         ))
         .environmentObject(AuthService.shared)
     }
+    .preferredColorScheme(.dark)
 }

@@ -2,7 +2,7 @@
 //  LoginView.swift
 //  LearnTrack
 //
-//  Écran de connexion
+//  Écran de connexion - Design Emerald Premium
 //
 
 import SwiftUI
@@ -15,152 +15,238 @@ struct LoginView: View {
     @State private var errorMessage: String?
     @State private var showResetPassword = false
     @State private var showRegister = false
+    @State private var appearAnimation = false
     
     var body: some View {
         NavigationView {
             ZStack {
-                // Gradient de fond
+                // Background gradient
                 LinearGradient(
-                    colors: [Color.blue.opacity(0.6), Color.purple.opacity(0.4)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
+                    colors: [.slate900, .slate950],
+                    startPoint: .top,
+                    endPoint: .bottom
                 )
                 .ignoresSafeArea()
                 
-                VStack(spacing: 30) {
-                    Spacer()
-                    
-                    // Logo et titre
-                    VStack(spacing: 16) {
-                        Image(systemName: "book.circle.fill")
-                            .resizable()
-                            .frame(width: 100, height: 100)
-                            .foregroundColor(.white)
+                // Decorative circles
+                Circle()
+                    .fill(Color.emerald500.opacity(0.15))
+                    .frame(width: 300, height: 300)
+                    .blur(radius: 60)
+                    .offset(x: -100, y: -200)
+                
+                Circle()
+                    .fill(Color.emerald600.opacity(0.1))
+                    .frame(width: 250, height: 250)
+                    .blur(radius: 50)
+                    .offset(x: 150, y: 300)
+                
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: LTSpacing.xxl) {
+                        Spacer(minLength: 60)
                         
-                        Text("LearnTrack")
-                            .font(.system(size: 40, weight: .bold))
-                            .foregroundColor(.white)
+                        // Logo
+                        logoSection
+                            .opacity(appearAnimation ? 1 : 0)
+                            .offset(y: appearAnimation ? 0 : -20)
                         
-                        Text("Gestion de formations")
-                            .font(.subheadline)
-                            .foregroundColor(.white.opacity(0.8))
+                        // Form
+                        formSection
+                            .opacity(appearAnimation ? 1 : 0)
+                            .offset(y: appearAnimation ? 0 : 20)
+                        
+                        // Links
+                        linksSection
+                            .opacity(appearAnimation ? 1 : 0)
+                        
+                        Spacer(minLength: 40)
                     }
-                    
-                    Spacer()
-                    
-                    // Formulaire de connexion
-                    VStack(spacing: 20) {
-                        // Email
-                        VStack(alignment: .leading, spacing: 8) {
-                            Label("Email", systemImage: "envelope")
-                                .foregroundColor(.white)
-                                .font(.subheadline)
-                            
-                            TextField("", text: $email)
-                                .textFieldStyle(CustomTextFieldStyle())
-                                .textInputAutocapitalization(.never)
-                                .keyboardType(.emailAddress)
-                                .autocorrectionDisabled()
-                        }
-                        
-                        // Mot de passe
-                        VStack(alignment: .leading, spacing: 8) {
-                            Label("Mot de passe", systemImage: "lock")
-                                .foregroundColor(.white)
-                                .font(.subheadline)
-                            
-                            SecureField("", text: $password)
-                                .textFieldStyle(CustomTextFieldStyle())
-                        }
-                        
-                        // Message d'erreur
-                        if let errorMessage = errorMessage {
-                            Text(errorMessage)
-                                .font(.caption)
-                                .foregroundColor(.red)
-                                .padding(.horizontal)
-                        }
-                        
-                        // Bouton de connexion
-                        Button(action: handleLogin) {
-                            HStack {
-                                if isLoading {
-                                    ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .blue))
-                                } else {
-                                    Text("Se connecter")
-                                        .fontWeight(.semibold)
-                                }
-                            }
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 50)
-                            .background(Color.white)
-                            .foregroundColor(.blue)
-                            .cornerRadius(12)
-                        }
-                        .disabled(isLoading || email.isEmpty || password.isEmpty)
-                        .opacity((email.isEmpty || password.isEmpty) ? 0.6 : 1.0)
-                        
-                        // Mot de passe oublié
-                        Button("Mot de passe oublié ?") {
-                            showResetPassword = true
-                        }
-                        .font(.subheadline)
-                        .foregroundColor(.white)
-                        
-                        // Bouton inscription
-                        Button("Créer un compte") {
-                            showRegister = true
-                        }
-                        .font(.subheadline)
-                        .foregroundColor(.white)
-                    }
-                    .padding(.horizontal, 32)
-                    
-                    Spacer()
+                    .padding(.horizontal, LTSpacing.lg)
                 }
-                .padding(.vertical, 40)
             }
-            .navigationBarHidden(true)
             .sheet(isPresented: $showResetPassword) {
                 ResetPasswordView()
             }
             .sheet(isPresented: $showRegister) {
                 RegisterView()
-                    .environmentObject(authService)
+            }
+            .onAppear {
+                withAnimation(.ltSpringSmooth.delay(0.2)) {
+                    appearAnimation = true
+                }
             }
         }
     }
     
-    private func handleLogin() {
+    // MARK: - Logo Section
+    private var logoSection: some View {
+        VStack(spacing: LTSpacing.lg) {
+            Image("image")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 100, height: 100)
+                .clipShape(RoundedRectangle(cornerRadius: LTRadius.xl))
+                .shadow(color: .emerald500.opacity(0.4), radius: 20, y: 10)
+            
+            VStack(spacing: LTSpacing.sm) {
+                Text("LearnTrack")
+                    .font(.ltH1)
+                    .foregroundColor(.white)
+                
+                Text("Gestion de formations")
+                    .font(.ltCaption)
+                    .foregroundColor(.slate400)
+            }
+        }
+    }
+    
+    // MARK: - Form Section
+    private var formSection: some View {
+        VStack(spacing: LTSpacing.xl) {
+            // Email field
+            VStack(alignment: .leading, spacing: LTSpacing.sm) {
+                Text("Email")
+                    .font(.ltLabel)
+                    .foregroundColor(.slate300)
+                
+                HStack(spacing: LTSpacing.md) {
+                    Image(systemName: "envelope.fill")
+                        .font(.system(size: LTIconSize.md))
+                        .foregroundColor(.slate400)
+                    
+                    TextField("nom@domaine.com", text: $email)
+                        .font(.ltBody)
+                        .foregroundColor(.white)
+                        .keyboardType(.emailAddress)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                }
+                .padding(.horizontal, LTSpacing.lg)
+                .frame(height: LTHeight.inputLarge)
+                .background(Color.slate800.opacity(0.5))
+                .clipShape(RoundedRectangle(cornerRadius: LTRadius.lg))
+                .overlay(
+                    RoundedRectangle(cornerRadius: LTRadius.lg)
+                        .stroke(Color.slate700, lineWidth: 1)
+                )
+            }
+            
+            // Password field
+            VStack(alignment: .leading, spacing: LTSpacing.sm) {
+                Text("Mot de passe")
+                    .font(.ltLabel)
+                    .foregroundColor(.slate300)
+                
+                HStack(spacing: LTSpacing.md) {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: LTIconSize.md))
+                        .foregroundColor(.slate400)
+                    
+                    SecureField("••••••••", text: $password)
+                        .font(.ltBody)
+                        .foregroundColor(.white)
+                }
+                .padding(.horizontal, LTSpacing.lg)
+                .frame(height: LTHeight.inputLarge)
+                .background(Color.slate800.opacity(0.5))
+                .clipShape(RoundedRectangle(cornerRadius: LTRadius.lg))
+                .overlay(
+                    RoundedRectangle(cornerRadius: LTRadius.lg)
+                        .stroke(Color.slate700, lineWidth: 1)
+                )
+            }
+            
+            // Error message
+            if let errorMessage = errorMessage {
+                HStack(spacing: LTSpacing.sm) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.error)
+                    Text(errorMessage)
+                        .font(.ltCaption)
+                        .foregroundColor(.error)
+                }
+                .padding(LTSpacing.md)
+                .background(Color.error.opacity(0.1))
+                .clipShape(RoundedRectangle(cornerRadius: LTRadius.md))
+            }
+            
+            // Login button
+            LTButton(
+                "Se connecter",
+                variant: .primary,
+                size: .large,
+                icon: "arrow.right",
+                isFullWidth: true,
+                isLoading: isLoading
+            ) {
+                login()
+            }
+        }
+        .padding(LTSpacing.xl)
+        .background(
+            RoundedRectangle(cornerRadius: LTRadius.xxl)
+                .fill(Color.slate900.opacity(0.8))
+                .overlay(
+                    RoundedRectangle(cornerRadius: LTRadius.xxl)
+                        .stroke(
+                            LinearGradient(
+                                colors: [.white.opacity(0.1), .clear],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                )
+        )
+    }
+    
+    // MARK: - Links Section
+    private var linksSection: some View {
+        VStack(spacing: LTSpacing.lg) {
+            Button(action: { showResetPassword = true }) {
+                Text("Mot de passe oublié ?")
+                    .font(.ltCaptionMedium)
+                    .foregroundColor(.emerald400)
+            }
+            
+            HStack(spacing: LTSpacing.xs) {
+                Text("Pas encore de compte ?")
+                    .font(.ltCaption)
+                    .foregroundColor(.slate400)
+                
+                Button(action: { showRegister = true }) {
+                    Text("S'inscrire")
+                        .font(.ltCaptionMedium)
+                        .foregroundColor(.emerald400)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Login
+    private func login() {
         errorMessage = nil
+        
+        guard !email.isEmpty, !password.isEmpty else {
+            errorMessage = "Veuillez remplir tous les champs"
+            return
+        }
+        
         isLoading = true
         
         Task {
             do {
                 try await authService.signIn(email: email, password: password)
             } catch {
-                await MainActor.run {
-                    errorMessage = "Email ou mot de passe incorrect"
-                    isLoading = false
-                }
+                errorMessage = "Email ou mot de passe incorrect"
             }
+            isLoading = false
         }
-    }
-}
-
-// Style personnalisé pour les champs de texte
-struct CustomTextFieldStyle: TextFieldStyle {
-    func _body(configuration: TextField<Self._Label>) -> some View {
-        configuration
-            .padding()
-            .background(Color.white.opacity(0.9))
-            .cornerRadius(10)
-            .foregroundColor(.black)
     }
 }
 
 #Preview {
     LoginView()
         .environmentObject(AuthService.shared)
+        .preferredColorScheme(.dark)
 }

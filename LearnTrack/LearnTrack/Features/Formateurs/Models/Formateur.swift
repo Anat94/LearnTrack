@@ -14,7 +14,7 @@ struct Formateur: Codable, Identifiable {
     var email: String
     var telephone: String
     var specialite: String
-    var tauxHoraire: Decimal
+    var tarifJournalier: Decimal
     var exterieur: Bool
     var societe: String?
     var siret: String?
@@ -30,7 +30,7 @@ struct Formateur: Codable, Identifiable {
         case email
         case telephone
         case specialite
-        case tauxHoraire = "taux_horaire"
+        case tarifJournalier = "tarif_journalier"
         case exterieur
         case societe
         case siret
@@ -72,7 +72,7 @@ struct Formateur: Codable, Identifiable {
         email: String = "",
         telephone: String = "",
         specialite: String = "",
-        tauxHoraire: Decimal = 0,
+        tarifJournalier: Decimal = 0,
         exterieur: Bool = false,
         societe: String? = nil,
         siret: String? = nil,
@@ -87,7 +87,7 @@ struct Formateur: Codable, Identifiable {
         self.email = email
         self.telephone = telephone
         self.specialite = specialite
-        self.tauxHoraire = tauxHoraire
+        self.tarifJournalier = tarifJournalier
         self.exterieur = exterieur
         self.societe = societe
         self.siret = siret

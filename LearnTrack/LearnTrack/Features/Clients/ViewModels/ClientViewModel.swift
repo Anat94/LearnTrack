@@ -14,6 +14,12 @@ class ClientViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var searchText = ""
     
+    private let service: APIServiceProtocol
+    
+    init(service: APIServiceProtocol = APIService.shared) {
+        self.service = service
+    }
+    
     
     // Charger tous les clients
     func fetchClients() async {
@@ -21,7 +27,7 @@ class ClientViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            let response: [APIClient] = try await APIService.shared.getClients()
+            let response: [APIClient] = try await self.service.getClients()
             let mapped = response.map { self.mapAPIClient($0) }
             // Sort by raisonSociale ascending to keep UX similar
             clients = mapped.sorted { $0.raisonSociale.localizedCaseInsensitiveCompare($1.raisonSociale) == .orderedAscending }
@@ -36,7 +42,7 @@ class ClientViewModel: ObservableObject {
     // Créer un client
     func createClient(_ client: Client) async throws {
         let payload = mapToAPIClientCreate(client)
-        let created = try await APIService.shared.createClient(payload)
+        let created = try await self.service.createClient(payload)
         let id64 = Int64(created.id)
         ExtrasStore.shared.setClientExtras(id: id64, ClientExtras(numeroTva: client.numeroTva))
         await fetchClients()
@@ -47,7 +53,7 @@ class ClientViewModel: ObservableObject {
         guard let id64 = client.id else { return }
         let id = Int(id64)
         let payload = mapToAPIClientUpdate(client)
-        _ = try await APIService.shared.updateClient(id: id, payload)
+        _ = try await self.service.updateClient(id: id, payload)
         ExtrasStore.shared.setClientExtras(id: id64, ClientExtras(numeroTva: client.numeroTva))
         await fetchClients()
     }
@@ -56,7 +62,7 @@ class ClientViewModel: ObservableObject {
     func deleteClient(_ client: Client) async throws {
         guard let id64 = client.id else { return }
         let id = Int(id64)
-        try await APIService.shared.deleteClient(id: id)
+        try await self.service.deleteClient(id: id)
         await fetchClients()
     }
     
@@ -73,7 +79,7 @@ class ClientViewModel: ObservableObject {
     // Charger les sessions d'un client
     func fetchSessionsForClient(_ clientId: Int64) async -> [Session] {
         do {
-            let apiSessions: [APISession] = try await APIService.shared.getClientSessions(clientId: Int(clientId))
+            let apiSessions: [APISession] = try await self.service.getClientSessions(clientId: Int(clientId))
             return apiSessions.compactMap { self.mapAPISession($0) }
         } catch {
             print("Erreur chargement sessions: \(error)")

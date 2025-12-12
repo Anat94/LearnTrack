@@ -2,7 +2,7 @@
 //  EcoleFormView.swift
 //  LearnTrack
 //
-//  Formulaire de création/modification d'école
+//  Formulaire école - Design SaaS compact
 //
 
 import SwiftUI
@@ -25,56 +25,65 @@ struct EcoleFormView: View {
     @State private var showError = false
     @State private var errorMessage = ""
     
-    var isEditing: Bool {
-        ecoleToEdit != nil
-    }
+    var isEditing: Bool { ecoleToEdit != nil }
     
     var body: some View {
         NavigationView {
-            Form {
-                Section("Établissement") {
-                    TextField("Nom de l'école", text: $nom)
-                }
+            ZStack {
+                LTGradientBackground()
                 
-                Section("Contact") {
-                    TextField("Nom du contact", text: $nomContact)
-                    
-                    TextField("Email", text: $email)
-                        .keyboardType(.emailAddress)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                    
-                    TextField("Téléphone", text: $telephone)
-                        .keyboardType(.phonePad)
-                }
-                
-                Section("Adresse") {
-                    TextField("Rue", text: $rue)
-                    TextField("Code postal", text: $codePostal)
-                        .keyboardType(.numberPad)
-                    TextField("Ville", text: $ville)
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: LTSpacing.md) {
+                        // Établissement
+                        LTFormSection(title: "Établissement") {
+                            LTFormField(label: "Nom de l'école", text: $nom, placeholder: "Nom de l'établissement")
+                        }
+                        
+                        // Contact
+                        LTFormSection(title: "Contact") {
+                            LTFormField(label: "Nom du contact", text: $nomContact, placeholder: "Prénom Nom")
+                            LTFormField(label: "Email", text: $email, placeholder: "contact@ecole.com", keyboardType: .emailAddress)
+                            LTFormField(label: "Téléphone", text: $telephone, placeholder: "0123456789", keyboardType: .phonePad)
+                        }
+                        
+                        // Adresse
+                        LTFormSection(title: "Adresse") {
+                            LTFormField(label: "Rue", text: $rue, placeholder: "123 rue de la Paix")
+                            HStack(spacing: LTSpacing.md) {
+                                LTFormField(label: "Code postal", text: $codePostal, placeholder: "75001", keyboardType: .numberPad)
+                                LTFormField(label: "Ville", text: $ville, placeholder: "Paris")
+                            }
+                        }
+                        
+                        // Bouton
+                        LTButton(
+                            isEditing ? "Enregistrer" : "Créer",
+                            variant: .primary,
+                            icon: isEditing ? "checkmark" : "plus",
+                            isFullWidth: true,
+                            isLoading: isLoading,
+                            isDisabled: nom.isEmpty || nomContact.isEmpty
+                        ) {
+                            saveEcole()
+                        }
+                        .padding(.top, LTSpacing.md)
+                    }
+                    .padding(.horizontal, LTSpacing.lg)
+                    .padding(.top, LTSpacing.md)
+                    .padding(.bottom, 40)
                 }
             }
             .navigationTitle(isEditing ? "Modifier" : "Nouvelle école")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Annuler") {
-                        dismiss()
-                    }
-                }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(isEditing ? "Enregistrer" : "Créer") {
-                        saveEcole()
-                    }
-                    .disabled(nom.isEmpty || nomContact.isEmpty || isLoading)
+                    Button("Annuler") { dismiss() }
+                        .foregroundColor(.ltText)
+                        .font(.ltBody)
                 }
             }
             .onAppear {
-                if let ecole = ecoleToEdit {
-                    loadEcoleData(ecole)
-                }
+                if let e = ecoleToEdit { loadData(e) }
             }
             .alert("Erreur", isPresented: $showError) {
                 Button("OK", role: .cancel) { }
@@ -84,14 +93,14 @@ struct EcoleFormView: View {
         }
     }
     
-    private func loadEcoleData(_ ecole: Ecole) {
-        nom = ecole.nom
-        nomContact = ecole.nomContact
-        email = ecole.email
-        telephone = ecole.telephone
-        rue = ecole.rue ?? ""
-        codePostal = ecole.codePostal ?? ""
-        ville = ecole.ville ?? ""
+    private func loadData(_ e: Ecole) {
+        nom = e.nom
+        nomContact = e.nomContact
+        email = e.email
+        telephone = e.telephone
+        rue = e.rue ?? ""
+        codePostal = e.codePostal ?? ""
+        ville = e.ville ?? ""
     }
     
     private func saveEcole() {
@@ -129,4 +138,5 @@ struct EcoleFormView: View {
 
 #Preview {
     EcoleFormView(viewModel: EcoleViewModel())
+        .preferredColorScheme(.dark)
 }

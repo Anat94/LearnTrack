@@ -2,7 +2,7 @@
 //  EcolesListView.swift
 //  LearnTrack
 //
-//  Liste des écoles
+//  Liste des écoles - Design Premium
 //
 
 import SwiftUI
@@ -13,43 +13,30 @@ struct EcolesListView: View {
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
-                // Barre de recherche
-                SearchBar(text: $viewModel.searchText)
-                    .padding()
+            ZStack {
+                LTGradientBackground()
                 
-                // Liste
-                if viewModel.isLoading {
-                    Spacer()
-                    ProgressView("Chargement...")
-                    Spacer()
-                } else if viewModel.filteredEcoles.isEmpty {
-                    EmptyStateView(
-                        icon: "graduationcap.circle",
-                        title: "Aucune école",
-                        message: "Aucune école trouvée"
-                    )
-                } else {
-                    List {
-                        ForEach(viewModel.filteredEcoles) { ecole in
-                            NavigationLink(destination: EcoleDetailView(ecole: ecole)) {
-                                EcoleRowView(ecole: ecole)
-                            }
-                        }
-                    }
-                    .listStyle(PlainListStyle())
-                    .refreshable {
-                        await viewModel.fetchEcoles()
+                VStack(spacing: 0) {
+                    // Search
+                    LTSearchBar(text: $viewModel.searchText, placeholder: "Rechercher...")
+                        .padding(.horizontal, LTSpacing.lg)
+                        .padding(.vertical, LTSpacing.md)
+                    
+                    // Content
+                    ScrollView(showsIndicators: false) {
+                        contentSection
                     }
                 }
             }
-            .navigationTitle("Écoles")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Écoles")
+                        .font(.ltH3)
+                        .foregroundColor(.ltText)
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingAddEcole = true }) {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title2)
-                    }
+                    addButton
                 }
             }
             .sheet(isPresented: $showingAddEcole) {
@@ -60,42 +47,134 @@ struct EcolesListView: View {
             }
         }
     }
+    
+    // MARK: - Add Button
+    private var addButton: some View {
+        Button {
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            showingAddEcole = true
+        } label: {
+            ZStack {
+                Circle()
+                    .fill(LinearGradient(colors: [.emerald400, .emerald600], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .frame(width: 36, height: 36)
+                    .shadow(color: .emerald500.opacity(0.4), radius: 8, y: 2)
+                
+                Image(systemName: "plus")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.white)
+            }
+        }
+        .ltScaleOnPress()
+    }
+    
+    // MARK: - Content
+    @ViewBuilder
+    private var contentSection: some View {
+        if viewModel.isLoading {
+            VStack(spacing: LTSpacing.md) {
+                ForEach(0..<4, id: \.self) { index in
+                    LTSkeletonCard()
+                        .ltStaggered(index: index)
+                }
+            }
+            .padding(.horizontal, LTSpacing.lg)
+            .padding(.bottom, 100)
+        } else if viewModel.filteredEcoles.isEmpty {
+            VStack {
+                Spacer(minLength: 80)
+                LTEmptyState(
+                    icon: "graduationcap",
+                    title: "Aucune école",
+                    message: "Aucune école trouvée",
+                    actionTitle: "Ajouter",
+                    action: { showingAddEcole = true }
+                )
+                Spacer()
+            }
+            .frame(minHeight: 400)
+        } else {
+            ecolesList
+        }
+    }
+    
+    // MARK: - List
+    private var ecolesList: some View {
+        LazyVStack(spacing: LTSpacing.md) {
+            ForEach(Array(viewModel.filteredEcoles.enumerated()), id: \.element.id) { index, ecole in
+                NavigationLink(destination: EcoleDetailView(ecole: ecole)) {
+                    EcoleCardView(ecole: ecole)
+                }
+                .buttonStyle(PlainButtonStyle())
+                .ltStaggered(index: index)
+            }
+        }
+        .padding(.horizontal, LTSpacing.lg)
+        .padding(.bottom, 100)
+    }
 }
 
-struct EcoleRowView: View {
+// MARK: - Ecole Card
+struct EcoleCardView: View {
     let ecole: Ecole
+    @State private var isPressed = false
     
     var body: some View {
-        HStack(spacing: 12) {
-            // Avatar avec initiales
-            Circle()
-                .fill(Color.purple.opacity(0.2))
-                .frame(width: 50, height: 50)
-                .overlay(
-                    Text(ecole.initiales)
-                        .font(.headline)
-                        .foregroundColor(.purple)
-                )
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(ecole.nom)
-                    .font(.headline)
+        HStack(spacing: LTSpacing.md) {
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [.emerald500.opacity(0.2), .emerald600.opacity(0.1)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: LTHeight.avatarMedium, height: LTHeight.avatarMedium)
                 
-                HStack(spacing: 4) {
-                    Image(systemName: "mappin.circle")
-                        .font(.caption)
-                    Text(ecole.villeDisplay)
-                        .font(.subheadline)
+                Image(systemName: "graduationcap.fill")
+                    .font(.system(size: LTIconSize.lg))
+                    .foregroundColor(.emerald500)
+            }
+            
+            VStack(alignment: .leading, spacing: LTSpacing.xs) {
+                Text(ecole.nom)
+                    .font(.ltBodySemibold)
+                    .foregroundColor(.ltText)
+                
+                if let ville = ecole.ville, !ville.isEmpty {
+                    Text(ville)
+                        .font(.ltCaption)
+                        .foregroundColor(.ltTextSecondary)
                 }
-                .foregroundColor(.secondary)
             }
             
             Spacer()
+            
+            Image(systemName: "chevron.right")
+                .font(.system(size: LTIconSize.sm, weight: .semibold))
+                .foregroundColor(.ltTextTertiary)
         }
-        .padding(.vertical, 4)
+        .padding(LTSpacing.lg)
+        .background(Color.ltCard)
+        .clipShape(RoundedRectangle(cornerRadius: LTRadius.xl))
+        .overlay(
+            RoundedRectangle(cornerRadius: LTRadius.xl)
+                .stroke(Color.ltBorderSubtle, lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.08), radius: 8, y: 4)
+        .scaleEffect(isPressed ? 0.98 : 1.0)
+        .animation(.ltSpringSubtle, value: isPressed)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in isPressed = true }
+                .onEnded { _ in isPressed = false }
+        )
     }
 }
 
 #Preview {
     EcolesListView()
+        .environmentObject(AuthService.shared)
+        .preferredColorScheme(.dark)
 }

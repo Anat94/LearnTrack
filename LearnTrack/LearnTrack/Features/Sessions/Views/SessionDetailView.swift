@@ -2,7 +2,7 @@
 //  SessionDetailView.swift
 //  LearnTrack
 //
-//  Détail d'une session
+//  Détail session - Design SaaS compact
 //
 
 import SwiftUI
@@ -16,185 +16,49 @@ struct SessionDetailView: View {
     @State private var showingShareSheet = false
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                // En-tête avec module
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(session.module)
-                        .font(.title2)
-                        .fontWeight(.bold)
+        ZStack {
+            LTGradientBackground()
+            
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: LTSpacing.md) {
+                    // Header Card
+                    headerCard
                     
-                    HStack {
-                        // Badge modalité
-                        HStack(spacing: 4) {
-                            Image(systemName: session.modalite.icon)
-                            Text(session.modalite.label)
-                                .fontWeight(.medium)
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(session.modalite == .presentiel ? Color.blue.opacity(0.2) : Color.green.opacity(0.2))
-                        .foregroundColor(session.modalite == .presentiel ? .blue : .green)
-                        .cornerRadius(10)
+                    // Date & Horaires
+                    dateTimeCard
+                    
+                    // Lieu
+                    if session.modalite == .presentiel && !session.lieu.isEmpty {
+                        lieuCard
                     }
+                    
+                    // Intervenants
+                    intervenantsCard
+                    
+                    // Tarifs
+                    tarifsCard
+                    
+                    // Référence contrat
+                    if let refContrat = session.refContrat, !refContrat.isEmpty {
+                        refContratCard(refContrat)
+                    }
+                    
+                    // Actions
+                    actionsSection
                 }
-                .padding(.horizontal)
-                .padding(.top)
-                
-                Divider()
-                
-                // Date et horaires
-                InfoSection(title: "Date et horaires", icon: "calendar") {
-                    InfoRow(label: "Date", value: session.displayDate)
-                    InfoRow(label: "Début", value: session.debut)
-                    InfoRow(label: "Fin", value: session.fin)
-                }
-                
-                Divider()
-                
-                // Lieu
-                InfoSection(title: "Lieu", icon: "mappin.circle.fill") {
-                    Text(session.lieu)
-                        .font(.body)
-                    
-                    if session.modalite == .presentiel,
-                       !session.lieu.isEmpty,
-                       session.lieu != "À distance" {
-                        Button(action: {
-                            ContactService.shared.openInMaps(address: session.lieu)
-                        }) {
-                            Label("Ouvrir dans Plans", systemImage: "map.fill")
-                                .font(.subheadline)
-                                .foregroundColor(.blue)
-                        }
-                        .padding(.top, 4)
-                    }
-                }
-                
-                Divider()
-                
-                // Intervenants
-                InfoSection(title: "Intervenants", icon: "person.3.fill") {
-                    if let formateur = session.formateur {
-                        NavigationLink(destination: Text("Détail formateur")) {
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text("Formateur")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                    Text(formateur.nomComplet)
-                                        .font(.body)
-                                }
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.secondary)
-                                    .font(.caption)
-                            }
-                        }
-                    }
-                    
-                    if let client = session.client {
-                        NavigationLink(destination: Text("Détail client")) {
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text("Client")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                    Text(client.raisonSociale)
-                                        .font(.body)
-                                }
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.secondary)
-                                    .font(.caption)
-                            }
-                        }
-                    }
-                    
-                    if let ecole = session.ecole {
-                        NavigationLink(destination: Text("Détail école")) {
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text("École")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                    Text(ecole.nom)
-                                        .font(.body)
-                                }
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.secondary)
-                                    .font(.caption)
-                            }
-                        }
-                    }
-                }
-                
-                Divider()
-                
-                // Tarifs
-                InfoSection(title: "Tarifs", icon: "eurosign.circle.fill") {
-                    InfoRow(label: "Tarif client", value: "\(session.tarifClient) €")
-                    InfoRow(label: "Tarif sous-traitant", value: "\(session.tarifSousTraitant) €")
-                    InfoRow(label: "Frais à rembourser", value: "\(session.fraisRembourser) €")
-                    
-                    Divider()
-                        .padding(.vertical, 8)
-                    
-                    HStack {
-                        Text("Marge")
-                            .font(.headline)
-                        Spacer()
-                        Text("\(session.marge) €")
-                            .font(.headline)
-                            .foregroundColor(session.marge >= 0 ? .green : .red)
-                    }
-                }
-                
-                // Référence contrat
-                if let refContrat = session.refContrat, !refContrat.isEmpty {
-                    Divider()
-                    
-                    InfoSection(title: "Référence", icon: "doc.text.fill") {
-                        Text(refContrat)
-                            .font(.body)
-                    }
-                }
-                
-                // Boutons d'action
-                VStack(spacing: 12) {
-                    Button(action: { showingShareSheet = true }) {
-                        Label("Partager la session", systemImage: "square.and.arrow.up")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
-                    }
-                    
-                    Button(action: { showingEditSheet = true }) {
-                        Label("Modifier", systemImage: "pencil")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.orange)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
-                    }
-                    
-                    Button(action: { showingDeleteAlert = true }) {
-                        Label("Supprimer", systemImage: "trash")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.red)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.vertical)
+                .padding(.horizontal, LTSpacing.lg)
+                .padding(.top, LTSpacing.md)
+                .padding(.bottom, 100)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Session")
+                    .font(.ltH4)
+                    .foregroundColor(.ltText)
+            }
+        }
         .sheet(isPresented: $showingEditSheet) {
             SessionFormView(viewModel: viewModel, sessionToEdit: session)
         }
@@ -213,40 +77,273 @@ struct SessionDetailView: View {
             Text("Cette action est irréversible.")
         }
     }
-}
-
-// Section d'informations
-struct InfoSection<Content: View>: View {
-    let title: String
-    let icon: String
-    @ViewBuilder let content: Content
     
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Label(title, systemImage: icon)
-                .font(.headline)
-                .foregroundColor(.blue)
-            
-            content
+    // MARK: - Header Card
+    private var headerCard: some View {
+        LTCard(variant: .accent) {
+            VStack(spacing: LTSpacing.sm) {
+                HStack {
+                    Text(session.module)
+                        .font(.ltH3)
+                        .foregroundColor(.ltText)
+                        .lineLimit(3)
+                    
+                    Spacer()
+                }
+                
+                HStack {
+                    LTModaliteBadge(isPresentiel: session.modalite == .presentiel)
+                    Spacer()
+                }
+            }
         }
-        .padding(.horizontal)
+    }
+    
+    // MARK: - Date & Time Card
+    private var dateTimeCard: some View {
+        LTCard {
+            HStack(spacing: LTSpacing.xl) {
+                // Date
+                HStack(spacing: LTSpacing.sm) {
+                    Image(systemName: "calendar")
+                        .font(.system(size: LTIconSize.md))
+                        .foregroundColor(.emerald500)
+                    
+                    VStack(alignment: .leading, spacing: LTSpacing.xxs) {
+                        Text("Date")
+                            .font(.ltSmall)
+                            .foregroundColor(.ltTextSecondary)
+                        Text(session.displayDate)
+                            .font(.ltBodySemibold)
+                            .foregroundColor(.ltText)
+                    }
+                }
+                
+                Divider().frame(height: 36)
+                
+                // Horaires
+                HStack(spacing: LTSpacing.sm) {
+                    Image(systemName: "clock")
+                        .font(.system(size: LTIconSize.md))
+                        .foregroundColor(.warning)
+                    
+                    VStack(alignment: .leading, spacing: LTSpacing.xxs) {
+                        Text("Horaires")
+                            .font(.ltSmall)
+                            .foregroundColor(.ltTextSecondary)
+                        Text("\(session.debut) - \(session.fin)")
+                            .font(.ltBodySemibold)
+                            .foregroundColor(.ltText)
+                    }
+                }
+                
+                Spacer()
+            }
+        }
+    }
+    
+    // MARK: - Lieu Card
+    private var lieuCard: some View {
+        LTCard {
+            VStack(alignment: .leading, spacing: LTSpacing.sm) {
+                HStack(spacing: LTSpacing.sm) {
+                    Image(systemName: "mappin.circle.fill")
+                        .font(.system(size: LTIconSize.md))
+                        .foregroundColor(.emerald500)
+                    
+                    Text("Lieu")
+                        .font(.ltBodySemibold)
+                        .foregroundColor(.ltText)
+                }
+                
+                Text(session.lieu)
+                    .font(.ltBody)
+                    .foregroundColor(.ltTextSecondary)
+                
+                Button(action: {
+                    ContactService.shared.openInMaps(address: session.lieu)
+                }) {
+                    HStack(spacing: LTSpacing.xs) {
+                        Image(systemName: "map")
+                        Text("Ouvrir dans Plans")
+                    }
+                    .font(.ltCaption)
+                    .foregroundColor(.emerald500)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Intervenants Card
+    private var intervenantsCard: some View {
+        LTCard {
+            VStack(alignment: .leading, spacing: LTSpacing.md) {
+                HStack(spacing: LTSpacing.sm) {
+                    Image(systemName: "person.3.fill")
+                        .font(.system(size: LTIconSize.md))
+                        .foregroundColor(.warning)
+                    
+                    Text("Intervenants")
+                        .font(.ltBodySemibold)
+                        .foregroundColor(.ltText)
+                }
+                
+                VStack(spacing: LTSpacing.sm) {
+                    if let formateur = session.formateur {
+                        NavigationLink(destination: FormateurDetailView(formateur: formateur)) {
+                            IntervenantRowCompact(label: "Formateur", name: formateur.nomComplet, color: .emerald500)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                    
+                    if let client = session.client {
+                        NavigationLink(destination: ClientDetailView(client: client)) {
+                            IntervenantRowCompact(label: "Client", name: client.raisonSociale, color: .info)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                    
+                    if let ecole = session.ecole {
+                        NavigationLink(destination: EcoleDetailView(ecole: ecole)) {
+                            IntervenantRowCompact(label: "École", name: ecole.nom, color: .warning)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Tarifs Card
+    private var tarifsCard: some View {
+        LTCard {
+            VStack(alignment: .leading, spacing: LTSpacing.md) {
+                HStack(spacing: LTSpacing.sm) {
+                    Image(systemName: "eurosign.circle.fill")
+                        .font(.system(size: LTIconSize.md))
+                        .foregroundColor(.emerald500)
+                    
+                    Text("Tarifs")
+                        .font(.ltBodySemibold)
+                        .foregroundColor(.ltText)
+                }
+                
+                VStack(spacing: LTSpacing.sm) {
+                    TarifRowCompact(label: "Tarif client", value: "\(session.tarifClient) €")
+                    TarifRowCompact(label: "Tarif sous-traitant", value: "\(session.tarifSousTraitant) €")
+                    TarifRowCompact(label: "Frais à rembourser", value: "\(session.fraisRembourser) €")
+                    
+                    Divider()
+                    
+                    HStack {
+                        Text("Marge")
+                            .font(.ltBodySemibold)
+                            .foregroundColor(.ltText)
+                        Spacer()
+                        Text("\(session.marge) €")
+                            .font(.ltH4)
+                            .foregroundColor(session.marge >= 0 ? .emerald500 : .error)
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Ref Contrat Card
+    private func refContratCard(_ ref: String) -> some View {
+        LTCard {
+            HStack(spacing: LTSpacing.sm) {
+                Image(systemName: "doc.text.fill")
+                    .font(.system(size: LTIconSize.md))
+                    .foregroundColor(.ltTextSecondary)
+                
+                VStack(alignment: .leading, spacing: LTSpacing.xxs) {
+                    Text("Référence contrat")
+                        .font(.ltSmall)
+                        .foregroundColor(.ltTextSecondary)
+                    Text(ref)
+                        .font(.ltBodyMedium)
+                        .foregroundColor(.ltText)
+                }
+                
+                Spacer()
+            }
+        }
+    }
+    
+    // MARK: - Actions
+    private var actionsSection: some View {
+        VStack(spacing: LTSpacing.sm) {
+            LTButton("Modifier", variant: .primary, icon: "pencil", isFullWidth: true) {
+                showingEditSheet = true
+            }
+            
+            LTButton("Partager", variant: .subtle, icon: "square.and.arrow.up", isFullWidth: true) {
+                showingShareSheet = true
+            }
+            
+            LTButton("Supprimer", variant: .destructive, icon: "trash", isFullWidth: true) {
+                showingDeleteAlert = true
+            }
+        }
+        .padding(.top, LTSpacing.md)
     }
 }
 
-// Ligne d'information
-struct InfoRow: View {
+// MARK: - Compact Components
+
+struct IntervenantRowCompact: View {
+    let label: String
+    let name: String
+    let color: Color
+    @State private var isPressed = false
+    
+    var body: some View {
+        HStack(spacing: LTSpacing.md) {
+            LTAvatar(initials: String(name.prefix(2)).uppercased(), size: .small, color: color)
+            
+            VStack(alignment: .leading, spacing: LTSpacing.xxs) {
+                Text(label)
+                    .font(.ltSmall)
+                    .foregroundColor(.ltTextSecondary)
+                Text(name)
+                    .font(.ltBodyMedium)
+                    .foregroundColor(.ltText)
+            }
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .font(.system(size: LTIconSize.xs))
+                .foregroundColor(.ltTextTertiary)
+        }
+        .padding(LTSpacing.sm)
+        .background(Color.ltBackgroundSecondary)
+        .clipShape(RoundedRectangle(cornerRadius: LTRadius.md))
+        .scaleEffect(isPressed ? 0.98 : 1.0)
+        .animation(.ltSpringSubtle, value: isPressed)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in isPressed = true }
+                .onEnded { _ in isPressed = false }
+        )
+    }
+}
+
+struct TarifRowCompact: View {
     let label: String
     let value: String
     
     var body: some View {
         HStack {
             Text(label)
-                .foregroundColor(.secondary)
+                .font(.ltBody)
+                .foregroundColor(.ltTextSecondary)
             Spacer()
             Text(value)
-                .fontWeight(.medium)
+                .font(.ltBodyMedium)
+                .foregroundColor(.ltText)
         }
-        .font(.body)
     }
 }
 
@@ -264,4 +361,5 @@ struct InfoRow: View {
             fraisRembourser: 50
         ))
     }
+    .preferredColorScheme(.dark)
 }

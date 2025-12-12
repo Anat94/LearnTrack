@@ -2,7 +2,7 @@
 //  RegisterView.swift
 //  LearnTrack
 //
-//  Écran d'inscription
+//  Écran d'inscription - Design SaaS compact
 //
 
 import SwiftUI
@@ -24,37 +24,77 @@ struct RegisterView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                Section("Identité") {
-                    TextField("Prénom", text: $prenom)
-                    TextField("Nom", text: $nom)
-                }
+            ZStack {
+                // Background
+                LinearGradient(
+                    colors: [.slate900, .slate950],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
                 
-                Section("Compte") {
-                    TextField("Email", text: $email)
-                        .textInputAutocapitalization(.never)
-                        .keyboardType(.emailAddress)
-                        .autocorrectionDisabled()
-                    SecureField("Mot de passe", text: $password)
-                }
-                
-                if let errorMessage = errorMessage {
-                    Text(errorMessage)
-                        .font(.caption)
-                        .foregroundColor(.red)
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: LTSpacing.xl) {
+                        // Header
+                        VStack(spacing: LTSpacing.sm) {
+                            Text("Créer un compte")
+                                .font(.ltH1)
+                                .foregroundColor(.ltText)
+                            
+                            Text("Rejoignez LearnTrack")
+                                .font(.ltCaption)
+                                .foregroundColor(.ltTextSecondary)
+                        }
+                        .padding(.top, LTSpacing.xl)
+                        
+                        // Formulaire
+                        LTCard {
+                            VStack(spacing: LTSpacing.md) {
+                                LTFormField(label: "Prénom", text: $prenom, placeholder: "Prénom")
+                                LTFormField(label: "Nom", text: $nom, placeholder: "Nom")
+                                LTFormField(label: "Email", text: $email, placeholder: "nom@domaine.com", keyboardType: .emailAddress)
+                                LTFormField(label: "Mot de passe", text: $password, placeholder: "••••••••", isSecure: true)
+                                
+                                // Message d'erreur
+                                if let errorMessage = errorMessage {
+                                    HStack(spacing: LTSpacing.sm) {
+                                        Image(systemName: "exclamationmark.triangle.fill")
+                                            .foregroundColor(.error)
+                                        Text(errorMessage)
+                                            .font(.ltCaption)
+                                            .foregroundColor(.error)
+                                    }
+                                    .padding(LTSpacing.md)
+                                    .background(Color.error.opacity(0.1))
+                                    .clipShape(RoundedRectangle(cornerRadius: LTRadius.md))
+                                }
+                                
+                                // Bouton
+                                LTButton(
+                                    "S'inscrire",
+                                    variant: .primary,
+                                    icon: "person.badge.plus",
+                                    isFullWidth: true,
+                                    isLoading: isLoading,
+                                    isDisabled: !isValid
+                                ) {
+                                    handleRegister()
+                                }
+                                .padding(.top, LTSpacing.sm)
+                            }
+                        }
+                        .padding(.horizontal, LTSpacing.lg)
+                        
+                        Spacer(minLength: 40)
+                    }
                 }
             }
-            .navigationTitle("Créer un compte")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Annuler") { dismiss() }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: handleRegister) {
-                        if isLoading { ProgressView() } else { Text("S'inscrire") }
-                    }
-                    .disabled(!isValid || isLoading)
+                        .foregroundColor(.ltText)
+                        .font(.ltBody)
                 }
             }
         }
@@ -80,5 +120,5 @@ struct RegisterView: View {
 #Preview {
     RegisterView()
         .environmentObject(AuthService.shared)
+        .preferredColorScheme(.dark)
 }
-
