@@ -86,60 +86,106 @@ struct SessionsListView: View {
     }
 }
 
-// Card pour afficher une session
+// Card pour afficher une session - Design moderne
 struct SessionCardView: View {
     let session: Session
     @Environment(\.colorScheme) var colorScheme
+    @State private var isPressed = false
     
     var theme: AppTheme {
         colorScheme == .dark ? .dark : .light
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 10) {
                     Text(session.module)
                         .font(.winamaxHeadline())
                         .foregroundColor(theme.textPrimary)
                         .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                     
-                    HStack(spacing: 12) {
-                        Label(session.displayDate, systemImage: "calendar")
-                        Label(session.displayHoraires, systemImage: "clock")
+                    HStack(spacing: 16) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "calendar")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundColor(theme.primaryGreen)
+                            Text(session.displayDate)
+                                .font(.winamaxCaption())
+                                .foregroundColor(theme.textSecondary)
+                        }
+                        
+                        HStack(spacing: 6) {
+                            Image(systemName: "clock")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundColor(theme.accentOrange)
+                            Text(session.displayHoraires)
+                                .font(.winamaxCaption())
+                                .foregroundColor(theme.textSecondary)
+                        }
                     }
-                    .font(.winamaxCaption())
-                    .foregroundColor(theme.textSecondary)
                 }
                 
                 Spacer()
                 
-                // Badge modalité
+                // Badge modalité avec glow
                 WinamaxBadge(
                     text: session.modalite.label,
-                    color: session.modalite == .presentiel ? theme.primaryGreen : theme.accentOrange
+                    color: session.modalite == .presentiel ? theme.primaryGreen : theme.accentOrange,
+                    size: .medium
                 )
             }
             
-            Divider()
-                .background(theme.borderColor)
+            // Divider avec gradient
+            Rectangle()
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            theme.borderColor.opacity(0.5),
+                            theme.borderColor.opacity(0.2),
+                            theme.borderColor.opacity(0.5)
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .frame(height: 1)
+                .padding(.vertical, 4)
             
-            HStack(spacing: 12) {
+            HStack(spacing: 14) {
                 if let formateur = session.formateur {
-                    Label(formateur.nomComplet, systemImage: "person.fill")
-                        .font(.winamaxCaption())
-                        .foregroundColor(theme.textSecondary)
+                    HStack(spacing: 6) {
+                        Image(systemName: "person.fill")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(theme.primaryGreen.opacity(0.8))
+                        Text(formateur.nomComplet)
+                            .font(.winamaxCaption())
+                            .foregroundColor(theme.textSecondary)
+                    }
                 }
                 
                 if session.modalite == .presentiel {
-                    Label(session.lieu, systemImage: "mappin.circle.fill")
-                        .font(.winamaxCaption())
-                        .foregroundColor(theme.textSecondary)
-                        .lineLimit(1)
+                    HStack(spacing: 6) {
+                        Image(systemName: "mappin.circle.fill")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(theme.accentOrange.opacity(0.8))
+                        Text(session.lieu)
+                            .font(.winamaxCaption())
+                            .foregroundColor(theme.textSecondary)
+                            .lineLimit(1)
+                    }
                 }
             }
         }
-        .winamaxCard()
+        .winamaxCard(
+            padding: 18,
+            cornerRadius: 22,
+            hasGlow: true,
+            glowColor: session.modalite == .presentiel ? theme.primaryGreen : theme.accentOrange
+        )
+        .scaleEffect(isPressed ? 0.98 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isPressed)
     }
 }
 
@@ -162,22 +208,37 @@ struct MonthFilterView: View {
             HStack(spacing: 10) {
                 ForEach(1...12, id: \.self) { month in
                     Button(action: {
-                        withAnimation(.spring(response: 0.3)) {
+                        withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) {
                             selectedMonth = month
                         }
                     }) {
                         Text(months[month - 1])
-                            .font(.system(size: 14, weight: .bold, design: .rounded))
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 10)
+                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .padding(.horizontal, 18)
+                            .padding(.vertical, 12)
                             .background(
                                 Group {
                                     if selectedMonth == month {
-                                        LinearGradient(
-                                            colors: [theme.primaryGreen, theme.primaryGreen.opacity(0.85)],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
+                                        ZStack {
+                                            LinearGradient(
+                                                colors: [
+                                                    theme.primaryGreen,
+                                                    theme.primaryGreen.opacity(0.9),
+                                                    theme.primaryGreen.opacity(0.85)
+                                                ],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            )
+                                            
+                                            LinearGradient(
+                                                colors: [
+                                                    Color.white.opacity(0.25),
+                                                    .clear
+                                                ],
+                                                startPoint: .top,
+                                                endPoint: .center
+                                            )
+                                        }
                                     } else {
                                         theme.cardBackground
                                     }
@@ -187,13 +248,38 @@ struct MonthFilterView: View {
                             .clipShape(Capsule(style: .continuous))
                             .overlay(
                                 Capsule(style: .continuous)
-                                    .stroke(selectedMonth == month ? .clear : theme.borderColor, lineWidth: 1.5)
+                                    .stroke(
+                                        selectedMonth == month ?
+                                            LinearGradient(
+                                                colors: [
+                                                    Color.white.opacity(0.4),
+                                                    Color.white.opacity(0.1)
+                                                ],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            ) :
+                                            LinearGradient(
+                                                colors: [
+                                                    theme.borderColor,
+                                                    theme.borderColor.opacity(0.6)
+                                                ],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            ),
+                                        lineWidth: selectedMonth == month ? 1 : 1.5
+                                    )
                             )
                             .shadow(
-                                color: selectedMonth == month ? theme.primaryGreen.opacity(0.3) : theme.shadowColor,
-                                radius: selectedMonth == month ? 8 : 4,
-                                y: selectedMonth == month ? 4 : 2
+                                color: selectedMonth == month ? theme.primaryGreen.opacity(0.4) : theme.shadowColor,
+                                radius: selectedMonth == month ? 12 : 6,
+                                y: selectedMonth == month ? 6 : 3
                             )
+                            .shadow(
+                                color: selectedMonth == month ? theme.primaryGreen.opacity(0.2) : .clear,
+                                radius: selectedMonth == month ? 6 : 0,
+                                y: selectedMonth == month ? 3 : 0
+                            )
+                            .scaleEffect(selectedMonth == month ? 1.05 : 1.0)
                     }
                 }
             }

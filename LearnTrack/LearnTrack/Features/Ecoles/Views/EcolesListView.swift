@@ -81,39 +81,78 @@ struct EcolesListView: View {
 struct EcoleRowView: View {
     let ecole: Ecole
     @Environment(\.colorScheme) var colorScheme
+    @State private var isPressed = false
     
     var theme: AppTheme {
         colorScheme == .dark ? .dark : .light
     }
     
     var body: some View {
-        HStack(spacing: 14) {
-            // Avatar avec initiales
+        HStack(spacing: 16) {
+            // Avatar avec initiales - Design amélioré
             ZStack {
+                // Glow effect
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [
+                                theme.accentOrange.opacity(0.3),
+                                theme.accentOrange.opacity(0.1),
+                                .clear
+                            ],
+                            center: .center,
+                            startRadius: 5,
+                            endRadius: 30
+                        )
+                    )
+                    .frame(width: 64, height: 64)
+                    .blur(radius: 8)
+                
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [theme.accentOrange, theme.accentOrange.opacity(0.7)],
+                            colors: [
+                                theme.accentOrange,
+                                theme.accentOrange.opacity(0.85),
+                                theme.accentOrange.opacity(0.75)
+                            ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: 56, height: 56)
-                    .shadow(color: theme.accentOrange.opacity(0.3), radius: 8, y: 4)
+                    .frame(width: 60, height: 60)
+                    .overlay(
+                        Circle()
+                            .stroke(
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(0.3),
+                                        Color.white.opacity(0.1)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 2
+                            )
+                    )
+                    .shadow(color: theme.accentOrange.opacity(0.4), radius: 12, y: 6)
+                    .shadow(color: theme.accentOrange.opacity(0.2), radius: 6, y: 3)
                 
                 Text(ecole.initiales)
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
             }
             
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 8) {
                 Text(ecole.nom)
                     .font(.winamaxHeadline())
                     .foregroundColor(theme.textPrimary)
+                    .lineLimit(2)
                 
                 HStack(spacing: 6) {
                     Image(systemName: "mappin.circle.fill")
-                        .font(.system(size: 12))
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(theme.accentOrange.opacity(0.8))
                     Text(ecole.villeDisplay)
                         .font(.winamaxCaption())
                 }
@@ -123,10 +162,17 @@ struct EcoleRowView: View {
             Spacer()
             
             Image(systemName: "chevron.right")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(theme.textSecondary)
+                .font(.system(size: 14, weight: .bold))
+                .foregroundColor(theme.textSecondary.opacity(0.6))
         }
-        .winamaxCard()
+        .winamaxCard(
+            padding: 18,
+            cornerRadius: 22,
+            hasGlow: true,
+            glowColor: theme.accentOrange
+        )
+        .scaleEffect(isPressed ? 0.98 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isPressed)
     }
 }
 

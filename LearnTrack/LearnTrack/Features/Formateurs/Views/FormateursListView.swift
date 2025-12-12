@@ -124,38 +124,73 @@ struct FormateursListView: View {
 struct FormateurRowView: View {
     let formateur: Formateur
     @Environment(\.colorScheme) var colorScheme
+    @State private var isPressed = false
     
     var theme: AppTheme {
         colorScheme == .dark ? .dark : .light
     }
     
+    var avatarColor: Color {
+        formateur.exterieur ? theme.accentOrange : theme.primaryGreen
+    }
+    
     var body: some View {
-        HStack(spacing: 14) {
-            // Avatar avec initiales
+        HStack(spacing: 16) {
+            // Avatar avec initiales - Design amélioré
             ZStack {
+                // Glow effect
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [
+                                avatarColor.opacity(0.3),
+                                avatarColor.opacity(0.1),
+                                .clear
+                            ],
+                            center: .center,
+                            startRadius: 5,
+                            endRadius: 30
+                        )
+                    )
+                    .frame(width: 64, height: 64)
+                    .blur(radius: 8)
+                
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: formateur.exterieur ? 
-                                [theme.accentOrange, theme.accentOrange.opacity(0.7)] :
-                                [theme.primaryGreen, theme.primaryGreen.opacity(0.7)],
+                            colors: [
+                                avatarColor,
+                                avatarColor.opacity(0.85),
+                                avatarColor.opacity(0.75)
+                            ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: 56, height: 56)
-                    .shadow(
-                        color: (formateur.exterieur ? theme.accentOrange : theme.primaryGreen).opacity(0.3),
-                        radius: 8,
-                        y: 4
+                    .frame(width: 60, height: 60)
+                    .overlay(
+                        Circle()
+                            .stroke(
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(0.3),
+                                        Color.white.opacity(0.1)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 2
+                            )
                     )
+                    .shadow(color: avatarColor.opacity(0.4), radius: 12, y: 6)
+                    .shadow(color: avatarColor.opacity(0.2), radius: 6, y: 3)
                 
                 Text(formateur.initiales)
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
             }
             
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 8) {
                 Text(formateur.nomComplet)
                     .font(.winamaxHeadline())
                     .foregroundColor(theme.textPrimary)
@@ -167,17 +202,25 @@ struct FormateurRowView: View {
                 // Badge type
                 WinamaxBadge(
                     text: formateur.type,
-                    color: formateur.exterieur ? theme.accentOrange : theme.primaryGreen
+                    color: avatarColor,
+                    size: .small
                 )
             }
             
             Spacer()
             
             Image(systemName: "chevron.right")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(theme.textSecondary)
+                .font(.system(size: 14, weight: .bold))
+                .foregroundColor(theme.textSecondary.opacity(0.6))
         }
-        .winamaxCard()
+        .winamaxCard(
+            padding: 18,
+            cornerRadius: 22,
+            hasGlow: true,
+            glowColor: avatarColor
+        )
+        .scaleEffect(isPressed ? 0.98 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isPressed)
     }
 }
 
