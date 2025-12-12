@@ -15,12 +15,14 @@ struct FormateursListView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color.ltBackground
-                    .ignoresSafeArea()
+                LTGradientBackground()
                 
                 VStack(spacing: 0) {
                     headerSection
-                    contentSection
+                    
+                    ScrollView(showsIndicators: false) {
+                        contentSection
+                    }
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -73,23 +75,27 @@ struct FormateursListView: View {
     @ViewBuilder
     private var contentSection: some View {
         if viewModel.isLoading {
-            ScrollView {
-                VStack(spacing: LTSpacing.md) {
-                    ForEach(0..<4, id: \.self) { index in
-                        LTSkeletonPersonRow()
-                            .ltStaggered(index: index)
-                    }
+            VStack(spacing: LTSpacing.md) {
+                ForEach(0..<4, id: \.self) { index in
+                    LTSkeletonPersonRow()
+                        .ltStaggered(index: index)
                 }
-                .padding(.horizontal, LTSpacing.lg)
             }
+            .padding(.horizontal, LTSpacing.lg)
+            .padding(.bottom, 100)
         } else if viewModel.filteredFormateurs.isEmpty {
-            LTEmptyState(
-                icon: "person.2.slash",
-                title: "Aucun formateur",
-                message: "Aucun formateur trouvé",
-                actionTitle: "Ajouter",
-                action: { showingAddFormateur = true }
-            )
+            VStack {
+                Spacer(minLength: 80)
+                LTEmptyState(
+                    icon: "person.2.slash",
+                    title: "Aucun formateur",
+                    message: "Aucun formateur trouvé",
+                    actionTitle: "Ajouter",
+                    action: { showingAddFormateur = true }
+                )
+                Spacer()
+            }
+            .frame(minHeight: 400)
         } else {
             formateursList
         }
@@ -117,22 +123,17 @@ struct FormateursListView: View {
     
     // MARK: - List
     private var formateursList: some View {
-        ScrollView(showsIndicators: false) {
-            LazyVStack(spacing: LTSpacing.md) {
-                ForEach(Array(viewModel.filteredFormateurs.enumerated()), id: \.element.id) { index, formateur in
-                    NavigationLink(destination: FormateurDetailView(formateur: formateur)) {
-                        FormateurCardView(formateur: formateur)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .ltStaggered(index: index)
+        LazyVStack(spacing: LTSpacing.md) {
+            ForEach(Array(viewModel.filteredFormateurs.enumerated()), id: \.element.id) { index, formateur in
+                NavigationLink(destination: FormateurDetailView(formateur: formateur)) {
+                    FormateurCardView(formateur: formateur)
                 }
+                .buttonStyle(PlainButtonStyle())
+                .ltStaggered(index: index)
             }
-            .padding(.horizontal, LTSpacing.lg)
-            .padding(.bottom, 100)
         }
-        .refreshable {
-            await viewModel.fetchFormateurs()
-        }
+        .padding(.horizontal, LTSpacing.lg)
+        .padding(.bottom, 100)
     }
 }
 

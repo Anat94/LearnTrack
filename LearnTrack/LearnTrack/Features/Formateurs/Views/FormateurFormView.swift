@@ -36,7 +36,7 @@ struct FormateurFormView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color.ltBackground.ignoresSafeArea()
+                LTGradientBackground()
                 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: LTSpacing.md) {
