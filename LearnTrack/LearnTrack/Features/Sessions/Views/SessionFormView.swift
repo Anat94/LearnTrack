@@ -41,7 +41,7 @@ struct SessionFormView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color.ltBackground.ignoresSafeArea()
+                LTGradientBackground()
                 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: LTSpacing.md) {
@@ -268,7 +268,7 @@ struct LTFormateurPicker: View {
     
     var body: some View {
         ZStack {
-            Color.ltBackground.ignoresSafeArea()
+            LTGradientBackground()
             
             ScrollView {
                 LazyVStack(spacing: LTSpacing.sm) {
@@ -324,7 +324,7 @@ struct LTClientPicker: View {
     
     var body: some View {
         ZStack {
-            Color.ltBackground.ignoresSafeArea()
+            LTGradientBackground()
             
             ScrollView {
                 LazyVStack(spacing: LTSpacing.sm) {
@@ -382,7 +382,7 @@ struct LTEcolePicker: View {
     
     var body: some View {
         ZStack {
-            Color.ltBackground.ignoresSafeArea()
+            LTGradientBackground()
             
             ScrollView {
                 LazyVStack(spacing: LTSpacing.sm) {

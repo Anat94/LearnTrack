@@ -14,8 +14,7 @@ struct ClientsListView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color.ltBackground
-                    .ignoresSafeArea()
+                LTGradientBackground()
                 
                 VStack(spacing: 0) {
                     // Search
@@ -24,7 +23,9 @@ struct ClientsListView: View {
                         .padding(.vertical, LTSpacing.md)
                     
                     // Content
-                    contentSection
+                    ScrollView(showsIndicators: false) {
+                        contentSection
+                    }
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -71,23 +72,27 @@ struct ClientsListView: View {
     @ViewBuilder
     private var contentSection: some View {
         if viewModel.isLoading {
-            ScrollView {
-                VStack(spacing: LTSpacing.md) {
-                    ForEach(0..<4, id: \.self) { index in
-                        LTSkeletonPersonRow()
-                            .ltStaggered(index: index)
-                    }
+            VStack(spacing: LTSpacing.md) {
+                ForEach(0..<4, id: \.self) { index in
+                    LTSkeletonPersonRow()
+                        .ltStaggered(index: index)
                 }
-                .padding(.horizontal, LTSpacing.lg)
             }
+            .padding(.horizontal, LTSpacing.lg)
+            .padding(.bottom, 100)
         } else if viewModel.filteredClients.isEmpty {
-            LTEmptyState(
-                icon: "building.2.slash",
-                title: "Aucun client",
-                message: "Aucun client trouvé",
-                actionTitle: "Ajouter",
-                action: { showingAddClient = true }
-            )
+            VStack {
+                Spacer(minLength: 80)
+                LTEmptyState(
+                    icon: "building.2.slash",
+                    title: "Aucun client",
+                    message: "Aucun client trouvé",
+                    actionTitle: "Ajouter",
+                    action: { showingAddClient = true }
+                )
+                Spacer()
+            }
+            .frame(minHeight: 400)
         } else {
             clientsList
         }
@@ -95,22 +100,17 @@ struct ClientsListView: View {
     
     // MARK: - List
     private var clientsList: some View {
-        ScrollView(showsIndicators: false) {
-            LazyVStack(spacing: LTSpacing.md) {
-                ForEach(Array(viewModel.filteredClients.enumerated()), id: \.element.id) { index, client in
-                    NavigationLink(destination: ClientDetailView(client: client)) {
-                        ClientCardView(client: client)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .ltStaggered(index: index)
+        LazyVStack(spacing: LTSpacing.md) {
+            ForEach(Array(viewModel.filteredClients.enumerated()), id: \.element.id) { index, client in
+                NavigationLink(destination: ClientDetailView(client: client)) {
+                    ClientCardView(client: client)
                 }
+                .buttonStyle(PlainButtonStyle())
+                .ltStaggered(index: index)
             }
-            .padding(.horizontal, LTSpacing.lg)
-            .padding(.bottom, 100)
         }
-        .refreshable {
-            await viewModel.fetchClients()
-        }
+        .padding(.horizontal, LTSpacing.lg)
+        .padding(.bottom, 100)
     }
 }
 

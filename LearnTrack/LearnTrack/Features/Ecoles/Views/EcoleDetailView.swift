@@ -18,7 +18,7 @@ struct EcoleDetailView: View {
     
     var body: some View {
         ZStack {
-            Color.ltBackground.ignoresSafeArea()
+            LTGradientBackground()
             
             ScrollView(showsIndicators: false) {
                 VStack(spacing: LTSpacing.md) {

@@ -14,8 +14,7 @@ struct EcolesListView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color.ltBackground
-                    .ignoresSafeArea()
+                LTGradientBackground()
                 
                 VStack(spacing: 0) {
                     // Search
@@ -24,7 +23,9 @@ struct EcolesListView: View {
                         .padding(.vertical, LTSpacing.md)
                     
                     // Content
-                    contentSection
+                    ScrollView(showsIndicators: false) {
+                        contentSection
+                    }
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -71,23 +72,27 @@ struct EcolesListView: View {
     @ViewBuilder
     private var contentSection: some View {
         if viewModel.isLoading {
-            ScrollView {
-                VStack(spacing: LTSpacing.md) {
-                    ForEach(0..<4, id: \.self) { index in
-                        LTSkeletonCard()
-                            .ltStaggered(index: index)
-                    }
+            VStack(spacing: LTSpacing.md) {
+                ForEach(0..<4, id: \.self) { index in
+                    LTSkeletonCard()
+                        .ltStaggered(index: index)
                 }
-                .padding(.horizontal, LTSpacing.lg)
             }
+            .padding(.horizontal, LTSpacing.lg)
+            .padding(.bottom, 100)
         } else if viewModel.filteredEcoles.isEmpty {
-            LTEmptyState(
-                icon: "graduationcap",
-                title: "Aucune école",
-                message: "Aucune école trouvée",
-                actionTitle: "Ajouter",
-                action: { showingAddEcole = true }
-            )
+            VStack {
+                Spacer(minLength: 80)
+                LTEmptyState(
+                    icon: "graduationcap",
+                    title: "Aucune école",
+                    message: "Aucune école trouvée",
+                    actionTitle: "Ajouter",
+                    action: { showingAddEcole = true }
+                )
+                Spacer()
+            }
+            .frame(minHeight: 400)
         } else {
             ecolesList
         }
@@ -95,22 +100,17 @@ struct EcolesListView: View {
     
     // MARK: - List
     private var ecolesList: some View {
-        ScrollView(showsIndicators: false) {
-            LazyVStack(spacing: LTSpacing.md) {
-                ForEach(Array(viewModel.filteredEcoles.enumerated()), id: \.element.id) { index, ecole in
-                    NavigationLink(destination: EcoleDetailView(ecole: ecole)) {
-                        EcoleCardView(ecole: ecole)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .ltStaggered(index: index)
+        LazyVStack(spacing: LTSpacing.md) {
+            ForEach(Array(viewModel.filteredEcoles.enumerated()), id: \.element.id) { index, ecole in
+                NavigationLink(destination: EcoleDetailView(ecole: ecole)) {
+                    EcoleCardView(ecole: ecole)
                 }
+                .buttonStyle(PlainButtonStyle())
+                .ltStaggered(index: index)
             }
-            .padding(.horizontal, LTSpacing.lg)
-            .padding(.bottom, 100)
         }
-        .refreshable {
-            await viewModel.fetchEcoles()
-        }
+        .padding(.horizontal, LTSpacing.lg)
+        .padding(.bottom, 100)
     }
 }
 

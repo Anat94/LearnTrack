@@ -15,12 +15,14 @@ struct SessionsListView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color.ltBackground
-                    .ignoresSafeArea()
+                LTGradientBackground()
                 
                 VStack(spacing: 0) {
                     headerSection
-                    contentSection
+                    
+                    ScrollView(showsIndicators: false) {
+                        contentSection
+                    }
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -57,29 +59,34 @@ struct SessionsListView: View {
         }
         .padding(.top, LTSpacing.sm)
         .padding(.bottom, LTSpacing.md)
+        .background(Color.clear) // Garde le header fixe
     }
     
     // MARK: - Content Section
     @ViewBuilder
     private var contentSection: some View {
         if viewModel.isLoading {
-            ScrollView {
-                VStack(spacing: LTSpacing.md) {
-                    ForEach(0..<4, id: \.self) { index in
-                        LTSkeletonCard()
-                            .ltStaggered(index: index)
-                    }
+            VStack(spacing: LTSpacing.md) {
+                ForEach(0..<4, id: \.self) { index in
+                    LTSkeletonCard()
+                        .ltStaggered(index: index)
                 }
-                .padding(.horizontal, LTSpacing.lg)
             }
+            .padding(.horizontal, LTSpacing.lg)
+            .padding(.bottom, 100)
         } else if viewModel.filteredSessions.isEmpty {
-            LTEmptyState(
-                icon: "calendar.badge.exclamationmark",
-                title: "Aucune session",
-                message: "Aucune session pour ce mois",
-                actionTitle: "Créer",
-                action: { showingAddSession = true }
-            )
+            VStack {
+                Spacer(minLength: 80)
+                LTEmptyState(
+                    icon: "calendar.badge.exclamationmark",
+                    title: "Aucune session",
+                    message: "Aucune session pour ce mois",
+                    actionTitle: "Créer",
+                    action: { showingAddSession = true }
+                )
+                Spacer()
+            }
+            .frame(minHeight: 400)
         } else {
             sessionsList
         }
@@ -113,22 +120,17 @@ struct SessionsListView: View {
     
     // MARK: - Sessions List
     private var sessionsList: some View {
-        ScrollView(showsIndicators: false) {
-            LazyVStack(spacing: LTSpacing.md) {
-                ForEach(Array(viewModel.filteredSessions.enumerated()), id: \.element.id) { index, session in
-                    NavigationLink(destination: SessionDetailView(session: session)) {
-                        SessionCardView(session: session)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .ltStaggered(index: index)
+        LazyVStack(spacing: LTSpacing.md) {
+            ForEach(Array(viewModel.filteredSessions.enumerated()), id: \.element.id) { index, session in
+                NavigationLink(destination: SessionDetailView(session: session)) {
+                    SessionCardView(session: session)
                 }
+                .buttonStyle(PlainButtonStyle())
+                .ltStaggered(index: index)
             }
-            .padding(.horizontal, LTSpacing.lg)
-            .padding(.bottom, 100)
         }
-        .refreshable {
-            await viewModel.fetchSessions()
-        }
+        .padding(.horizontal, LTSpacing.lg)
+        .padding(.bottom, 100)
     }
 }
 

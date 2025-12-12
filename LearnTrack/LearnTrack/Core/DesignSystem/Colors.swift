@@ -135,6 +135,53 @@ extension LinearGradient {
     )
 }
 
+// MARK: - App Background View
+struct LTGradientBackground: View {
+    @Environment(\.colorScheme) var colorScheme
+    
+    var body: some View {
+        ZStack {
+            // Base gradient
+            if colorScheme == .dark {
+                LinearGradient(
+                    colors: [Color.slate900, Color.slate950],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            } else {
+                LinearGradient(
+                    colors: [Color.slate50, Color.white],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
+            
+            // Green accent in top-left
+            RadialGradient(
+                colors: colorScheme == .dark ? 
+                    [Color.emerald600.opacity(0.15), Color.emerald900.opacity(0.08), .clear] :
+                    [Color.emerald400.opacity(0.12), Color.emerald500.opacity(0.05), .clear],
+                center: .topLeading,
+                startRadius: 30,
+                endRadius: 350
+            )
+            .blur(radius: 30)
+            
+            // Subtle green glow bottom-right
+            RadialGradient(
+                colors: colorScheme == .dark ?
+                    [Color.emerald700.opacity(0.1), .clear] :
+                    [Color.emerald300.opacity(0.08), .clear],
+                center: .bottomTrailing,
+                startRadius: 50,
+                endRadius: 300
+            )
+            .blur(radius: 40)
+        }
+        .ignoresSafeArea()
+    }
+}
+
 // MARK: - Color from Hex
 extension Color {
     init(hex: String) {
