@@ -2,7 +2,7 @@
 //  FormateurFormView.swift
 //  LearnTrack
 //
-//  Formulaire de création/modification de formateur
+//  Formulaire formateur - Design SaaS compact
 //
 
 import SwiftUI
@@ -31,106 +31,82 @@ struct FormateurFormView: View {
     @State private var showError = false
     @State private var errorMessage = ""
     
-    var isEditing: Bool {
-        formateurToEdit != nil
-    }
-    
-    @Environment(\.colorScheme) var colorScheme
-    
-    var theme: AppTheme {
-        colorScheme == .dark ? .dark : .light
-    }
+    var isEditing: Bool { formateurToEdit != nil }
     
     var body: some View {
         NavigationView {
             ZStack {
-                WinamaxBackground()
+                Color.ltBackground.ignoresSafeArea()
                 
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 20) {
+                    VStack(spacing: LTSpacing.md) {
                         // Identité
-                        FormSection(title: "Identité") {
-                            FormField(label: "Prénom", text: $prenom, placeholder: "Prénom")
-                            FormField(label: "Nom", text: $nom, placeholder: "Nom")
+                        LTFormSection(title: "Identité") {
+                            LTFormField(label: "Prénom", text: $prenom, placeholder: "Prénom")
+                            LTFormField(label: "Nom", text: $nom, placeholder: "Nom")
                         }
                         
                         // Contact
-                        FormSection(title: "Contact") {
-                            FormField(label: "Email", text: $email, placeholder: "email@domaine.com", keyboardType: .emailAddress)
-                            FormField(label: "Téléphone", text: $telephone, placeholder: "01 23 45 67 89", keyboardType: .phonePad)
+                        LTFormSection(title: "Contact") {
+                            LTFormField(label: "Email", text: $email, placeholder: "email@domaine.com", keyboardType: .emailAddress)
+                            LTFormField(label: "Téléphone", text: $telephone, placeholder: "0123456789", keyboardType: .phonePad)
                         }
                         
-                        // Informations professionnelles
-                        FormSection(title: "Informations professionnelles") {
-                            FormField(label: "Spécialité", text: $specialite, placeholder: "Ex: Swift, iOS")
-                            FormField(label: "Taux horaire (€)", text: $tauxHoraire, placeholder: "50.00", keyboardType: .decimalPad)
-                            
-                            Toggle(isOn: $exterieur) {
-                                HStack(spacing: 12) {
-                                    Image(systemName: "person.badge.key.fill")
-                                        .foregroundColor(theme.primaryGreen)
-                                    Text("Formateur externe")
-                                        .font(.winamaxBody())
-                                        .foregroundColor(theme.textPrimary)
-                                }
-                            }
-                            .tint(theme.primaryGreen)
-                            .padding(.top, 8)
+                        // Infos professionnelles
+                        LTFormSection(title: "Informations professionnelles") {
+                            LTFormField(label: "Spécialité", text: $specialite, placeholder: "Ex: Swift, iOS")
+                            LTFormField(label: "Taux horaire (€)", text: $tauxHoraire, placeholder: "50.00", keyboardType: .decimalPad)
+                            LTFormToggle(label: "Formateur externe", isOn: $exterieur, icon: "person.badge.key.fill")
                         }
                         
                         // Société (si externe)
                         if exterieur {
-                            FormSection(title: "Société") {
-                                FormField(label: "Nom de la société", text: $societe, placeholder: "Nom de l'entreprise")
-                                FormField(label: "SIRET", text: $siret, placeholder: "12345678900001", keyboardType: .numberPad)
-                                FormField(label: "NDA", text: $nda, placeholder: "Numéro NDA")
+                            LTFormSection(title: "Société") {
+                                LTFormField(label: "Nom de la société", text: $societe, placeholder: "Nom de l'entreprise")
+                                LTFormField(label: "SIRET", text: $siret, placeholder: "12345678900001", keyboardType: .numberPad)
+                                LTFormField(label: "NDA", text: $nda, placeholder: "Numéro NDA")
                             }
+                            .transition(.opacity.combined(with: .move(edge: .top)))
                         }
                         
                         // Adresse
-                        FormSection(title: "Adresse") {
-                            FormField(label: "Rue", text: $rue, placeholder: "123 rue de la Paix")
-                            HStack(spacing: 12) {
-                                FormField(label: "Code postal", text: $codePostal, placeholder: "75001", keyboardType: .numberPad)
-                                FormField(label: "Ville", text: $ville, placeholder: "Paris")
+                        LTFormSection(title: "Adresse") {
+                            LTFormField(label: "Rue", text: $rue, placeholder: "123 rue de la Paix")
+                            HStack(spacing: LTSpacing.md) {
+                                LTFormField(label: "Code postal", text: $codePostal, placeholder: "75001", keyboardType: .numberPad)
+                                LTFormField(label: "Ville", text: $ville, placeholder: "Paris")
                             }
                         }
                         
                         // Bouton
-                        Button(action: saveFormateur) {
-                            HStack {
-                                if isLoading {
-                                    ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                } else {
-                                    Text(isEditing ? "Enregistrer" : "Créer")
-                                }
-                            }
+                        LTButton(
+                            isEditing ? "Enregistrer" : "Créer",
+                            variant: .primary,
+                            icon: isEditing ? "checkmark" : "plus",
+                            isFullWidth: true,
+                            isLoading: isLoading,
+                            isDisabled: prenom.isEmpty || nom.isEmpty
+                        ) {
+                            saveFormateur()
                         }
-                        .buttonStyle(WinamaxPrimaryButton())
-                        .disabled(prenom.isEmpty || nom.isEmpty || isLoading)
-                        .opacity((prenom.isEmpty || nom.isEmpty) ? 0.6 : 1.0)
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 40)
+                        .padding(.top, LTSpacing.md)
                     }
-                    .padding(.top, 20)
+                    .padding(.horizontal, LTSpacing.lg)
+                    .padding(.top, LTSpacing.md)
+                    .padding(.bottom, 40)
                 }
             }
             .navigationTitle(isEditing ? "Modifier" : "Nouveau formateur")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Annuler") {
-                        dismiss()
-                    }
-                    .foregroundColor(theme.textPrimary)
-                    .font(.winamaxBody())
+                    Button("Annuler") { dismiss() }
+                        .foregroundColor(.ltText)
+                        .font(.ltBody)
                 }
             }
             .onAppear {
-                if let formateur = formateurToEdit {
-                    loadFormateurData(formateur)
-                }
+                if let f = formateurToEdit { loadData(f) }
             }
             .alert("Erreur", isPresented: $showError) {
                 Button("OK", role: .cancel) { }
@@ -140,20 +116,20 @@ struct FormateurFormView: View {
         }
     }
     
-    private func loadFormateurData(_ formateur: Formateur) {
-        prenom = formateur.prenom
-        nom = formateur.nom
-        email = formateur.email
-        telephone = formateur.telephone
-        specialite = formateur.specialite
-        tauxHoraire = "\(formateur.tauxHoraire)"
-        exterieur = formateur.exterieur
-        societe = formateur.societe ?? ""
-        siret = formateur.siret ?? ""
-        nda = formateur.nda ?? ""
-        rue = formateur.rue ?? ""
-        codePostal = formateur.codePostal ?? ""
-        ville = formateur.ville ?? ""
+    private func loadData(_ f: Formateur) {
+        prenom = f.prenom
+        nom = f.nom
+        email = f.email
+        telephone = f.telephone
+        specialite = f.specialite
+        tauxHoraire = "\(f.tauxHoraire)"
+        exterieur = f.exterieur
+        societe = f.societe ?? ""
+        siret = f.siret ?? ""
+        nda = f.nda ?? ""
+        rue = f.rue ?? ""
+        codePostal = f.codePostal ?? ""
+        ville = f.ville ?? ""
     }
     
     private func saveFormateur() {
@@ -204,4 +180,5 @@ struct FormateurFormView: View {
 
 #Preview {
     FormateurFormView(viewModel: FormateurViewModel())
+        .preferredColorScheme(.dark)
 }

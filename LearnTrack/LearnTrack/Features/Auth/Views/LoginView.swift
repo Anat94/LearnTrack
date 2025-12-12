@@ -81,22 +81,12 @@ struct LoginView: View {
     // MARK: - Logo Section
     private var logoSection: some View {
         VStack(spacing: LTSpacing.lg) {
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [.emerald400, .emerald600],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 100, height: 100)
-                    .shadow(color: .emerald500.opacity(0.5), radius: 20, y: 10)
-                
-                Image(systemName: "book.fill")
-                    .font(.system(size: 40, weight: .bold))
-                    .foregroundColor(.white)
-            }
+            Image("image")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 100, height: 100)
+                .clipShape(RoundedRectangle(cornerRadius: LTRadius.xl))
+                .shadow(color: .emerald500.opacity(0.4), radius: 20, y: 10)
             
             VStack(spacing: LTSpacing.sm) {
                 Text("LearnTrack")

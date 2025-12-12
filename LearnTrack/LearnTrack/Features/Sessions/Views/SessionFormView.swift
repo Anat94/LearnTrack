@@ -2,7 +2,7 @@
 //  SessionFormView.swift
 //  LearnTrack
 //
-//  Formulaire de création/modification de session
+//  Formulaire session - Design SaaS compact
 //
 
 import SwiftUI
@@ -36,320 +36,122 @@ struct SessionFormView: View {
     @State private var selectedClientId: Int64?
     @State private var selectedEcoleId: Int64?
     
-    var isEditing: Bool {
-        sessionToEdit != nil
-    }
-    
-    @Environment(\.colorScheme) var colorScheme
-    
-    var theme: AppTheme {
-        colorScheme == .dark ? .dark : .light
-    }
+    var isEditing: Bool { sessionToEdit != nil }
     
     var body: some View {
         NavigationView {
             ZStack {
-                WinamaxBackground()
+                Color.ltBackground.ignoresSafeArea()
                 
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 20) {
+                    VStack(spacing: LTSpacing.md) {
                         // Informations générales
-                        VStack(alignment: .leading, spacing: 16) {
-                            Text("Informations générales")
-                                .font(.winamaxHeadline())
-                                .foregroundColor(theme.textPrimary)
-                                .padding(.horizontal, 4)
+                        LTFormSection(title: "Informations générales") {
+                            LTFormField(label: "Module de formation", text: $module, placeholder: "Ex: Swift avancé")
                             
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("Module de formation")
-                                    .font(.winamaxCaption())
-                                    .foregroundColor(theme.textPrimary)
-                                    .fontWeight(.semibold)
-                                
-                                TextField("Ex: Swift avancé", text: $module)
-                                    .autocorrectionDisabled()
-                                    .winamaxTextField()
-                            }
-                            
-                            VStack(alignment: .leading, spacing: 12) {
+                            VStack(alignment: .leading, spacing: LTSpacing.xs) {
                                 Text("Date")
-                                    .font(.winamaxCaption())
-                                    .foregroundColor(theme.textPrimary)
-                                    .fontWeight(.semibold)
-                                
+                                    .font(.ltSmall)
+                                    .foregroundColor(.ltTextSecondary)
                                 DatePicker("", selection: $date, displayedComponents: .date)
                                     .datePickerStyle(.compact)
                                     .labelsHidden()
-                                    .padding(14)
-                                    .background(theme.cardBackground)
-                                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                            .stroke(theme.borderColor, lineWidth: 1.5)
-                                    )
+                                    .tint(.emerald500)
                             }
                             
-                            HStack(spacing: 12) {
-                                VStack(alignment: .leading, spacing: 12) {
-                                    Text("Début")
-                                        .font(.winamaxCaption())
-                                        .foregroundColor(theme.textPrimary)
-                                        .fontWeight(.semibold)
-                                    
-                                    TextField("09:00", text: $debut)
-                                        .keyboardType(.numbersAndPunctuation)
-                                        .winamaxTextField()
-                                }
-                                
-                                VStack(alignment: .leading, spacing: 12) {
-                                    Text("Fin")
-                                        .font(.winamaxCaption())
-                                        .foregroundColor(theme.textPrimary)
-                                        .fontWeight(.semibold)
-                                    
-                                    TextField("17:00", text: $fin)
-                                        .keyboardType(.numbersAndPunctuation)
-                                        .winamaxTextField()
-                                }
+                            HStack(spacing: LTSpacing.md) {
+                                LTFormField(label: "Début", text: $debut, placeholder: "09:00")
+                                LTFormField(label: "Fin", text: $fin, placeholder: "17:00")
                             }
                         }
-                        .winamaxCard()
-                        .padding(.horizontal, 20)
                         
                         // Modalité
-                        VStack(alignment: .leading, spacing: 16) {
-                            Text("Modalité")
-                                .font(.winamaxHeadline())
-                                .foregroundColor(theme.textPrimary)
-                                .padding(.horizontal, 4)
-                            
+                        LTFormSection(title: "Modalité") {
                             Picker("Type", selection: $modalite) {
                                 ForEach(Session.Modalite.allCases, id: \.self) { mode in
                                     Text(mode.label).tag(mode)
                                 }
                             }
                             .pickerStyle(.segmented)
-                            .tint(theme.primaryGreen)
+                            .tint(.emerald500)
                             
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text(modalite == .presentiel ? "Adresse" : "Lien visio")
-                                    .font(.winamaxCaption())
-                                    .foregroundColor(theme.textPrimary)
-                                    .fontWeight(.semibold)
-                                
-                                TextField(modalite == .presentiel ? "Adresse complète" : "URL de la visio", text: $lieu)
-                                    .autocorrectionDisabled()
-                                    .winamaxTextField()
-                            }
+                            LTFormField(
+                                label: modalite == .presentiel ? "Adresse" : "Lien visio",
+                                text: $lieu,
+                                placeholder: modalite == .presentiel ? "Adresse complète" : "URL de la visio"
+                            )
                         }
-                        .winamaxCard()
-                        .padding(.horizontal, 20)
                         
                         // Intervenants
-                        VStack(alignment: .leading, spacing: 16) {
-                            Text("Intervenants")
-                                .font(.winamaxHeadline())
-                                .foregroundColor(theme.textPrimary)
-                                .padding(.horizontal, 4)
+                        LTFormSection(title: "Intervenants") {
+                            NavigationLink(destination: LTFormateurPicker(
+                                formateurs: formateurViewModel.formateurs,
+                                selectedId: $selectedFormateurId
+                            )) {
+                                PickerRow(
+                                    label: "Formateur",
+                                    value: formateurViewModel.formateurs.first(where: { $0.id == selectedFormateurId })?.nomComplet
+                                )
+                            }
                             
-                            VStack(spacing: 12) {
-                                NavigationLink(destination: FormateurPickerView(
-                                    formateurs: formateurViewModel.formateurs,
-                                    selectedId: $selectedFormateurId
-                                )) {
-                                    HStack {
-                                        Text("Formateur")
-                                            .font(.winamaxBody())
-                                            .foregroundColor(theme.textPrimary)
-                                        
-                                        Spacer()
-                                        
-                                        if let id = selectedFormateurId,
-                                           let formateur = formateurViewModel.formateurs.first(where: { $0.id == id }) {
-                                            Text(formateur.nomComplet)
-                                                .font(.winamaxCaption())
-                                                .foregroundColor(theme.textSecondary)
-                                        } else {
-                                            Text("Sélectionner")
-                                                .font(.winamaxCaption())
-                                                .foregroundColor(theme.textSecondary)
-                                        }
-                                        
-                                        Image(systemName: "chevron.right")
-                                            .font(.system(size: 12, weight: .semibold))
-                                            .foregroundColor(theme.textSecondary)
-                                    }
-                                    .padding(14)
-                                    .background(theme.cardBackground)
-                                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                            .stroke(theme.borderColor, lineWidth: 1.5)
-                                    )
-                                }
-                                
-                                NavigationLink(destination: ClientPickerView(
-                                    clients: clientViewModel.clients,
-                                    selectedId: $selectedClientId
-                                )) {
-                                    HStack {
-                                        Text("Client")
-                                            .font(.winamaxBody())
-                                            .foregroundColor(theme.textPrimary)
-                                        
-                                        Spacer()
-                                        
-                                        if let id = selectedClientId,
-                                           let client = clientViewModel.clients.first(where: { $0.id == id }) {
-                                            Text(client.raisonSociale)
-                                                .font(.winamaxCaption())
-                                                .foregroundColor(theme.textSecondary)
-                                        } else {
-                                            Text("Sélectionner")
-                                                .font(.winamaxCaption())
-                                                .foregroundColor(theme.textSecondary)
-                                        }
-                                        
-                                        Image(systemName: "chevron.right")
-                                            .font(.system(size: 12, weight: .semibold))
-                                            .foregroundColor(theme.textSecondary)
-                                    }
-                                    .padding(14)
-                                    .background(theme.cardBackground)
-                                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                            .stroke(theme.borderColor, lineWidth: 1.5)
-                                    )
-                                }
-                                
-                                NavigationLink(destination: EcolePickerView(
-                                    ecoles: ecoleViewModel.ecoles,
-                                    selectedId: $selectedEcoleId
-                                )) {
-                                    HStack {
-                                        Text("École")
-                                            .font(.winamaxBody())
-                                            .foregroundColor(theme.textPrimary)
-                                        
-                                        Spacer()
-                                        
-                                        if let id = selectedEcoleId,
-                                           let ecole = ecoleViewModel.ecoles.first(where: { $0.id == id }) {
-                                            Text(ecole.nom)
-                                                .font(.winamaxCaption())
-                                                .foregroundColor(theme.textSecondary)
-                                        } else {
-                                            Text("Sélectionner")
-                                                .font(.winamaxCaption())
-                                                .foregroundColor(theme.textSecondary)
-                                        }
-                                        
-                                        Image(systemName: "chevron.right")
-                                            .font(.system(size: 12, weight: .semibold))
-                                            .foregroundColor(theme.textSecondary)
-                                    }
-                                    .padding(14)
-                                    .background(theme.cardBackground)
-                                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                            .stroke(theme.borderColor, lineWidth: 1.5)
-                                    )
-                                }
+                            NavigationLink(destination: LTClientPicker(
+                                clients: clientViewModel.clients,
+                                selectedId: $selectedClientId
+                            )) {
+                                PickerRow(
+                                    label: "Client",
+                                    value: clientViewModel.clients.first(where: { $0.id == selectedClientId })?.raisonSociale
+                                )
+                            }
+                            
+                            NavigationLink(destination: LTEcolePicker(
+                                ecoles: ecoleViewModel.ecoles,
+                                selectedId: $selectedEcoleId
+                            )) {
+                                PickerRow(
+                                    label: "École",
+                                    value: ecoleViewModel.ecoles.first(where: { $0.id == selectedEcoleId })?.nom
+                                )
                             }
                         }
-                        .winamaxCard()
-                        .padding(.horizontal, 20)
                         
                         // Tarifs
-                        VStack(alignment: .leading, spacing: 16) {
-                            Text("Tarifs (€)")
-                                .font(.winamaxHeadline())
-                                .foregroundColor(theme.textPrimary)
-                                .padding(.horizontal, 4)
-                            
-                            VStack(spacing: 12) {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Text("Tarif client")
-                                        .font(.winamaxCaption())
-                                        .foregroundColor(theme.textPrimary)
-                                        .fontWeight(.semibold)
-                                    
-                                    TextField("0.00", text: $tarifClient)
-                                        .keyboardType(.decimalPad)
-                                        .winamaxTextField()
-                                }
-                                
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Text("Tarif sous-traitant")
-                                        .font(.winamaxCaption())
-                                        .foregroundColor(theme.textPrimary)
-                                        .fontWeight(.semibold)
-                                    
-                                    TextField("0.00", text: $tarifSousTraitant)
-                                        .keyboardType(.decimalPad)
-                                        .winamaxTextField()
-                                }
-                                
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Text("Frais à rembourser")
-                                        .font(.winamaxCaption())
-                                        .foregroundColor(theme.textPrimary)
-                                        .fontWeight(.semibold)
-                                    
-                                    TextField("0.00", text: $fraisRembourser)
-                                        .keyboardType(.decimalPad)
-                                        .winamaxTextField()
-                                }
-                            }
+                        LTFormSection(title: "Tarifs (€)") {
+                            LTFormField(label: "Tarif client", text: $tarifClient, placeholder: "0.00", keyboardType: .decimalPad)
+                            LTFormField(label: "Tarif sous-traitant", text: $tarifSousTraitant, placeholder: "0.00", keyboardType: .decimalPad)
+                            LTFormField(label: "Frais à rembourser", text: $fraisRembourser, placeholder: "0.00", keyboardType: .decimalPad)
                         }
-                        .winamaxCard()
-                        .padding(.horizontal, 20)
                         
                         // Référence
-                        VStack(alignment: .leading, spacing: 16) {
-                            Text("Référence")
-                                .font(.winamaxHeadline())
-                                .foregroundColor(theme.textPrimary)
-                                .padding(.horizontal, 4)
-                            
-                            TextField("Référence contrat (optionnel)", text: $refContrat)
-                                .autocorrectionDisabled()
-                                .winamaxTextField()
+                        LTFormSection(title: "Référence") {
+                            LTFormField(label: "Référence contrat", text: $refContrat, placeholder: "Optionnel")
                         }
-                        .winamaxCard()
-                        .padding(.horizontal, 20)
                         
-                        // Bouton de sauvegarde
-                        Button(action: saveSession) {
-                            HStack {
-                                if isLoading {
-                                    ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                } else {
-                                    Text(isEditing ? "Enregistrer" : "Créer")
-                                }
-                            }
+                        // Bouton
+                        LTButton(
+                            isEditing ? "Enregistrer" : "Créer",
+                            variant: .primary,
+                            icon: isEditing ? "checkmark" : "plus",
+                            isFullWidth: true,
+                            isLoading: isLoading,
+                            isDisabled: module.isEmpty
+                        ) {
+                            saveSession()
                         }
-                        .buttonStyle(WinamaxPrimaryButton())
-                        .disabled(module.isEmpty || isLoading)
-                        .opacity(module.isEmpty ? 0.6 : 1.0)
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 40)
+                        .padding(.top, LTSpacing.md)
                     }
-                    .padding(.top, 20)
+                    .padding(.horizontal, LTSpacing.lg)
+                    .padding(.top, LTSpacing.md)
+                    .padding(.bottom, 40)
                 }
             }
             .navigationTitle(isEditing ? "Modifier" : "Nouvelle session")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Annuler") {
-                        dismiss()
-                    }
-                    .foregroundColor(theme.textPrimary)
-                    .font(.winamaxBody())
+                    Button("Annuler") { dismiss() }
+                        .foregroundColor(.ltText)
+                        .font(.ltBody)
                 }
             }
             .task {
@@ -357,9 +159,7 @@ struct SessionFormView: View {
                 await clientViewModel.fetchClients()
                 await ecoleViewModel.fetchEcoles()
                 
-                if let session = sessionToEdit {
-                    loadSessionData(session)
-                }
+                if let s = sessionToEdit { loadData(s) }
             }
             .alert("Erreur", isPresented: $showError) {
                 Button("OK", role: .cancel) { }
@@ -369,28 +169,28 @@ struct SessionFormView: View {
         }
     }
     
-    private func loadSessionData(_ session: Session) {
-        module = session.module
-        date = session.date
-        debut = session.debut
-        fin = session.fin
-        modalite = session.modalite
-        lieu = session.lieu
-        tarifClient = "\(session.tarifClient)"
-        tarifSousTraitant = "\(session.tarifSousTraitant)"
-        fraisRembourser = "\(session.fraisRembourser)"
-        refContrat = session.refContrat ?? ""
-        selectedFormateurId = session.formateurId
-        selectedClientId = session.clientId
-        selectedEcoleId = session.ecoleId
+    private func loadData(_ s: Session) {
+        module = s.module
+        date = s.date
+        debut = s.debut
+        fin = s.fin
+        modalite = s.modalite
+        lieu = s.lieu
+        tarifClient = "\(s.tarifClient)"
+        tarifSousTraitant = "\(s.tarifSousTraitant)"
+        fraisRembourser = "\(s.fraisRembourser)"
+        refContrat = s.refContrat ?? ""
+        selectedFormateurId = s.formateurId
+        selectedClientId = s.clientId
+        selectedEcoleId = s.ecoleId
     }
     
     private func saveSession() {
         isLoading = true
         
-        guard let tarifClientValue = Decimal(string: tarifClient),
-              let tarifSTValue = Decimal(string: tarifSousTraitant),
-              let fraisValue = Decimal(string: fraisRembourser) else {
+        guard let tc = Decimal(string: tarifClient),
+              let ts = Decimal(string: tarifSousTraitant),
+              let fr = Decimal(string: fraisRembourser) else {
             errorMessage = "Veuillez saisir des montants valides"
             showError = true
             isLoading = false
@@ -405,9 +205,9 @@ struct SessionFormView: View {
             fin: fin,
             modalite: modalite,
             lieu: lieu,
-            tarifClient: tarifClientValue,
-            tarifSousTraitant: tarifSTValue,
-            fraisRembourser: fraisValue,
+            tarifClient: tc,
+            tarifSousTraitant: ts,
+            fraisRembourser: fr,
             refContrat: refContrat.isEmpty ? nil : refContrat,
             ecoleId: selectedEcoleId,
             clientId: selectedClientId,
@@ -433,48 +233,83 @@ struct SessionFormView: View {
     }
 }
 
-// Pickers pour la sélection style Winamax
-struct FormateurPickerView: View {
+// MARK: - Picker Row
+struct PickerRow: View {
+    let label: String
+    let value: String?
+    
+    var body: some View {
+        HStack {
+            Text(label)
+                .font(.ltBody)
+                .foregroundColor(.ltText)
+            
+            Spacer()
+            
+            Text(value ?? "Sélectionner")
+                .font(.ltCaption)
+                .foregroundColor(.ltTextSecondary)
+            
+            Image(systemName: "chevron.right")
+                .font(.system(size: LTIconSize.xs))
+                .foregroundColor(.ltTextTertiary)
+        }
+        .padding(LTSpacing.md)
+        .background(Color.ltBackgroundSecondary)
+        .clipShape(RoundedRectangle(cornerRadius: LTRadius.md))
+    }
+}
+
+// MARK: - Pickers
+struct LTFormateurPicker: View {
     let formateurs: [Formateur]
     @Binding var selectedId: Int64?
     @Environment(\.dismiss) var dismiss
-    @Environment(\.colorScheme) var colorScheme
-    
-    var theme: AppTheme {
-        colorScheme == .dark ? .dark : .light
-    }
     
     var body: some View {
         ZStack {
-            WinamaxBackground()
+            Color.ltBackground.ignoresSafeArea()
             
             ScrollView {
-                LazyVStack(spacing: 12) {
-                    ForEach(formateurs) { formateur in
+                LazyVStack(spacing: LTSpacing.sm) {
+                    ForEach(formateurs) { f in
                         Button(action: {
-                            selectedId = formateur.id
+                            selectedId = f.id
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
                             dismiss()
                         }) {
                             HStack {
-                                Text(formateur.nomComplet)
-                                    .font(.winamaxBody())
-                                    .foregroundColor(theme.textPrimary)
+                                LTAvatar(initials: f.initiales, size: .small, color: .emerald500)
+                                
+                                VStack(alignment: .leading, spacing: LTSpacing.xxs) {
+                                    Text(f.nomComplet)
+                                        .font(.ltBodyMedium)
+                                        .foregroundColor(.ltText)
+                                    Text(f.specialite)
+                                        .font(.ltSmall)
+                                        .foregroundColor(.ltTextSecondary)
+                                }
                                 
                                 Spacer()
                                 
-                                if selectedId == formateur.id {
+                                if selectedId == f.id {
                                     Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(theme.primaryGreen)
-                                        .font(.system(size: 20))
+                                        .foregroundColor(.emerald500)
+                                        .font(.system(size: LTIconSize.md))
                                 }
                             }
-                            .padding(16)
-                            .winamaxCard()
+                            .padding(LTSpacing.md)
+                            .background(Color.ltCard)
+                            .clipShape(RoundedRectangle(cornerRadius: LTRadius.lg))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: LTRadius.lg)
+                                    .stroke(selectedId == f.id ? Color.emerald500 : Color.ltBorderSubtle, lineWidth: selectedId == f.id ? 1.5 : 0.5)
+                            )
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(PlainButtonStyle())
                     }
                 }
-                .padding(20)
+                .padding(LTSpacing.lg)
             }
         }
         .navigationTitle("Sélectionner un formateur")
@@ -482,47 +317,57 @@ struct FormateurPickerView: View {
     }
 }
 
-struct ClientPickerView: View {
+struct LTClientPicker: View {
     let clients: [Client]
     @Binding var selectedId: Int64?
     @Environment(\.dismiss) var dismiss
-    @Environment(\.colorScheme) var colorScheme
-    
-    var theme: AppTheme {
-        colorScheme == .dark ? .dark : .light
-    }
     
     var body: some View {
         ZStack {
-            WinamaxBackground()
+            Color.ltBackground.ignoresSafeArea()
             
             ScrollView {
-                LazyVStack(spacing: 12) {
-                    ForEach(clients) { client in
+                LazyVStack(spacing: LTSpacing.sm) {
+                    ForEach(clients) { c in
                         Button(action: {
-                            selectedId = client.id
+                            selectedId = c.id
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
                             dismiss()
                         }) {
                             HStack {
-                                Text(client.raisonSociale)
-                                    .font(.winamaxBody())
-                                    .foregroundColor(theme.textPrimary)
+                                LTAvatar(initials: c.initiales, size: .small, color: .info)
+                                
+                                VStack(alignment: .leading, spacing: LTSpacing.xxs) {
+                                    Text(c.raisonSociale)
+                                        .font(.ltBodyMedium)
+                                        .foregroundColor(.ltText)
+                                    if !c.villeDisplay.isEmpty {
+                                        Text(c.villeDisplay)
+                                            .font(.ltSmall)
+                                            .foregroundColor(.ltTextSecondary)
+                                    }
+                                }
                                 
                                 Spacer()
                                 
-                                if selectedId == client.id {
+                                if selectedId == c.id {
                                     Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(theme.primaryGreen)
-                                        .font(.system(size: 20))
+                                        .foregroundColor(.emerald500)
+                                        .font(.system(size: LTIconSize.md))
                                 }
                             }
-                            .padding(16)
-                            .winamaxCard()
+                            .padding(LTSpacing.md)
+                            .background(Color.ltCard)
+                            .clipShape(RoundedRectangle(cornerRadius: LTRadius.lg))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: LTRadius.lg)
+                                    .stroke(selectedId == c.id ? Color.emerald500 : Color.ltBorderSubtle, lineWidth: selectedId == c.id ? 1.5 : 0.5)
+                            )
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(PlainButtonStyle())
                     }
                 }
-                .padding(20)
+                .padding(LTSpacing.lg)
             }
         }
         .navigationTitle("Sélectionner un client")
@@ -530,47 +375,64 @@ struct ClientPickerView: View {
     }
 }
 
-struct EcolePickerView: View {
+struct LTEcolePicker: View {
     let ecoles: [Ecole]
     @Binding var selectedId: Int64?
     @Environment(\.dismiss) var dismiss
-    @Environment(\.colorScheme) var colorScheme
-    
-    var theme: AppTheme {
-        colorScheme == .dark ? .dark : .light
-    }
     
     var body: some View {
         ZStack {
-            WinamaxBackground()
+            Color.ltBackground.ignoresSafeArea()
             
             ScrollView {
-                LazyVStack(spacing: 12) {
-                    ForEach(ecoles) { ecole in
+                LazyVStack(spacing: LTSpacing.sm) {
+                    ForEach(ecoles) { e in
                         Button(action: {
-                            selectedId = ecole.id
+                            selectedId = e.id
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
                             dismiss()
                         }) {
                             HStack {
-                                Text(ecole.nom)
-                                    .font(.winamaxBody())
-                                    .foregroundColor(theme.textPrimary)
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.warning.opacity(0.15))
+                                        .frame(width: LTHeight.avatarSmall, height: LTHeight.avatarSmall)
+                                    Image(systemName: "graduationcap.fill")
+                                        .font(.system(size: LTIconSize.sm))
+                                        .foregroundColor(.warning)
+                                }
+                                
+                                VStack(alignment: .leading, spacing: LTSpacing.xxs) {
+                                    Text(e.nom)
+                                        .font(.ltBodyMedium)
+                                        .foregroundColor(.ltText)
+                                    if !e.villeDisplay.isEmpty {
+                                        Text(e.villeDisplay)
+                                            .font(.ltSmall)
+                                            .foregroundColor(.ltTextSecondary)
+                                    }
+                                }
                                 
                                 Spacer()
                                 
-                                if selectedId == ecole.id {
+                                if selectedId == e.id {
                                     Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(theme.primaryGreen)
-                                        .font(.system(size: 20))
+                                        .foregroundColor(.emerald500)
+                                        .font(.system(size: LTIconSize.md))
                                 }
                             }
-                            .padding(16)
-                            .winamaxCard()
+                            .padding(LTSpacing.md)
+                            .background(Color.ltCard)
+                            .clipShape(RoundedRectangle(cornerRadius: LTRadius.lg))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: LTRadius.lg)
+                                    .stroke(selectedId == e.id ? Color.emerald500 : Color.ltBorderSubtle, lineWidth: selectedId == e.id ? 1.5 : 0.5)
+                            )
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(PlainButtonStyle())
                     }
                 }
-                .padding(20)
+                .padding(LTSpacing.lg)
             }
         }
         .navigationTitle("Sélectionner une école")
@@ -580,4 +442,5 @@ struct EcolePickerView: View {
 
 #Preview {
     SessionFormView(viewModel: SessionViewModel())
+        .preferredColorScheme(.dark)
 }

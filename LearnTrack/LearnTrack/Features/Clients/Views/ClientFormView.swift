@@ -2,7 +2,7 @@
 //  ClientFormView.swift
 //  LearnTrack
 //
-//  Formulaire de création/modification de client style Winamax
+//  Formulaire client - Design SaaS compact
 //
 
 import SwiftUI
@@ -10,7 +10,6 @@ import SwiftUI
 struct ClientFormView: View {
     @ObservedObject var viewModel: ClientViewModel
     @Environment(\.dismiss) var dismiss
-    @Environment(\.colorScheme) var colorScheme
     
     var clientToEdit: Client?
     
@@ -28,83 +27,71 @@ struct ClientFormView: View {
     @State private var showError = false
     @State private var errorMessage = ""
     
-    var theme: AppTheme {
-        colorScheme == .dark ? .dark : .light
-    }
-    
-    var isEditing: Bool {
-        clientToEdit != nil
-    }
+    var isEditing: Bool { clientToEdit != nil }
     
     var body: some View {
         NavigationView {
             ZStack {
-                WinamaxBackground()
+                Color.ltBackground.ignoresSafeArea()
                 
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 20) {
+                    VStack(spacing: LTSpacing.md) {
                         // Entreprise
-                        FormSection(title: "Entreprise") {
-                            FormField(label: "Raison sociale", text: $raisonSociale, placeholder: "Nom de l'entreprise")
+                        LTFormSection(title: "Entreprise") {
+                            LTFormField(label: "Raison sociale", text: $raisonSociale, placeholder: "Nom de l'entreprise")
                         }
                         
                         // Contact
-                        FormSection(title: "Contact principal") {
-                            FormField(label: "Nom du contact", text: $nomContact, placeholder: "Prénom Nom")
-                            FormField(label: "Email", text: $email, placeholder: "contact@entreprise.com", keyboardType: .emailAddress)
-                            FormField(label: "Téléphone", text: $telephone, placeholder: "01 23 45 67 89", keyboardType: .phonePad)
+                        LTFormSection(title: "Contact principal") {
+                            LTFormField(label: "Nom du contact", text: $nomContact, placeholder: "Prénom Nom")
+                            LTFormField(label: "Email", text: $email, placeholder: "contact@entreprise.com", keyboardType: .emailAddress)
+                            LTFormField(label: "Téléphone", text: $telephone, placeholder: "0123456789", keyboardType: .phonePad)
                         }
                         
                         // Adresse
-                        FormSection(title: "Adresse") {
-                            FormField(label: "Rue", text: $rue, placeholder: "123 rue de la Paix")
-                            HStack(spacing: 12) {
-                                FormField(label: "Code postal", text: $codePostal, placeholder: "75001", keyboardType: .numberPad)
-                                FormField(label: "Ville", text: $ville, placeholder: "Paris")
+                        LTFormSection(title: "Adresse") {
+                            LTFormField(label: "Rue", text: $rue, placeholder: "123 rue de la Paix")
+                            HStack(spacing: LTSpacing.md) {
+                                LTFormField(label: "Code postal", text: $codePostal, placeholder: "75001", keyboardType: .numberPad)
+                                LTFormField(label: "Ville", text: $ville, placeholder: "Paris")
                             }
                         }
                         
-                        // Informations fiscales
-                        FormSection(title: "Informations fiscales") {
-                            FormField(label: "SIRET", text: $siret, placeholder: "12345678900001", keyboardType: .numberPad)
-                            FormField(label: "N° TVA intracommunautaire", text: $numeroTva, placeholder: "FR12345678901")
+                        // Infos fiscales
+                        LTFormSection(title: "Informations fiscales") {
+                            LTFormField(label: "SIRET", text: $siret, placeholder: "12345678900001", keyboardType: .numberPad)
+                            LTFormField(label: "N° TVA intracommunautaire", text: $numeroTva, placeholder: "FR12345678901")
                         }
                         
                         // Bouton
-                        Button(action: saveClient) {
-                            HStack {
-                                if isLoading {
-                                    ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                } else {
-                                    Text(isEditing ? "Enregistrer" : "Créer")
-                                }
-                            }
+                        LTButton(
+                            isEditing ? "Enregistrer" : "Créer",
+                            variant: .primary,
+                            icon: isEditing ? "checkmark" : "plus",
+                            isFullWidth: true,
+                            isLoading: isLoading,
+                            isDisabled: raisonSociale.isEmpty || nomContact.isEmpty
+                        ) {
+                            saveClient()
                         }
-                        .buttonStyle(WinamaxPrimaryButton())
-                        .disabled(raisonSociale.isEmpty || nomContact.isEmpty || isLoading)
-                        .opacity((raisonSociale.isEmpty || nomContact.isEmpty) ? 0.6 : 1.0)
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 40)
+                        .padding(.top, LTSpacing.md)
                     }
-                    .padding(.top, 20)
+                    .padding(.horizontal, LTSpacing.lg)
+                    .padding(.top, LTSpacing.md)
+                    .padding(.bottom, 40)
                 }
             }
             .navigationTitle(isEditing ? "Modifier" : "Nouveau client")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Annuler") {
-                        dismiss()
-                    }
-                    .foregroundColor(theme.textPrimary)
-                    .font(.winamaxBody())
+                    Button("Annuler") { dismiss() }
+                        .foregroundColor(.ltText)
+                        .font(.ltBody)
                 }
             }
             .onAppear {
-                if let client = clientToEdit {
-                    loadClientData(client)
-                }
+                if let c = clientToEdit { loadData(c) }
             }
             .alert("Erreur", isPresented: $showError) {
                 Button("OK", role: .cancel) { }
@@ -114,16 +101,16 @@ struct ClientFormView: View {
         }
     }
     
-    private func loadClientData(_ client: Client) {
-        raisonSociale = client.raisonSociale
-        nomContact = client.nomContact
-        email = client.email
-        telephone = client.telephone
-        rue = client.rue ?? ""
-        codePostal = client.codePostal ?? ""
-        ville = client.ville ?? ""
-        siret = client.siret ?? ""
-        numeroTva = client.numeroTva ?? ""
+    private func loadData(_ c: Client) {
+        raisonSociale = c.raisonSociale
+        nomContact = c.nomContact
+        email = c.email
+        telephone = c.telephone
+        rue = c.rue ?? ""
+        codePostal = c.codePostal ?? ""
+        ville = c.ville ?? ""
+        siret = c.siret ?? ""
+        numeroTva = c.numeroTva ?? ""
     }
     
     private func saveClient() {
@@ -157,58 +144,6 @@ struct ClientFormView: View {
                     isLoading = false
                 }
             }
-        }
-    }
-}
-
-// Helper pour les sections de formulaire
-struct FormSection<Content: View>: View {
-    let title: String
-    @ViewBuilder let content: Content
-    @Environment(\.colorScheme) var colorScheme
-    
-    var theme: AppTheme {
-        colorScheme == .dark ? .dark : .light
-    }
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(title)
-                .font(.winamaxHeadline())
-                .foregroundColor(theme.textPrimary)
-                .padding(.horizontal, 4)
-            
-            content
-        }
-        .winamaxCard()
-        .padding(.horizontal, 20)
-    }
-}
-
-// Helper pour les champs de formulaire
-struct FormField: View {
-    let label: String
-    @Binding var text: String
-    var placeholder: String = ""
-    var keyboardType: UIKeyboardType = .default
-    @Environment(\.colorScheme) var colorScheme
-    
-    var theme: AppTheme {
-        colorScheme == .dark ? .dark : .light
-    }
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(label)
-                .font(.winamaxCaption())
-                .foregroundColor(theme.textPrimary)
-                .fontWeight(.semibold)
-            
-            TextField(placeholder, text: $text)
-                .keyboardType(keyboardType)
-                .textInputAutocapitalization(keyboardType == .emailAddress ? .never : .words)
-                .autocorrectionDisabled(keyboardType == .emailAddress)
-                .winamaxTextField()
         }
     }
 }

@@ -2,7 +2,7 @@
 //  EcoleFormView.swift
 //  LearnTrack
 //
-//  Formulaire de création/modification d'école
+//  Formulaire école - Design SaaS compact
 //
 
 import SwiftUI
@@ -25,79 +25,65 @@ struct EcoleFormView: View {
     @State private var showError = false
     @State private var errorMessage = ""
     
-    var isEditing: Bool {
-        ecoleToEdit != nil
-    }
-    
-    @Environment(\.colorScheme) var colorScheme
-    
-    var theme: AppTheme {
-        colorScheme == .dark ? .dark : .light
-    }
+    var isEditing: Bool { ecoleToEdit != nil }
     
     var body: some View {
         NavigationView {
             ZStack {
-                WinamaxBackground()
+                Color.ltBackground.ignoresSafeArea()
                 
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 20) {
+                    VStack(spacing: LTSpacing.md) {
                         // Établissement
-                        FormSection(title: "Établissement") {
-                            FormField(label: "Nom de l'école", text: $nom, placeholder: "Nom de l'établissement")
+                        LTFormSection(title: "Établissement") {
+                            LTFormField(label: "Nom de l'école", text: $nom, placeholder: "Nom de l'établissement")
                         }
                         
                         // Contact
-                        FormSection(title: "Contact") {
-                            FormField(label: "Nom du contact", text: $nomContact, placeholder: "Prénom Nom")
-                            FormField(label: "Email", text: $email, placeholder: "contact@ecole.com", keyboardType: .emailAddress)
-                            FormField(label: "Téléphone", text: $telephone, placeholder: "01 23 45 67 89", keyboardType: .phonePad)
+                        LTFormSection(title: "Contact") {
+                            LTFormField(label: "Nom du contact", text: $nomContact, placeholder: "Prénom Nom")
+                            LTFormField(label: "Email", text: $email, placeholder: "contact@ecole.com", keyboardType: .emailAddress)
+                            LTFormField(label: "Téléphone", text: $telephone, placeholder: "0123456789", keyboardType: .phonePad)
                         }
                         
                         // Adresse
-                        FormSection(title: "Adresse") {
-                            FormField(label: "Rue", text: $rue, placeholder: "123 rue de la Paix")
-                            HStack(spacing: 12) {
-                                FormField(label: "Code postal", text: $codePostal, placeholder: "75001", keyboardType: .numberPad)
-                                FormField(label: "Ville", text: $ville, placeholder: "Paris")
+                        LTFormSection(title: "Adresse") {
+                            LTFormField(label: "Rue", text: $rue, placeholder: "123 rue de la Paix")
+                            HStack(spacing: LTSpacing.md) {
+                                LTFormField(label: "Code postal", text: $codePostal, placeholder: "75001", keyboardType: .numberPad)
+                                LTFormField(label: "Ville", text: $ville, placeholder: "Paris")
                             }
                         }
                         
                         // Bouton
-                        Button(action: saveEcole) {
-                            HStack {
-                                if isLoading {
-                                    ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                } else {
-                                    Text(isEditing ? "Enregistrer" : "Créer")
-                                }
-                            }
+                        LTButton(
+                            isEditing ? "Enregistrer" : "Créer",
+                            variant: .primary,
+                            icon: isEditing ? "checkmark" : "plus",
+                            isFullWidth: true,
+                            isLoading: isLoading,
+                            isDisabled: nom.isEmpty || nomContact.isEmpty
+                        ) {
+                            saveEcole()
                         }
-                        .buttonStyle(WinamaxPrimaryButton())
-                        .disabled(nom.isEmpty || nomContact.isEmpty || isLoading)
-                        .opacity((nom.isEmpty || nomContact.isEmpty) ? 0.6 : 1.0)
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 40)
+                        .padding(.top, LTSpacing.md)
                     }
-                    .padding(.top, 20)
+                    .padding(.horizontal, LTSpacing.lg)
+                    .padding(.top, LTSpacing.md)
+                    .padding(.bottom, 40)
                 }
             }
             .navigationTitle(isEditing ? "Modifier" : "Nouvelle école")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Annuler") {
-                        dismiss()
-                    }
-                    .foregroundColor(theme.textPrimary)
-                    .font(.winamaxBody())
+                    Button("Annuler") { dismiss() }
+                        .foregroundColor(.ltText)
+                        .font(.ltBody)
                 }
             }
             .onAppear {
-                if let ecole = ecoleToEdit {
-                    loadEcoleData(ecole)
-                }
+                if let e = ecoleToEdit { loadData(e) }
             }
             .alert("Erreur", isPresented: $showError) {
                 Button("OK", role: .cancel) { }
@@ -107,14 +93,14 @@ struct EcoleFormView: View {
         }
     }
     
-    private func loadEcoleData(_ ecole: Ecole) {
-        nom = ecole.nom
-        nomContact = ecole.nomContact
-        email = ecole.email
-        telephone = ecole.telephone
-        rue = ecole.rue ?? ""
-        codePostal = ecole.codePostal ?? ""
-        ville = ecole.ville ?? ""
+    private func loadData(_ e: Ecole) {
+        nom = e.nom
+        nomContact = e.nomContact
+        email = e.email
+        telephone = e.telephone
+        rue = e.rue ?? ""
+        codePostal = e.codePostal ?? ""
+        ville = e.ville ?? ""
     }
     
     private func saveEcole() {
@@ -152,4 +138,5 @@ struct EcoleFormView: View {
 
 #Preview {
     EcoleFormView(viewModel: EcoleViewModel())
+        .preferredColorScheme(.dark)
 }
