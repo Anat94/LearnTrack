@@ -1,10 +1,3 @@
-//
-//  SessionsListView.swift
-//  LearnTrack
-//
-//  Liste des sessions style Winamax
-//
-
 import SwiftUI
 
 struct SessionsListView: View {
@@ -29,7 +22,6 @@ struct SessionsListView: View {
                     MonthFilterView(selectedMonth: $viewModel.selectedMonth)
                         .padding(.horizontal, 20)
                     
-                    // Liste des sessions
                     Group {
                         if viewModel.isLoading {
                             ProgressView()
@@ -84,7 +76,6 @@ struct SessionsListView: View {
     }
 }
 
-// Card pour afficher une session - Design moderne et propre
 struct SessionCardView: View {
     let session: Session
     @Environment(\.colorScheme) var colorScheme
@@ -169,7 +160,6 @@ struct SessionCardView: View {
     }
 }
 
-// Filtre par mois
 struct MonthFilterView: View {
     @Binding var selectedMonth: Int
     @Environment(\.colorScheme) var colorScheme

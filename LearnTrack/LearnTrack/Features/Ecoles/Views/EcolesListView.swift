@@ -1,10 +1,3 @@
-//
-//  EcolesListView.swift
-//  LearnTrack
-//
-//  Liste des écoles style Winamax
-//
-
 import SwiftUI
 
 struct EcolesListView: View {

@@ -1,10 +1,3 @@
-//
-//  FormateursListView.swift
-//  LearnTrack
-//
-//  Liste des formateurs style Winamax
-//
-
 import SwiftUI
 
 struct FormateursListView: View {

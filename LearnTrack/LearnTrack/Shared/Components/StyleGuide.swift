@@ -1,13 +1,5 @@
-//
-//  StyleGuide.swift
-//  LearnTrack
-//
-//  Système de design moderne inspiré de Winamax - Design premium
-//
-
 import SwiftUI
 
-// MARK: - Environment pour le thème
 class ThemeManager: ObservableObject {
     @Published var isDarkMode: Bool = false
     
@@ -20,32 +12,31 @@ enum AppTheme {
     case light
     case dark
     
-    // MARK: - Couleurs Winamax améliorées
     var primaryGreen: Color {
         switch self {
-        case .light: return Color(red: 0.0, green: 0.85, blue: 0.65) // #00D9A5
-        case .dark: return Color(red: 0.0, green: 0.98, blue: 0.78) // Plus lumineux et vibrant
+        case .light: return Color(red: 0.0, green: 0.85, blue: 0.65)
+        case .dark: return Color(red: 0.0, green: 0.98, blue: 0.78)
         }
     }
     
     var accentOrange: Color {
         switch self {
-        case .light: return Color(red: 1.0, green: 0.4, blue: 0.0) // #FF6600
-        case .dark: return Color(red: 1.0, green: 0.55, blue: 0.15) // Plus chaud
+        case .light: return Color(red: 1.0, green: 0.4, blue: 0.0)
+        case .dark: return Color(red: 1.0, green: 0.55, blue: 0.15)
         }
     }
     
     var background: Color {
         switch self {
         case .light: return Color(red: 0.98, green: 0.98, blue: 0.99)
-        case .dark: return Color(red: 0.02, green: 0.02, blue: 0.05) // Encore plus profond
+        case .dark: return Color(red: 0.02, green: 0.02, blue: 0.05)
         }
     }
     
     var cardBackground: Color {
         switch self {
         case .light: return .white
-        case .dark: return Color(red: 0.08, green: 0.08, blue: 0.12) // Plus sombre avec teinte bleue
+        case .dark: return Color(red: 0.08, green: 0.08, blue: 0.12)
         }
     }
     
@@ -85,7 +76,6 @@ enum AppTheme {
     }
 }
 
-// MARK: - Background Winamax amélioré
 struct WinamaxBackground: View {
     @Environment(\.colorScheme) var colorScheme
     var theme: AppTheme {
@@ -94,7 +84,6 @@ struct WinamaxBackground: View {
     
     var body: some View {
         ZStack {
-            // Fond de base avec gradient subtil
             LinearGradient(
                 colors: theme == .light ?
                     [theme.background, Color(red: 0.96, green: 0.97, blue: 0.98)] :
@@ -104,10 +93,8 @@ struct WinamaxBackground: View {
             )
             .ignoresSafeArea()
             
-            // Motifs géométriques améliorés (light mode)
             if theme == .light {
                 GeometryReader { geo in
-                    // Grand cercle vert avec blur
                     Circle()
                         .fill(
                             RadialGradient(
@@ -125,7 +112,6 @@ struct WinamaxBackground: View {
                         .offset(x: -geo.size.width * 0.3, y: -geo.size.width * 0.2)
                         .blur(radius: 60)
                     
-                    // Cercle orange
                     Circle()
                         .fill(
                             RadialGradient(
@@ -144,9 +130,7 @@ struct WinamaxBackground: View {
                         .blur(radius: 50)
                 }
             } else {
-                // Effets lumineux améliorés en dark mode
                 GeometryReader { geo in
-                    // Gradient vert cyan avec animation subtile
                     RadialGradient(
                         colors: [
                             theme.primaryGreen.opacity(0.3),
@@ -160,7 +144,6 @@ struct WinamaxBackground: View {
                     )
                     .blur(radius: 40)
                     
-                    // Gradient orange
                     RadialGradient(
                         colors: [
                             theme.accentOrange.opacity(0.25),
@@ -174,7 +157,6 @@ struct WinamaxBackground: View {
                     )
                     .blur(radius: 35)
                     
-                    // Gradient bleu/violet plus prononcé
                     RadialGradient(
                         colors: [
                             Color(red: 0.35, green: 0.45, blue: 0.95).opacity(0.2),
@@ -187,7 +169,6 @@ struct WinamaxBackground: View {
                     )
                     .blur(radius: 50)
                     
-                    // Motifs géométriques animés
                     ForEach(0..<4) { i in
                         Circle()
                             .fill(
@@ -214,7 +195,6 @@ struct WinamaxBackground: View {
     }
 }
 
-// MARK: - Carte Winamax avec glassmorphism
 struct WinamaxCard<Content: View>: View {
     @Environment(\.colorScheme) var colorScheme
     let content: Content
@@ -294,7 +274,6 @@ struct WinamaxCard<Content: View>: View {
     }
 }
 
-// MARK: - Bouton Primary amélioré
 struct WinamaxPrimaryButton: ButtonStyle {
     @Environment(\.colorScheme) var colorScheme
     
@@ -310,7 +289,6 @@ struct WinamaxPrimaryButton: ButtonStyle {
             .padding(.vertical, 18)
             .background(
                 ZStack {
-                    // Gradient principal
                     LinearGradient(
                         colors: [
                             theme.primaryGreen,
@@ -321,7 +299,6 @@ struct WinamaxPrimaryButton: ButtonStyle {
                         endPoint: .bottomTrailing
                     )
                     
-                    // Overlay pour effet de profondeur
                     LinearGradient(
                         colors: [
                             Color.white.opacity(0.2),
@@ -365,7 +342,6 @@ struct WinamaxPrimaryButton: ButtonStyle {
     }
 }
 
-// MARK: - Bouton Secondary amélioré
 struct WinamaxSecondaryButton: ButtonStyle {
     @Environment(\.colorScheme) var colorScheme
     
@@ -422,7 +398,6 @@ struct WinamaxSecondaryButton: ButtonStyle {
     }
 }
 
-// MARK: - Bouton Danger amélioré
 struct WinamaxDangerButton: ButtonStyle {
     @Environment(\.colorScheme) var colorScheme
     
@@ -485,7 +460,6 @@ struct WinamaxDangerButton: ButtonStyle {
     }
 }
 
-// MARK: - Badge Winamax amélioré
 struct WinamaxBadge: View {
     @Environment(\.colorScheme) var colorScheme
     let text: String
@@ -576,7 +550,6 @@ struct WinamaxBadge: View {
     }
 }
 
-// MARK: - Champ de texte Winamax amélioré
 struct WinamaxTextField: ViewModifier {
     @Environment(\.colorScheme) var colorScheme
     @FocusState private var isFocused: Bool
@@ -630,7 +603,6 @@ extension View {
     }
 }
 
-// MARK: - Extension pour accès facile au thème
 extension View {
     @ViewBuilder
     func winamaxCard(
@@ -650,7 +622,6 @@ extension View {
     }
 }
 
-// MARK: - Typographie Winamax améliorée
 extension Font {
     static func winamaxTitle() -> Font {
         .system(size: 32, weight: .bold, design: .rounded)

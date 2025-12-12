@@ -1,10 +1,3 @@
-//
-//  ClientsListView.swift
-//  LearnTrack
-//
-//  Liste des clients style Winamax
-//
-
 import SwiftUI
 
 struct ClientsListView: View {
