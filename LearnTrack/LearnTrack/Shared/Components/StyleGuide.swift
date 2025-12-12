@@ -38,14 +38,14 @@ enum AppTheme {
     var background: Color {
         switch self {
         case .light: return Color(red: 0.98, green: 0.98, blue: 0.99) // Presque blanc
-        case .dark: return Color(red: 0.05, green: 0.05, blue: 0.08) // Noir profond
+        case .dark: return Color(red: 0.03, green: 0.03, blue: 0.06) // Noir très profond avec teinte bleue
         }
     }
     
     var cardBackground: Color {
         switch self {
         case .light: return .white
-        case .dark: return Color(red: 0.12, green: 0.12, blue: 0.16)
+        case .dark: return Color(red: 0.1, green: 0.1, blue: 0.14) // Plus sombre avec teinte bleue
         }
     }
     
@@ -117,27 +117,63 @@ struct WinamaxBackground: View {
                         .offset(x: geo.size.width * 0.5, y: geo.size.height * 0.7)
                 }
             } else {
-                // Effets lumineux en dark mode
+                // Effets lumineux en dark mode - Plus dynamiques et colorés
                 GeometryReader { geo in
+                    // Gradient vert cyan en haut à gauche
                     RadialGradient(
                         colors: [
-                            theme.primaryGreen.opacity(0.2),
+                            theme.primaryGreen.opacity(0.25),
+                            theme.primaryGreen.opacity(0.1),
                             .clear
                         ],
                         center: .topLeading,
-                        startRadius: 50,
-                        endRadius: 400
+                        startRadius: 20,
+                        endRadius: 500
                     )
                     
+                    // Gradient orange en bas à droite
                     RadialGradient(
                         colors: [
-                            theme.accentOrange.opacity(0.15),
+                            theme.accentOrange.opacity(0.2),
+                            theme.accentOrange.opacity(0.08),
                             .clear
                         ],
                         center: .bottomTrailing,
                         startRadius: 30,
-                        endRadius: 350
+                        endRadius: 450
                     )
+                    
+                    // Gradient bleu/violet subtil au centre
+                    RadialGradient(
+                        colors: [
+                            Color(red: 0.3, green: 0.4, blue: 0.9).opacity(0.15),
+                            .clear
+                        ],
+                        center: .center,
+                        startRadius: 100,
+                        endRadius: 600
+                    )
+                    
+                    // Motifs géométriques subtils
+                    ForEach(0..<3) { i in
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        theme.primaryGreen.opacity(0.08),
+                                        .clear
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: CGFloat(200 + i * 150), height: CGFloat(200 + i * 150))
+                            .offset(
+                                x: geo.size.width * (0.2 + CGFloat(i) * 0.3),
+                                y: geo.size.height * (0.1 + CGFloat(i) * 0.2)
+                            )
+                            .blur(radius: 30)
+                    }
                 }
             }
         }

@@ -2,7 +2,7 @@
 //  EcoleDetailView.swift
 //  LearnTrack
 //
-//  Détail d'une école
+//  Détail d'une école style Winamax - Design audacieux
 //
 
 import SwiftUI
@@ -11,105 +11,183 @@ struct EcoleDetailView: View {
     @State var ecole: Ecole
     @StateObject private var viewModel = EcoleViewModel()
     @Environment(\.dismiss) var dismiss
+    @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var authService: AuthService
     
     @State private var showingEditSheet = false
     @State private var showingDeleteAlert = false
     
+    var theme: AppTheme {
+        colorScheme == .dark ? .dark : .light
+    }
+    
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                // En-tête
-                VStack(spacing: 12) {
-                    Circle()
-                        .fill(Color.purple.opacity(0.2))
-                        .frame(width: 100, height: 100)
-                        .overlay(
-                            Text(ecole.initiales)
-                                .font(.system(size: 36, weight: .bold))
-                                .foregroundColor(.purple)
-                        )
-                    
-                    Text(ecole.nom)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .multilineTextAlignment(.center)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.top)
-                
-                // Boutons d'action rapide
-                HStack(spacing: 12) {
-                    ActionButton(icon: "phone.fill", title: "Appeler", color: .green) {
-                        ContactService.shared.call(phoneNumber: ecole.telephone)
-                    }
-                    
-                    ActionButton(icon: "envelope.fill", title: "Email", color: .blue) {
-                        ContactService.shared.sendEmail(to: ecole.email)
-                    }
-                }
-                .padding(.horizontal)
-                
-                Divider()
-                
-                // Contact
-                InfoSection(title: "Contact", icon: "person.fill") {
-                    Text(ecole.nomContact)
-                        .font(.headline)
-                        .padding(.bottom, 8)
-                    
-                    ContactRow(icon: "phone", label: "Téléphone", value: ecole.telephone) {
-                        ContactService.shared.call(phoneNumber: ecole.telephone)
-                    }
-                    
-                    ContactRow(icon: "envelope", label: "Email", value: ecole.email) {
-                        ContactService.shared.sendEmail(to: ecole.email)
-                    }
-                }
-                
-                // Adresse
-                if let adresse = ecole.adresseComplete {
-                    Divider()
-                    
-                    InfoSection(title: "Adresse", icon: "mappin.circle.fill") {
-                        Text(adresse)
-                            .font(.body)
+        ZStack {
+            WinamaxBackground()
+            
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    // Hero Header
+                    VStack(spacing: 20) {
+                        Spacer()
                         
-                        Button(action: {
-                            ContactService.shared.openInMaps(address: adresse)
-                        }) {
-                            Label("Ouvrir dans Plans", systemImage: "map.fill")
-                                .font(.subheadline)
-                                .foregroundColor(.blue)
-                        }
-                        .padding(.top, 4)
-                    }
-                }
-                
-                // Boutons d'action
-                VStack(spacing: 12) {
-                    Button(action: { showingEditSheet = true }) {
-                        Label("Modifier", systemImage: "pencil")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.orange)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
-                    }
-                    
-                    if authService.userRole == .admin {
-                        Button(action: { showingDeleteAlert = true }) {
-                            Label("Supprimer", systemImage: "trash")
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.red)
+                        // Avatar avec gradient
+                        ZStack {
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [theme.accentOrange, theme.accentOrange.opacity(0.7)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 120, height: 120)
+                                .shadow(color: theme.accentOrange.opacity(0.4), radius: 20, y: 10)
+                            
+                            Text(ecole.initiales)
+                                .font(.system(size: 42, weight: .bold, design: .rounded))
                                 .foregroundColor(.white)
-                                .cornerRadius(12)
+                        }
+                        
+                        VStack(spacing: 8) {
+                            Text(ecole.nom)
+                                .font(.system(size: 28, weight: .bold, design: .rounded))
+                                .foregroundColor(theme.textPrimary)
+                                .multilineTextAlignment(.center)
+                                .lineLimit(2)
+                            
+                            if !ecole.villeDisplay.isEmpty {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "mappin.circle.fill")
+                                        .font(.system(size: 14))
+                                    Text(ecole.villeDisplay)
+                                        .font(.winamaxHeadline())
+                                }
+                                .foregroundColor(theme.textSecondary)
+                            }
+                        }
+                        
+                        Spacer()
+                    }
+                    .frame(height: 280)
+                    .frame(maxWidth: .infinity)
+                    .background(
+                        LinearGradient(
+                            colors: [theme.accentOrange.opacity(0.15), theme.accentOrange.opacity(0.05), .clear],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    
+                    // Actions rapides
+                    HStack(spacing: 12) {
+                        QuickActionButton(
+                            icon: "phone.fill",
+                            title: "Appeler",
+                            color: theme.primaryGreen
+                        ) {
+                            ContactService.shared.call(phoneNumber: ecole.telephone)
+                        }
+                        
+                        QuickActionButton(
+                            icon: "envelope.fill",
+                            title: "Email",
+                            color: theme.accentOrange
+                        ) {
+                            ContactService.shared.sendEmail(to: ecole.email)
                         }
                     }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 20)
+                    
+                    // Contenu principal
+                    VStack(spacing: 20) {
+                        // Contact
+                        DetailCard(
+                            icon: "person.fill",
+                            iconColor: theme.primaryGreen,
+                            title: "Contact",
+                            content: {
+                                VStack(alignment: .leading, spacing: 16) {
+                                    Text(ecole.nomContact)
+                                        .font(.winamaxHeadline())
+                                        .foregroundColor(theme.textPrimary)
+                                    
+                                    VStack(spacing: 12) {
+                                        ContactDetailRow(
+                                            icon: "phone.fill",
+                                            label: "Téléphone",
+                                            value: ecole.telephone,
+                                            color: theme.primaryGreen
+                                        ) {
+                                            ContactService.shared.call(phoneNumber: ecole.telephone)
+                                        }
+                                        
+                                        ContactDetailRow(
+                                            icon: "envelope.fill",
+                                            label: "Email",
+                                            value: ecole.email,
+                                            color: theme.accentOrange
+                                        ) {
+                                            ContactService.shared.sendEmail(to: ecole.email)
+                                        }
+                                    }
+                                }
+                            }
+                        )
+                        
+                        // Adresse
+                        if let adresse = ecole.adresseComplete {
+                            DetailCard(
+                                icon: "mappin.circle.fill",
+                                iconColor: theme.accentOrange,
+                                title: "Adresse",
+                                content: {
+                                    VStack(alignment: .leading, spacing: 12) {
+                                        Text(adresse)
+                                            .font(.winamaxBody())
+                                            .foregroundColor(theme.textPrimary)
+                                        
+                                        Button(action: {
+                                            ContactService.shared.openInMaps(address: adresse)
+                                        }) {
+                                            HStack {
+                                                Image(systemName: "map.fill")
+                                                Text("Ouvrir dans Plans")
+                                            }
+                                            .font(.winamaxCaption())
+                                            .foregroundColor(theme.primaryGreen)
+                                        }
+                                    }
+                                }
+                            )
+                        }
+                        
+                        // Boutons d'action
+                        VStack(spacing: 12) {
+                            Button(action: { showingEditSheet = true }) {
+                                HStack {
+                                    Image(systemName: "pencil.fill")
+                                    Text("Modifier")
+                                }
+                            }
+                            .buttonStyle(WinamaxPrimaryButton())
+                            
+                            if authService.userRole == .admin {
+                                Button(action: { showingDeleteAlert = true }) {
+                                    HStack {
+                                        Image(systemName: "trash.fill")
+                                        Text("Supprimer")
+                                    }
+                                }
+                                .buttonStyle(WinamaxDangerButton())
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 40)
+                    }
+                    .padding(.top, 20)
                 }
-                .padding(.horizontal)
-                .padding(.vertical)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -128,9 +206,7 @@ struct EcoleDetailView: View {
             }
         }
     }
-}
-
-extension EcoleDetailView {
+    
     private func refreshEcole() async {
         guard let id = ecole.id else { return }
         do {
@@ -138,6 +214,7 @@ extension EcoleDetailView {
             await MainActor.run { self.ecole = mapAPIEcole(api) }
         } catch { print("Erreur refresh ecole: \(error)") }
     }
+    
     private func mapAPIEcole(_ api: APIEcole) -> Ecole {
         Ecole(
             id: Int64(api.id),
@@ -165,4 +242,5 @@ extension EcoleDetailView {
         ))
         .environmentObject(AuthService.shared)
     }
+    .preferredColorScheme(.dark)
 }
