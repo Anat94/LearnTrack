@@ -2,7 +2,7 @@
 //  MainTabView.swift
 //  LearnTrack
 //
-//  Navigation principale avec TabBar
+//  Navigation principale avec TabBar custom Emerald
 //
 
 import SwiftUI
@@ -10,48 +10,37 @@ import SwiftUI
 struct MainTabView: View {
     @State private var selectedTab = 0
     
+    private let tabItems = [
+        LTTabItem(icon: "calendar", activeIcon: "calendar.circle.fill", title: "Sessions"),
+        LTTabItem(icon: "person.2", activeIcon: "person.2.fill", title: "Formateurs"),
+        LTTabItem(icon: "building.2", activeIcon: "building.2.fill", title: "Clients"),
+        LTTabItem(icon: "graduationcap", activeIcon: "graduationcap.fill", title: "Écoles"),
+        LTTabItem(icon: "person.circle", activeIcon: "person.circle.fill", title: "Profil")
+    ]
+    
     var body: some View {
-        TabView(selection: $selectedTab) {
-            // Dashboard
-            DashboardView()
-                .tabItem { Label("Accueil", systemImage: "house.fill") }
-                .tag(0)
-            // Sessions
-            SessionsListView()
-                .tabItem {
-                    Label("Sessions", systemImage: "calendar")
+        LTTabView(
+            selectedIndex: $selectedTab,
+            items: tabItems,
+            tabBarStyle: .floating
+        ) { index in
+            Group {
+                switch index {
+                case 0:
+                    SessionsListView()
+                case 1:
+                    FormateursListView()
+                case 2:
+                    ClientsListView()
+                case 3:
+                    EcolesListView()
+                case 4:
+                    ProfileView()
+                default:
+                    SessionsListView()
                 }
-                .tag(1)
-            
-            // Formateurs
-            FormateursListView()
-                .tabItem {
-                    Label("Formateurs", systemImage: "person.2.fill")
-                }
-                .tag(2)
-            
-            // Clients
-            ClientsListView()
-                .tabItem {
-                    Label("Clients", systemImage: "building.2.fill")
-                }
-                .tag(3)
-            
-            // Écoles
-            EcolesListView()
-                .tabItem {
-                    Label("Écoles", systemImage: "graduationcap.fill")
-                }
-                .tag(4)
-            
-            // Profil
-            ProfileView()
-                .tabItem {
-                    Label("Profil", systemImage: "person.circle.fill")
-                }
-                .tag(5)
+            }
         }
-        .accentColor(LT.ColorToken.primary)
     }
 }
 

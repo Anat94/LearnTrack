@@ -2,7 +2,7 @@
 //  SessionsListView.swift
 //  LearnTrack
 //
-//  Liste des sessions de formation
+//  Liste des sessions - Design Emerald
 //
 
 import SwiftUI
@@ -10,55 +10,33 @@ import SwiftUI
 struct SessionsListView: View {
     @StateObject private var viewModel = SessionViewModel()
     @State private var showingAddSession = false
-    @State private var selectedSession: Session?
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
-                LTHeroHeader(title: "Sessions", subtitle: "Vos formations à venir", systemImage: "calendar")
-                // Barre de recherche
-                SearchBar(text: $viewModel.searchText)
-                    .padding(.horizontal)
-                    .padding(.top)
+            ZStack {
+                // Background
+                Color.ltBackground
+                    .ignoresSafeArea()
                 
-                // Filtres par mois
-                MonthFilterView(selectedMonth: $viewModel.selectedMonth)
-                    .padding(.horizontal)
-                
-                // Liste des sessions
-                if viewModel.isLoading {
-                    Spacer()
-                    ProgressView("Chargement...")
-                    Spacer()
-                } else if viewModel.filteredSessions.isEmpty {
-                    EmptyStateView(
-                        icon: "calendar.badge.exclamationmark",
-                        title: "Aucune session",
-                        message: "Aucune session trouvée pour ce mois"
-                    )
-                } else {
-                    List {
-                        ForEach(viewModel.filteredSessions) { session in
-                            NavigationLink(destination: SessionDetailView(session: session)) {
-                                SessionCardView(session: session)
-                                    .listRowSeparator(.hidden)
-                            }
-                            .listRowBackground(Color.clear)
-                        }
-                    }
-                    .listStyle(PlainListStyle())
-                    .scrollContentBackground(.hidden)
-                    .refreshable { await viewModel.fetchSessions() }
+                VStack(spacing: 0) {
+                    // Header avec recherche et filtres
+                    headerSection
+                    
+                    // Contenu
+                    contentSection
                 }
             }
-            .navigationTitle("")
-            .navigationBarHidden(true)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Sessions")
+                        .font(.ltH3)
+                        .foregroundColor(.ltText)
+                }
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingAddSession = true }) {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title2)
-                            .foregroundColor(LT.ColorToken.primary)
+                    LTIconButton(icon: "plus", variant: .primary, size: .small) {
+                        showingAddSession = true
                     }
                 }
             }
@@ -68,83 +46,127 @@ struct SessionsListView: View {
             .task {
                 await viewModel.fetchSessions()
             }
-            .ltScreen()
         }
     }
-}
-
-// Card pour afficher une session
-struct SessionCardView: View {
-    let session: Session
     
-    var body: some View {
-        LT.SectionCard {
-            VStack(alignment: .leading, spacing: 12) {
-                // En-tête avec module et badge modalité
-                HStack(alignment: .top) {
-                    Text(session.module)
-                        .font(.headline)
-                        .foregroundColor(LT.ColorToken.textPrimary)
-                        .lineLimit(2)
-                    Spacer()
-                    LT.Badge(
-                        text: session.modalite.label,
-                        color: session.modalite == .presentiel ? LT.ColorToken.secondary : LT.ColorToken.primary
-                    )
-                }
-                
-                // Date et horaires
-                HStack(spacing: 16) {
-                    Label(session.displayDate, systemImage: "calendar")
-                        .font(.subheadline)
-                
-                    Label(session.displayHoraires, systemImage: "clock")
-                        .font(.subheadline)
-                }
-                .foregroundColor(LT.ColorToken.textSecondary)
-                
-                // Formateur
-                if let formateur = session.formateur {
-                    Label(formateur.nomComplet, systemImage: "person.fill")
-                        .font(.subheadline)
-                        .foregroundColor(LT.ColorToken.textSecondary)
-                }
-                
-                // Lieu (si présentiel)
-                if session.modalite == .presentiel && !session.lieu.isEmpty {
-                    Label(session.lieu, systemImage: "mappin.circle.fill")
-                        .font(.caption)
-                        .foregroundColor(LT.ColorToken.textSecondary)
-                        .lineLimit(1)
-                }
-            }
-            .padding(.vertical, 2)
+    // MARK: - Header Section
+    private var headerSection: some View {
+        VStack(spacing: LTSpacing.md) {
+            // Search bar
+            LTSearchBar(text: $viewModel.searchText)
+                .padding(.horizontal, LTSpacing.lg)
+                .padding(.top, LTSpacing.md)
+            
+            // Month filter
+            LTMonthFilter(selectedMonth: $viewModel.selectedMonth)
         }
+        .padding(.bottom, LTSpacing.md)
+        .background(Color.ltCard)
     }
-}
-
-// Filtre par mois
-struct MonthFilterView: View {
-    @Binding var selectedMonth: Int
     
-    let months = [
-        "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
-        "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
-    ]
-    
-    var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
-                ForEach(1...12, id: \.self) { month in
-                    Button(action: { selectedMonth = month }) {
-                        LT.Chip(label: months[month - 1], selected: selectedMonth == month)
+    // MARK: - Content Section
+    @ViewBuilder
+    private var contentSection: some View {
+        if viewModel.isLoading {
+            // Skeleton loading
+            ScrollView {
+                LazyVStack(spacing: LTSpacing.md) {
+                    ForEach(0..<5) { _ in
+                        LTSkeletonCard()
                     }
                 }
+                .padding(.horizontal, LTSpacing.lg)
+                .padding(.top, LTSpacing.lg)
+            }
+        } else if viewModel.filteredSessions.isEmpty {
+            // Empty state
+            LTEmptyState(
+                icon: "calendar.badge.exclamationmark",
+                title: "Aucune session",
+                message: "Aucune session trouvée pour ce mois. Créez-en une nouvelle !",
+                actionTitle: "Créer une session"
+            ) {
+                showingAddSession = true
+            }
+        } else {
+            // Sessions list
+            ScrollView {
+                LazyVStack(spacing: LTSpacing.md) {
+                    ForEach(Array(viewModel.filteredSessions.enumerated()), id: \.element.id) { index, session in
+                        NavigationLink(destination: SessionDetailView(session: session)) {
+                            SessionCardNew(session: session)
+                                .ltStaggered(index: index)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+                .padding(.horizontal, LTSpacing.lg)
+                .padding(.top, LTSpacing.lg)
+                .padding(.bottom, 100) // Space for tab bar
+            }
+            .refreshable {
+                await viewModel.fetchSessions()
             }
         }
+    }
+}
+
+// MARK: - New Session Card
+struct SessionCardNew: View {
+    let session: Session
+    
+    @State private var isPressed = false
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: LTSpacing.md) {
+            // Header avec module et badge
+            HStack(alignment: .top) {
+                Text(session.module)
+                    .font(.ltH4)
+                    .foregroundColor(.ltText)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                
+                Spacer()
+                
+                LTModaliteBadge(isPreentiel: session.modalite == .presentiel)
+            }
+            
+            // Date et horaires
+            HStack(spacing: LTSpacing.lg) {
+                LTIconLabel(icon: "calendar", text: session.displayDate)
+                LTIconLabel(icon: "clock", text: session.displayHoraires)
+            }
+            
+            // Formateur
+            if let formateur = session.formateur {
+                LTIconLabel(icon: "person.fill", text: formateur.nomComplet)
+            }
+            
+            // Lieu (si présentiel)
+            if session.modalite == .presentiel && !session.lieu.isEmpty {
+                LTIconLabel(icon: "mappin.circle.fill", text: session.lieu, color: .ltTextTertiary)
+            }
+        }
+        .padding(LTSpacing.lg)
+        .background(Color.ltCard)
+        .clipShape(RoundedRectangle(cornerRadius: LTRadius.xl))
+        .overlay(
+            RoundedRectangle(cornerRadius: LTRadius.xl)
+                .stroke(Color.ltBorderSubtle, lineWidth: 1)
+        )
+        .ltCardShadow()
+        .scaleEffect(isPressed ? 0.98 : 1.0)
+        .animation(.ltSpringSubtle, value: isPressed)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in isPressed = true }
+                .onEnded { _ in isPressed = false }
+        )
     }
 }
 
 #Preview {
     SessionsListView()
+        .environmentObject(AuthService.shared)
 }

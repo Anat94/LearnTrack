@@ -2,7 +2,7 @@
 //  EcoleDetailView.swift
 //  LearnTrack
 //
-//  Détail d'une école
+//  Détail d'une école - Design Emerald
 //
 
 import SwiftUI
@@ -17,97 +17,43 @@ struct EcoleDetailView: View {
     @State private var showingDeleteAlert = false
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                // En-tête
-                VStack(spacing: 12) {
-                    Circle()
-                        .fill(LT.ColorToken.secondary.opacity(0.2))
-                        .frame(width: 100, height: 100)
-                        .overlay(
-                            Text(ecole.initiales)
-                                .font(.system(size: 36, weight: .bold))
-                                .foregroundColor(LT.ColorToken.secondary)
-                        )
+        ZStack {
+            Color.ltBackground
+                .ignoresSafeArea()
+            
+            ScrollView {
+                VStack(spacing: LTSpacing.lg) {
+                    // Header card
+                    headerCard
                     
-                    Text(ecole.nom)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .multilineTextAlignment(.center)
+                    // Quick actions
+                    quickActionsSection
+                    
+                    // Contact info
+                    contactSection
+                    
+                    // Address
+                    if let adresse = ecole.adresseComplete {
+                        addressSection(adresse)
+                    }
+                    
+                    // Action buttons
+                    actionButtons
+                    
+                    Spacer(minLength: 100)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.top)
-                
-                // Boutons d'action rapide
-                HStack(spacing: 12) {
-                    ActionButton(icon: "phone.fill", title: "Appeler", color: .green) {
-                        ContactService.shared.call(phoneNumber: ecole.telephone)
-                    }
-                    
-                    ActionButton(icon: "envelope.fill", title: "Email", color: .blue) {
-                        ContactService.shared.sendEmail(to: ecole.email)
-                    }
-                }
-                .padding(.horizontal)
-                
-                Divider()
-                
-                // Contact
-                InfoSection(title: "Contact", icon: "person.fill") {
-                    Text(ecole.nomContact)
-                        .font(.headline)
-                        .padding(.bottom, 8)
-                    
-                    ContactRow(icon: "phone", label: "Téléphone", value: ecole.telephone) {
-                        ContactService.shared.call(phoneNumber: ecole.telephone)
-                    }
-                    
-                    ContactRow(icon: "envelope", label: "Email", value: ecole.email) {
-                        ContactService.shared.sendEmail(to: ecole.email)
-                    }
-                }
-                
-                // Adresse
-                if let adresse = ecole.adresseComplete {
-                    Divider()
-                    
-                    InfoSection(title: "Adresse", icon: "mappin.circle.fill") {
-                        Text(adresse)
-                            .font(.body)
-                        
-                        Button(action: {
-                            ContactService.shared.openInMaps(address: adresse)
-                        }) {
-                            Label("Ouvrir dans Plans", systemImage: "map.fill")
-                                .font(.subheadline)
-                                .foregroundColor(.blue)
-                        }
-                        .padding(.top, 4)
-                    }
-                }
-                
-                // Boutons d'action
-                VStack(spacing: 12) {
-                    Button(action: { showingEditSheet = true }) { Label("Modifier", systemImage: "pencil") }
-                    .buttonStyle(LT.PrimaryButtonStyle())
-                    
-                    if authService.userRole == .admin {
-                        Button(action: { showingDeleteAlert = true }) {
-                            Label("Supprimer", systemImage: "trash")
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(LT.ColorToken.danger)
-                                .foregroundColor(.white)
-                                .cornerRadius(12)
-                        }
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.vertical)
+                .padding(.horizontal, LTSpacing.lg)
+                .padding(.top, LTSpacing.lg)
             }
         }
-        .ltScreen()
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("École")
+                    .font(.ltH4)
+                    .foregroundColor(.ltText)
+            }
+        }
         .sheet(isPresented: $showingEditSheet, onDismiss: {
             Task { await refreshEcole() }
         }) {
@@ -123,9 +69,128 @@ struct EcoleDetailView: View {
             }
         }
     }
-}
-
-extension EcoleDetailView {
+    
+    // MARK: - Header Card
+    private var headerCard: some View {
+        LTCard(variant: .accent) {
+            VStack(spacing: LTSpacing.md) {
+                // Icon avatar
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [.emerald400, .emerald600],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: LTHeight.avatarXL, height: LTHeight.avatarXL)
+                    
+                    Image(systemName: "graduationcap.fill")
+                        .font(.system(size: 32, weight: .bold))
+                        .foregroundColor(.white)
+                }
+                .overlay(
+                    Circle()
+                        .stroke(
+                            LinearGradient(
+                                colors: [.emerald400, .emerald600],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 3
+                        )
+                )
+                
+                Text(ecole.nom)
+                    .font(.ltH2)
+                    .foregroundColor(.ltText)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity)
+        }
+    }
+    
+    // MARK: - Quick Actions
+    private var quickActionsSection: some View {
+        HStack(spacing: LTSpacing.md) {
+            QuickActionButtonEcole(
+                icon: "phone.fill",
+                title: "Appeler",
+                color: .emerald500
+            ) {
+                ContactService.shared.call(phoneNumber: ecole.telephone)
+            }
+            
+            QuickActionButtonEcole(
+                icon: "envelope.fill",
+                title: "Email",
+                color: .info
+            ) {
+                ContactService.shared.sendEmail(to: ecole.email)
+            }
+        }
+    }
+    
+    // MARK: - Contact Section
+    private var contactSection: some View {
+        LTInfoSection(title: "Contact", icon: "person.fill") {
+            VStack(alignment: .leading, spacing: LTSpacing.md) {
+                Text(ecole.nomContact)
+                    .font(.ltH4)
+                    .foregroundColor(.ltText)
+                
+                ContactRowEcole(
+                    icon: "phone",
+                    label: "Téléphone",
+                    value: ecole.telephone
+                ) {
+                    ContactService.shared.call(phoneNumber: ecole.telephone)
+                }
+                
+                ContactRowEcole(
+                    icon: "envelope",
+                    label: "Email",
+                    value: ecole.email
+                ) {
+                    ContactService.shared.sendEmail(to: ecole.email)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Address Section
+    private func addressSection(_ adresse: String) -> some View {
+        LTInfoSection(title: "Adresse", icon: "mappin.circle.fill") {
+            VStack(alignment: .leading, spacing: LTSpacing.sm) {
+                Text(adresse)
+                    .font(.ltBody)
+                    .foregroundColor(.ltText)
+                
+                LTButton("Ouvrir dans Plans", variant: .subtle, icon: "map.fill", size: .small) {
+                    ContactService.shared.openInMaps(address: adresse)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Action Buttons
+    private var actionButtons: some View {
+        VStack(spacing: LTSpacing.md) {
+            LTButton("Modifier", variant: .secondary, icon: "pencil", isFullWidth: true) {
+                showingEditSheet = true
+            }
+            
+            if authService.userRole == .admin {
+                LTButton("Supprimer", variant: .destructive, icon: "trash", isFullWidth: true) {
+                    showingDeleteAlert = true
+                }
+            }
+        }
+        .padding(.top, LTSpacing.lg)
+    }
+    
+    // MARK: - Helpers
     private func refreshEcole() async {
         guard let id = ecole.id else { return }
         do {
@@ -133,6 +198,7 @@ extension EcoleDetailView {
             await MainActor.run { self.ecole = mapAPIEcole(api) }
         } catch { print("Erreur refresh ecole: \(error)") }
     }
+    
     private func mapAPIEcole(_ api: APIEcole) -> Ecole {
         Ecole(
             id: Int64(api.id),
@@ -143,6 +209,104 @@ extension EcoleDetailView {
             nomContact: api.responsableNom ?? "",
             email: api.email ?? "",
             telephone: api.telephone ?? ""
+        )
+    }
+}
+
+// MARK: - Quick Action Button (Ecole)
+private struct QuickActionButtonEcole: View {
+    let icon: String
+    let title: String
+    let color: Color
+    let action: () -> Void
+    
+    @State private var isPressed = false
+    
+    var body: some View {
+        Button(action: {
+            let impact = UIImpactFeedbackGenerator(style: .medium)
+            impact.impactOccurred()
+            action()
+        }) {
+            VStack(spacing: LTSpacing.sm) {
+                ZStack {
+                    Circle()
+                        .fill(color.opacity(0.15))
+                        .frame(width: 48, height: 48)
+                    
+                    Image(systemName: icon)
+                        .font(.system(size: LTIconSize.lg, weight: .semibold))
+                        .foregroundColor(color)
+                }
+                
+                Text(title)
+                    .font(.ltCaptionMedium)
+                    .foregroundColor(.ltText)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, LTSpacing.md)
+            .background(Color.ltCard)
+            .clipShape(RoundedRectangle(cornerRadius: LTRadius.lg))
+            .ltCardShadow()
+            .scaleEffect(isPressed ? 0.95 : 1.0)
+            .animation(.ltSpringSubtle, value: isPressed)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in isPressed = true }
+                .onEnded { _ in isPressed = false }
+        )
+    }
+}
+
+// MARK: - Contact Row (Ecole)
+private struct ContactRowEcole: View {
+    let icon: String
+    let label: String
+    let value: String
+    let action: () -> Void
+    
+    @State private var isPressed = false
+    
+    var body: some View {
+        Button(action: {
+            let impact = UIImpactFeedbackGenerator(style: .light)
+            impact.impactOccurred()
+            action()
+        }) {
+            HStack(spacing: LTSpacing.md) {
+                Image(systemName: icon)
+                    .font(.system(size: LTIconSize.md))
+                    .foregroundColor(.emerald500)
+                    .frame(width: 24)
+                
+                VStack(alignment: .leading, spacing: LTSpacing.xxs) {
+                    Text(label)
+                        .font(.ltCaption)
+                        .foregroundColor(.ltTextSecondary)
+                    Text(value)
+                        .font(.ltBodyMedium)
+                        .foregroundColor(.ltText)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: LTIconSize.sm))
+                    .foregroundColor(.ltTextTertiary)
+            }
+            .padding(LTSpacing.md)
+            .background(Color.ltBackgroundSecondary)
+            .clipShape(RoundedRectangle(cornerRadius: LTRadius.md))
+            .scaleEffect(isPressed ? 0.98 : 1.0)
+            .animation(.ltSpringSubtle, value: isPressed)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in isPressed = true }
+                .onEnded { _ in isPressed = false }
         )
     }
 }
