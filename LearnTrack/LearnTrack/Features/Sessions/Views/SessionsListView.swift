@@ -2,7 +2,7 @@
 //  SessionsListView.swift
 //  LearnTrack
 //
-//  Liste des sessions de formation
+//  Liste des sessions style Winamax
 //
 
 import SwiftUI
@@ -10,35 +10,39 @@ import SwiftUI
 struct SessionsListView: View {
     @StateObject private var viewModel = SessionViewModel()
     @State private var showingAddSession = false
-    @State private var selectedSession: Session?
+    @Environment(\.colorScheme) var colorScheme
+    
+    var theme: AppTheme {
+        colorScheme == .dark ? .dark : .light
+    }
     
     var body: some View {
         NavigationView {
             ZStack {
-                BrandBackground()
+                WinamaxBackground()
                 
                 VStack(spacing: 16) {
                     // Barre de recherche
-                    SearchBar(text: $viewModel.searchText, placeholder: "Trouver une session ou un module")
-                        .padding(.horizontal)
+                    SearchBar(text: $viewModel.searchText, placeholder: "Rechercher une session...")
+                        .padding(.horizontal, 20)
                         .padding(.top, 8)
                     
                     // Filtres par mois
                     MonthFilterView(selectedMonth: $viewModel.selectedMonth)
-                        .padding(.horizontal)
+                        .padding(.horizontal, 20)
                     
                     // Liste des sessions
                     Group {
                         if viewModel.isLoading {
-                            ProgressView("Chargement stylé...")
-                                .progressViewStyle(CircularProgressViewStyle(tint: .brandCyan))
-                                .foregroundColor(.white)
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: theme.primaryGreen))
+                                .scaleEffect(1.2)
                                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                         } else if viewModel.filteredSessions.isEmpty {
                             EmptyStateView(
                                 icon: "calendar.badge.exclamationmark",
                                 title: "Aucune session",
-                                message: "Ajustez vos filtres ou ajoutez-en une nouvelle."
+                                message: "Aucune session trouvée pour ce mois"
                             )
                         } else {
                             ScrollView {
@@ -50,8 +54,8 @@ struct SessionsListView: View {
                                         .buttonStyle(.plain)
                                     }
                                 }
-                                .padding(.horizontal)
-                                .padding(.bottom, 12)
+                                .padding(.horizontal, 20)
+                                .padding(.bottom, 20)
                             }
                             .refreshable {
                                 await viewModel.fetchSessions()
@@ -61,14 +65,14 @@ struct SessionsListView: View {
                 }
             }
             .navigationTitle("Sessions")
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingAddSession = true }) {
-                        Image(systemName: "plus.app.fill")
-                            .font(.title2)
-                            .foregroundColor(.brandCyan)
-                            .shadow(color: .brandPink.opacity(0.35), radius: 10, y: 6)
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 24, weight: .semibold))
+                            .foregroundColor(theme.primaryGreen)
+                            .shadow(color: theme.primaryGreen.opacity(0.3), radius: 8, y: 4)
                     }
                 }
             }
@@ -85,107 +89,111 @@ struct SessionsListView: View {
 // Card pour afficher une session
 struct SessionCardView: View {
     let session: Session
+    @Environment(\.colorScheme) var colorScheme
+    
+    var theme: AppTheme {
+        colorScheme == .dark ? .dark : .light
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(session.module)
-                        .font(.headline)
-                        .foregroundColor(.white)
+                        .font(.winamaxHeadline())
+                        .foregroundColor(theme.textPrimary)
                         .lineLimit(2)
                     
                     HStack(spacing: 12) {
                         Label(session.displayDate, systemImage: "calendar")
                         Label(session.displayHoraires, systemImage: "clock")
                     }
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.75))
+                    .font(.winamaxCaption())
+                    .foregroundColor(theme.textSecondary)
                 }
                 
                 Spacer()
                 
-                // Badge Présentiel/Distanciel
-                HStack(spacing: 6) {
-                    Image(systemName: session.modalite.icon)
-                    Text(session.modalite.label)
-                        .fontWeight(.semibold)
-                }
-                .font(.caption)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(
-                    LinearGradient(
-                        colors: session.modalite == .presentiel ? [.brandCyan, .brandIndigo] : [.green, .brandCyan],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
+                // Badge modalité
+                WinamaxBadge(
+                    text: session.modalite.label,
+                    color: session.modalite == .presentiel ? theme.primaryGreen : theme.accentOrange
                 )
-                .cornerRadius(12)
-                .foregroundColor(.white)
-                .shadow(color: .black.opacity(0.25), radius: 10, y: 8)
             }
             
             Divider()
-                .background(Color.white.opacity(0.1))
+                .background(theme.borderColor)
             
             HStack(spacing: 12) {
                 if let formateur = session.formateur {
                     Label(formateur.nomComplet, systemImage: "person.fill")
+                        .font(.winamaxCaption())
+                        .foregroundColor(theme.textSecondary)
                 }
                 
                 if session.modalite == .presentiel {
                     Label(session.lieu, systemImage: "mappin.circle.fill")
+                        .font(.winamaxCaption())
+                        .foregroundColor(theme.textSecondary)
                         .lineLimit(1)
                 }
             }
-            .font(.subheadline)
-            .foregroundColor(.white.opacity(0.78))
         }
-        .glassCard()
+        .winamaxCard()
     }
 }
 
 // Filtre par mois
 struct MonthFilterView: View {
     @Binding var selectedMonth: Int
+    @Environment(\.colorScheme) var colorScheme
+    
+    var theme: AppTheme {
+        colorScheme == .dark ? .dark : .light
+    }
     
     let months = [
-        "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
-        "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+        "Jan", "Fév", "Mar", "Avr", "Mai", "Juin",
+        "Juil", "Août", "Sep", "Oct", "Nov", "Déc"
     ]
     
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
+            HStack(spacing: 10) {
                 ForEach(1...12, id: \.self) { month in
                     Button(action: {
-                        selectedMonth = month
+                        withAnimation(.spring(response: 0.3)) {
+                            selectedMonth = month
+                        }
                     }) {
                         Text(months[month - 1])
-                            .font(.subheadline.weight(.semibold))
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
                             .padding(.horizontal, 16)
                             .padding(.vertical, 10)
                             .background(
                                 Group {
                                     if selectedMonth == month {
                                         LinearGradient(
-                                            colors: [.brandCyan, .brandPink],
+                                            colors: [theme.primaryGreen, theme.primaryGreen.opacity(0.85)],
                                             startPoint: .leading,
                                             endPoint: .trailing
                                         )
                                     } else {
-                                        Color.white.opacity(0.08)
+                                        theme.cardBackground
                                     }
                                 }
                             )
-                            .foregroundColor(selectedMonth == month ? .white : .white.opacity(0.8))
+                            .foregroundColor(selectedMonth == month ? .white : theme.textPrimary)
                             .clipShape(Capsule(style: .continuous))
                             .overlay(
                                 Capsule(style: .continuous)
-                                    .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                                    .stroke(selectedMonth == month ? .clear : theme.borderColor, lineWidth: 1.5)
                             )
-                            .shadow(color: Color.brandCyan.opacity(selectedMonth == month ? 0.25 : 0), radius: 10, y: 6)
+                            .shadow(
+                                color: selectedMonth == month ? theme.primaryGreen.opacity(0.3) : theme.shadowColor,
+                                radius: selectedMonth == month ? 8 : 4,
+                                y: selectedMonth == month ? 4 : 2
+                            )
                     }
                 }
             }
@@ -195,4 +203,5 @@ struct MonthFilterView: View {
 
 #Preview {
     SessionsListView()
+        .preferredColorScheme(.dark)
 }

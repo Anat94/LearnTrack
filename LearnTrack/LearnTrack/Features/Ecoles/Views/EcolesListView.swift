@@ -2,7 +2,7 @@
 //  EcolesListView.swift
 //  LearnTrack
 //
-//  Liste des écoles
+//  Liste des écoles style Winamax
 //
 
 import SwiftUI
@@ -10,28 +10,32 @@ import SwiftUI
 struct EcolesListView: View {
     @StateObject private var viewModel = EcoleViewModel()
     @State private var showingAddEcole = false
+    @Environment(\.colorScheme) var colorScheme
+    
+    var theme: AppTheme {
+        colorScheme == .dark ? .dark : .light
+    }
     
     var body: some View {
         NavigationView {
             ZStack {
-                BrandBackground()
+                WinamaxBackground()
                 
                 VStack(spacing: 16) {
-                    // Barre de recherche
-                    SearchBar(text: $viewModel.searchText, placeholder: "Rechercher une école")
-                        .padding(.horizontal)
+                    SearchBar(text: $viewModel.searchText, placeholder: "Rechercher une école...")
+                        .padding(.horizontal, 20)
                         .padding(.top, 8)
                     
                     if viewModel.isLoading {
-                        ProgressView("Chargement...")
-                            .progressViewStyle(CircularProgressViewStyle(tint: .brandCyan))
-                            .foregroundColor(.white)
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: theme.primaryGreen))
+                            .scaleEffect(1.2)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else if viewModel.filteredEcoles.isEmpty {
                         EmptyStateView(
                             icon: "graduationcap.circle",
                             title: "Aucune école",
-                            message: "Ajoutez votre première école ou ajustez la recherche."
+                            message: "Aucune école trouvée"
                         )
                     } else {
                         ScrollView {
@@ -43,8 +47,8 @@ struct EcolesListView: View {
                                     .buttonStyle(.plain)
                                 }
                             }
-                            .padding(.horizontal)
-                            .padding(.bottom, 12)
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 20)
                         }
                         .refreshable {
                             await viewModel.fetchEcoles()
@@ -53,13 +57,14 @@ struct EcolesListView: View {
                 }
             }
             .navigationTitle("Écoles")
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingAddEcole = true }) {
-                        Image(systemName: "sparkles.square.filled.on.square")
-                            .font(.title2)
-                            .foregroundColor(.brandCyan)
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 24, weight: .semibold))
+                            .foregroundColor(theme.primaryGreen)
+                            .shadow(color: theme.primaryGreen.opacity(0.3), radius: 8, y: 4)
                     }
                 }
             }
@@ -75,6 +80,11 @@ struct EcolesListView: View {
 
 struct EcoleRowView: View {
     let ecole: Ecole
+    @Environment(\.colorScheme) var colorScheme
+    
+    var theme: AppTheme {
+        colorScheme == .dark ? .dark : .light
+    }
     
     var body: some View {
         HStack(spacing: 14) {
@@ -83,42 +93,44 @@ struct EcoleRowView: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [.brandIndigo, .brandPink],
+                            colors: [theme.accentOrange, theme.accentOrange.opacity(0.7)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: 54, height: 54)
-                    .shadow(color: .brandPink.opacity(0.28), radius: 10, y: 6)
+                    .frame(width: 56, height: 56)
+                    .shadow(color: theme.accentOrange.opacity(0.3), radius: 8, y: 4)
                 
                 Text(ecole.initiales)
-                    .font(.headline)
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
             }
             
             VStack(alignment: .leading, spacing: 6) {
                 Text(ecole.nom)
-                    .font(.headline)
-                    .foregroundColor(.white)
+                    .font(.winamaxHeadline())
+                    .foregroundColor(theme.textPrimary)
                 
                 HStack(spacing: 6) {
-                    Image(systemName: "mappin.circle")
-                        .font(.caption)
+                    Image(systemName: "mappin.circle.fill")
+                        .font(.system(size: 12))
                     Text(ecole.villeDisplay)
-                        .font(.subheadline)
+                        .font(.winamaxCaption())
                 }
-                .foregroundColor(.white.opacity(0.75))
+                .foregroundColor(theme.textSecondary)
             }
             
             Spacer()
             
             Image(systemName: "chevron.right")
-                .foregroundColor(.white.opacity(0.6))
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(theme.textSecondary)
         }
-        .glassCard()
+        .winamaxCard()
     }
 }
 
 #Preview {
     EcolesListView()
+        .preferredColorScheme(.dark)
 }

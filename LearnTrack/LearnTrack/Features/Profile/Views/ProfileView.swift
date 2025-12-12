@@ -2,99 +2,168 @@
 //  ProfileView.swift
 //  LearnTrack
 //
-//  Vue du profil utilisateur
+//  Vue du profil utilisateur style Winamax
 //
 
 import SwiftUI
 
 struct ProfileView: View {
     @EnvironmentObject var authService: AuthService
+    @Environment(\.colorScheme) var colorScheme
     @State private var showingLogoutAlert = false
     @AppStorage("isDarkMode") private var isDarkMode = false
     
+    var theme: AppTheme {
+        colorScheme == .dark ? .dark : .light
+    }
+    
+    var userName: String {
+        if let u = authService.currentUser {
+            let name = "\(u.prenom) \(u.nom)".trimmingCharacters(in: .whitespaces)
+            return name.isEmpty ? "Utilisateur" : name
+        }
+        return "Utilisateur"
+    }
+    
     var body: some View {
         NavigationView {
-            List {
-                // Section utilisateur
-                Section {
-                    HStack(spacing: 16) {
-                        Circle()
-                            .fill(Color.blue.opacity(0.2))
-                            .frame(width: 60, height: 60)
-                            .overlay(
+            ZStack {
+                WinamaxBackground()
+                
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 24) {
+                        // En-tête utilisateur
+                        VStack(spacing: 16) {
+                            ZStack {
+                                Circle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [theme.primaryGreen, theme.primaryGreen.opacity(0.7)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .frame(width: 100, height: 100)
+                                    .shadow(color: theme.primaryGreen.opacity(0.4), radius: 20, y: 10)
+                                
                                 Image(systemName: "person.fill")
-                                    .font(.title)
-                                    .foregroundColor(.blue)
-                            )
-                        
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text({
-                                if let u = authService.currentUser {
-                                    let name = "\(u.prenom) \(u.nom)".trimmingCharacters(in: .whitespaces)
-                                    return name.isEmpty ? "Utilisateur" : name
-                                }
-                                return "Utilisateur"
-                            }())
-                                .font(.headline)
-                        
-                            Text(authService.currentUser?.email ?? "")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
+                                    .font(.system(size: 45, weight: .semibold))
+                                    .foregroundColor(.white)
+                            }
                             
-                            // Badge rôle
-                            Text(authService.userRole == .admin ? "Administrateur" : "Utilisateur")
-                                .font(.caption)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 3)
-                                .background(authService.userRole == .admin ? Color.orange.opacity(0.2) : Color.blue.opacity(0.2))
-                                .foregroundColor(authService.userRole == .admin ? .orange : .blue)
-                                .cornerRadius(8)
+                            VStack(spacing: 8) {
+                                Text(userName)
+                                    .font(.winamaxTitle())
+                                    .foregroundColor(theme.textPrimary)
+                                
+                                Text(authService.currentUser?.email ?? "")
+                                    .font(.winamaxCaption())
+                                    .foregroundColor(theme.textSecondary)
+                                
+                                // Badge rôle
+                                WinamaxBadge(
+                                    text: authService.userRole == .admin ? "Administrateur" : "Utilisateur",
+                                    color: authService.userRole == .admin ? theme.accentOrange : theme.primaryGreen
+                                )
+                            }
                         }
-                    }
-                    .padding(.vertical, 8)
-                }
-                
-                // Préférences
-                Section("Préférences") {
-                    Toggle(isOn: $isDarkMode) {
-                        Label("Mode sombre", systemImage: "moon.fill")
-                    }
-                }
-                
-                // Informations
-                Section("À propos") {
-                    HStack {
-                        Label("Version", systemImage: "info.circle")
-                        Spacer()
-                        Text("1.0.0")
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    Link(destination: URL(string: "https://github.com")!) {
-                        Label("Code source", systemImage: "link")
-                    }
-                }
-                
-                // Compte
-                Section {
-                    Button(action: {
-                        showingLogoutAlert = true
-                    }) {
-                        Label("Déconnexion", systemImage: "arrow.right.square")
-                            .foregroundColor(.red)
-                    }
-                } header: {
-                    Text("Compte")
-                } footer: {
-                    Text("LearnTrack © 2025\nApplication de gestion de formations")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: .infinity)
                         .padding(.top, 20)
+                        .winamaxCard()
+                        .padding(.horizontal, 20)
+                        
+                        // Préférences
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Préférences")
+                                .font(.winamaxHeadline())
+                                .foregroundColor(theme.textPrimary)
+                                .padding(.horizontal, 4)
+                            
+                            Toggle(isOn: $isDarkMode) {
+                                HStack(spacing: 12) {
+                                    Image(systemName: isDarkMode ? "moon.fill" : "sun.max.fill")
+                                        .foregroundColor(theme.primaryGreen)
+                                        .font(.system(size: 18))
+                                    
+                                    Text("Mode sombre")
+                                        .font(.winamaxBody())
+                                        .foregroundColor(theme.textPrimary)
+                                }
+                            }
+                            .tint(theme.primaryGreen)
+                        }
+                        .winamaxCard()
+                        .padding(.horizontal, 20)
+                        
+                        // Informations
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("À propos")
+                                .font(.winamaxHeadline())
+                                .foregroundColor(theme.textPrimary)
+                                .padding(.horizontal, 4)
+                            
+                            HStack {
+                                Label("Version", systemImage: "info.circle")
+                                    .font(.winamaxBody())
+                                    .foregroundColor(theme.textPrimary)
+                                
+                                Spacer()
+                                
+                                Text("1.0.0")
+                                    .font(.winamaxCaption())
+                                    .foregroundColor(theme.textSecondary)
+                            }
+                            
+                            Divider()
+                                .background(theme.borderColor)
+                            
+                            Link(destination: URL(string: "https://github.com")!) {
+                                HStack {
+                                    Label("Code source", systemImage: "link")
+                                        .font(.winamaxBody())
+                                        .foregroundColor(theme.primaryGreen)
+                                    
+                                    Spacer()
+                                    
+                                    Image(systemName: "arrow.up.right.square")
+                                        .foregroundColor(theme.primaryGreen)
+                                }
+                            }
+                        }
+                        .winamaxCard()
+                        .padding(.horizontal, 20)
+                        
+                        // Déconnexion
+                        Button(action: {
+                            showingLogoutAlert = true
+                        }) {
+                            HStack {
+                                Image(systemName: "arrow.right.square.fill")
+                                    .font(.system(size: 18))
+                                Text("Déconnexion")
+                                    .font(.winamaxBody())
+                            }
+                            .foregroundColor(.white)
+                        }
+                        .buttonStyle(WinamaxDangerButton())
+                        .padding(.horizontal, 20)
+                        
+                        // Footer
+                        VStack(spacing: 8) {
+                            Text("LearnTrack © 2025")
+                                .font(.winamaxCaption())
+                                .foregroundColor(theme.textSecondary)
+                            
+                            Text("Application de gestion de formations")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(theme.textSecondary.opacity(0.7))
+                        }
+                        .padding(.top, 20)
+                        .padding(.bottom, 40)
+                    }
                 }
             }
             .navigationTitle("Profil")
+            .navigationBarTitleDisplayMode(.large)
             .alert("Déconnexion", isPresented: $showingLogoutAlert) {
                 Button("Annuler", role: .cancel) { }
                 Button("Déconnexion", role: .destructive) {
@@ -112,4 +181,5 @@ struct ProfileView: View {
 #Preview {
     ProfileView()
         .environmentObject(AuthService.shared)
+        .preferredColorScheme(.dark)
 }

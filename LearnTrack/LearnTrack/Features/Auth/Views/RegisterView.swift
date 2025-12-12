@@ -2,13 +2,14 @@
 //  RegisterView.swift
 //  LearnTrack
 //
-//  Écran d'inscription
+//  Écran d'inscription style Winamax
 //
 
 import SwiftUI
 
 struct RegisterView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var authService: AuthService
     
     @State private var prenom = ""
@@ -18,43 +19,128 @@ struct RegisterView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     
+    var theme: AppTheme {
+        colorScheme == .dark ? .dark : .light
+    }
+    
     var isValid: Bool {
         !prenom.isEmpty && !nom.isEmpty && !email.isEmpty && !password.isEmpty
     }
     
     var body: some View {
         NavigationView {
-            Form {
-                Section("Identité") {
-                    TextField("Prénom", text: $prenom)
-                    TextField("Nom", text: $nom)
-                }
+            ZStack {
+                WinamaxBackground()
                 
-                Section("Compte") {
-                    TextField("Email", text: $email)
-                        .textInputAutocapitalization(.never)
-                        .keyboardType(.emailAddress)
-                        .autocorrectionDisabled()
-                    SecureField("Mot de passe", text: $password)
-                }
-                
-                if let errorMessage = errorMessage {
-                    Text(errorMessage)
-                        .font(.caption)
-                        .foregroundColor(.red)
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 24) {
+                        // En-tête
+                        VStack(spacing: 8) {
+                            Text("Créer un compte")
+                                .font(.winamaxTitle())
+                                .foregroundColor(theme.textPrimary)
+                            
+                            Text("Rejoignez LearnTrack")
+                                .font(.winamaxCaption())
+                                .foregroundColor(theme.textSecondary)
+                        }
+                        .padding(.top, 20)
+                        
+                        // Formulaire
+                        VStack(spacing: 20) {
+                            // Prénom
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Prénom")
+                                    .font(.winamaxCaption())
+                                    .foregroundColor(theme.textPrimary)
+                                    .fontWeight(.semibold)
+                                
+                                TextField("Prénom", text: $prenom)
+                                    .winamaxTextField()
+                            }
+                            
+                            // Nom
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Nom")
+                                    .font(.winamaxCaption())
+                                    .foregroundColor(theme.textPrimary)
+                                    .fontWeight(.semibold)
+                                
+                                TextField("Nom", text: $nom)
+                                    .winamaxTextField()
+                            }
+                            
+                            // Email
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Email")
+                                    .font(.winamaxCaption())
+                                    .foregroundColor(theme.textPrimary)
+                                    .fontWeight(.semibold)
+                                
+                                TextField("nom@domaine.com", text: $email)
+                                    .keyboardType(.emailAddress)
+                                    .textInputAutocapitalization(.never)
+                                    .autocorrectionDisabled()
+                                    .winamaxTextField()
+                            }
+                            
+                            // Mot de passe
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Mot de passe")
+                                    .font(.winamaxCaption())
+                                    .foregroundColor(theme.textPrimary)
+                                    .fontWeight(.semibold)
+                                
+                                SecureField("••••••••", text: $password)
+                                    .winamaxTextField()
+                            }
+                            
+                            // Message d'erreur
+                            if let errorMessage = errorMessage {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                        .foregroundColor(.red)
+                                    Text(errorMessage)
+                                        .font(.winamaxCaption())
+                                        .foregroundColor(.red)
+                                }
+                                .padding(12)
+                                .background(Color.red.opacity(0.1))
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                            }
+                            
+                            // Bouton d'inscription
+                            Button(action: handleRegister) {
+                                HStack {
+                                    if isLoading {
+                                        ProgressView()
+                                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                    } else {
+                                        Text("S'inscrire")
+                                    }
+                                }
+                            }
+                            .buttonStyle(WinamaxPrimaryButton())
+                            .disabled(!isValid || isLoading)
+                            .opacity(isValid ? 1.0 : 0.6)
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 24)
+                        .winamaxCard()
+                        .padding(.horizontal, 24)
+                        
+                        Spacer(minLength: 40)
+                    }
                 }
             }
-            .navigationTitle("Créer un compte")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Annuler") { dismiss() }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: handleRegister) {
-                        if isLoading { ProgressView() } else { Text("S'inscrire") }
+                    Button("Annuler") {
+                        dismiss()
                     }
-                    .disabled(!isValid || isLoading)
+                    .foregroundColor(theme.textPrimary)
+                    .font(.winamaxBody())
                 }
             }
         }
@@ -78,7 +164,13 @@ struct RegisterView: View {
 }
 
 #Preview {
-    RegisterView()
-        .environmentObject(AuthService.shared)
+    Group {
+        RegisterView()
+            .environmentObject(AuthService.shared)
+            .preferredColorScheme(.light)
+        
+        RegisterView()
+            .environmentObject(AuthService.shared)
+            .preferredColorScheme(.dark)
+    }
 }
-

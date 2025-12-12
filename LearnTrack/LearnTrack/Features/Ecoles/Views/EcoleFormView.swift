@@ -29,38 +29,59 @@ struct EcoleFormView: View {
         ecoleToEdit != nil
     }
     
+    @Environment(\.colorScheme) var colorScheme
+    
+    var theme: AppTheme {
+        colorScheme == .dark ? .dark : .light
+    }
+    
     var body: some View {
         NavigationView {
             ZStack {
-                BrandBackground()
+                WinamaxBackground()
                 
-                Form {
-                    Section("Établissement") {
-                        TextField("Nom de l'école", text: $nom)
-                    }
-                    
-                    Section("Contact") {
-                        TextField("Nom du contact", text: $nomContact)
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 20) {
+                        // Établissement
+                        FormSection(title: "Établissement") {
+                            FormField(label: "Nom de l'école", text: $nom, placeholder: "Nom de l'établissement")
+                        }
                         
-                        TextField("Email", text: $email)
-                            .keyboardType(.emailAddress)
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled()
+                        // Contact
+                        FormSection(title: "Contact") {
+                            FormField(label: "Nom du contact", text: $nomContact, placeholder: "Prénom Nom")
+                            FormField(label: "Email", text: $email, placeholder: "contact@ecole.com", keyboardType: .emailAddress)
+                            FormField(label: "Téléphone", text: $telephone, placeholder: "01 23 45 67 89", keyboardType: .phonePad)
+                        }
                         
-                        TextField("Téléphone", text: $telephone)
-                            .keyboardType(.phonePad)
+                        // Adresse
+                        FormSection(title: "Adresse") {
+                            FormField(label: "Rue", text: $rue, placeholder: "123 rue de la Paix")
+                            HStack(spacing: 12) {
+                                FormField(label: "Code postal", text: $codePostal, placeholder: "75001", keyboardType: .numberPad)
+                                FormField(label: "Ville", text: $ville, placeholder: "Paris")
+                            }
+                        }
+                        
+                        // Bouton
+                        Button(action: saveEcole) {
+                            HStack {
+                                if isLoading {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                } else {
+                                    Text(isEditing ? "Enregistrer" : "Créer")
+                                }
+                            }
+                        }
+                        .buttonStyle(WinamaxPrimaryButton())
+                        .disabled(nom.isEmpty || nomContact.isEmpty || isLoading)
+                        .opacity((nom.isEmpty || nomContact.isEmpty) ? 0.6 : 1.0)
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 40)
                     }
-                    
-                    Section("Adresse") {
-                        TextField("Rue", text: $rue)
-                        TextField("Code postal", text: $codePostal)
-                            .keyboardType(.numberPad)
-                        TextField("Ville", text: $ville)
-                    }
+                    .padding(.top, 20)
                 }
-                .scrollContentBackground(.hidden)
-                .listRowBackground(Color.white.opacity(0.06))
-                .tint(.brandCyan)
             }
             .navigationTitle(isEditing ? "Modifier" : "Nouvelle école")
             .navigationBarTitleDisplayMode(.inline)
@@ -69,13 +90,8 @@ struct EcoleFormView: View {
                     Button("Annuler") {
                         dismiss()
                     }
-                }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(isEditing ? "Enregistrer" : "Créer") {
-                        saveEcole()
-                    }
-                    .disabled(nom.isEmpty || nomContact.isEmpty || isLoading)
+                    .foregroundColor(theme.textPrimary)
+                    .font(.winamaxBody())
                 }
             }
             .onAppear {

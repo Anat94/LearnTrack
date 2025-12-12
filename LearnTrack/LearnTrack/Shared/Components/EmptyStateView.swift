@@ -2,7 +2,7 @@
 //  EmptyStateView.swift
 //  LearnTrack
 //
-//  Vue pour les états vides
+//  Vue pour les états vides style Winamax
 //
 
 import SwiftUI
@@ -11,36 +11,61 @@ struct EmptyStateView: View {
     let icon: String
     let title: String
     let message: String
+    @Environment(\.colorScheme) var colorScheme
+    
+    var theme: AppTheme {
+        colorScheme == .dark ? .dark : .light
+    }
     
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: icon)
-                .font(.system(size: 64, weight: .semibold))
-                .foregroundColor(.brandCyan)
-                .shadow(color: .brandPink.opacity(0.25), radius: 12, x: 0, y: 10)
+        VStack(spacing: 20) {
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [theme.primaryGreen.opacity(0.2), theme.primaryGreen.opacity(0.05)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 120, height: 120)
+                
+                Image(systemName: icon)
+                    .font(.system(size: 50, weight: .semibold))
+                    .foregroundColor(theme.primaryGreen)
+            }
             
-            Text(title)
-                .font(.title2)
-                .fontWeight(.bold)
-                .foregroundColor(.white)
-            
-            Text(message)
-                .font(.subheadline)
-                .foregroundColor(.white.opacity(0.75))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
+            VStack(spacing: 8) {
+                Text(title)
+                    .font(.winamaxHeadline())
+                    .foregroundColor(theme.textPrimary)
+                
+                Text(message)
+                    .font(.winamaxCaption())
+                    .foregroundColor(theme.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+            }
         }
-        .padding(28)
-        .glassCard()
-        .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(40)
     }
 }
 
 #Preview {
-    EmptyStateView(
-        icon: "calendar.badge.exclamationmark",
-        title: "Aucune session",
-        message: "Aucune session trouvée pour ce mois"
-    )
+    Group {
+        EmptyStateView(
+            icon: "calendar.badge.exclamationmark",
+            title: "Aucune session",
+            message: "Aucune session trouvée pour ce mois"
+        )
+        .preferredColorScheme(.light)
+        
+        EmptyStateView(
+            icon: "calendar.badge.exclamationmark",
+            title: "Aucune session",
+            message: "Aucune session trouvée pour ce mois"
+        )
+        .preferredColorScheme(.dark)
+    }
 }

@@ -35,54 +35,86 @@ struct FormateurFormView: View {
         formateurToEdit != nil
     }
     
+    @Environment(\.colorScheme) var colorScheme
+    
+    var theme: AppTheme {
+        colorScheme == .dark ? .dark : .light
+    }
+    
     var body: some View {
         NavigationView {
             ZStack {
-                BrandBackground()
+                WinamaxBackground()
                 
-                Form {
-                    Section("Identité") {
-                        TextField("Prénom", text: $prenom)
-                        TextField("Nom", text: $nom)
-                    }
-                    
-                    Section("Contact") {
-                        TextField("Email", text: $email)
-                            .keyboardType(.emailAddress)
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled()
-                        
-                        TextField("Téléphone", text: $telephone)
-                            .keyboardType(.phonePad)
-                    }
-                    
-                    Section("Informations professionnelles") {
-                        TextField("Spécialité", text: $specialite)
-                        
-                        TextField("Taux horaire (€)", text: $tauxHoraire)
-                            .keyboardType(.decimalPad)
-                        
-                        Toggle("Formateur externe", isOn: $exterieur)
-                    }
-                    
-                    if exterieur {
-                        Section("Société") {
-                            TextField("Nom de la société", text: $societe)
-                            TextField("SIRET", text: $siret)
-                            TextField("NDA", text: $nda)
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 20) {
+                        // Identité
+                        FormSection(title: "Identité") {
+                            FormField(label: "Prénom", text: $prenom, placeholder: "Prénom")
+                            FormField(label: "Nom", text: $nom, placeholder: "Nom")
                         }
+                        
+                        // Contact
+                        FormSection(title: "Contact") {
+                            FormField(label: "Email", text: $email, placeholder: "email@domaine.com", keyboardType: .emailAddress)
+                            FormField(label: "Téléphone", text: $telephone, placeholder: "01 23 45 67 89", keyboardType: .phonePad)
+                        }
+                        
+                        // Informations professionnelles
+                        FormSection(title: "Informations professionnelles") {
+                            FormField(label: "Spécialité", text: $specialite, placeholder: "Ex: Swift, iOS")
+                            FormField(label: "Taux horaire (€)", text: $tauxHoraire, placeholder: "50.00", keyboardType: .decimalPad)
+                            
+                            Toggle(isOn: $exterieur) {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "person.badge.key.fill")
+                                        .foregroundColor(theme.primaryGreen)
+                                    Text("Formateur externe")
+                                        .font(.winamaxBody())
+                                        .foregroundColor(theme.textPrimary)
+                                }
+                            }
+                            .tint(theme.primaryGreen)
+                            .padding(.top, 8)
+                        }
+                        
+                        // Société (si externe)
+                        if exterieur {
+                            FormSection(title: "Société") {
+                                FormField(label: "Nom de la société", text: $societe, placeholder: "Nom de l'entreprise")
+                                FormField(label: "SIRET", text: $siret, placeholder: "12345678900001", keyboardType: .numberPad)
+                                FormField(label: "NDA", text: $nda, placeholder: "Numéro NDA")
+                            }
+                        }
+                        
+                        // Adresse
+                        FormSection(title: "Adresse") {
+                            FormField(label: "Rue", text: $rue, placeholder: "123 rue de la Paix")
+                            HStack(spacing: 12) {
+                                FormField(label: "Code postal", text: $codePostal, placeholder: "75001", keyboardType: .numberPad)
+                                FormField(label: "Ville", text: $ville, placeholder: "Paris")
+                            }
+                        }
+                        
+                        // Bouton
+                        Button(action: saveFormateur) {
+                            HStack {
+                                if isLoading {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                } else {
+                                    Text(isEditing ? "Enregistrer" : "Créer")
+                                }
+                            }
+                        }
+                        .buttonStyle(WinamaxPrimaryButton())
+                        .disabled(prenom.isEmpty || nom.isEmpty || isLoading)
+                        .opacity((prenom.isEmpty || nom.isEmpty) ? 0.6 : 1.0)
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 40)
                     }
-                    
-                    Section("Adresse") {
-                        TextField("Rue", text: $rue)
-                        TextField("Code postal", text: $codePostal)
-                            .keyboardType(.numberPad)
-                        TextField("Ville", text: $ville)
-                    }
+                    .padding(.top, 20)
                 }
-                .scrollContentBackground(.hidden)
-                .listRowBackground(Color.white.opacity(0.06))
-                .tint(.brandCyan)
             }
             .navigationTitle(isEditing ? "Modifier" : "Nouveau formateur")
             .navigationBarTitleDisplayMode(.inline)
@@ -91,13 +123,8 @@ struct FormateurFormView: View {
                     Button("Annuler") {
                         dismiss()
                     }
-                }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(isEditing ? "Enregistrer" : "Créer") {
-                        saveFormateur()
-                    }
-                    .disabled(prenom.isEmpty || nom.isEmpty || isLoading)
+                    .foregroundColor(theme.textPrimary)
+                    .font(.winamaxBody())
                 }
             }
             .onAppear {

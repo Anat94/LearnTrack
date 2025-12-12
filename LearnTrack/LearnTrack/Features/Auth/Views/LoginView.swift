@@ -2,13 +2,14 @@
 //  LoginView.swift
 //  LearnTrack
 //
-//  Écran de connexion
+//  Écran de connexion style Winamax
 //
 
 import SwiftUI
 
 struct LoginView: View {
     @EnvironmentObject var authService: AuthService
+    @Environment(\.colorScheme) var colorScheme
     @State private var email = ""
     @State private var password = ""
     @State private var isLoading = false
@@ -16,75 +17,89 @@ struct LoginView: View {
     @State private var showResetPassword = false
     @State private var showRegister = false
     
+    var theme: AppTheme {
+        colorScheme == .dark ? .dark : .light
+    }
+    
     var body: some View {
         NavigationView {
             ZStack {
-                BrandBackground()
+                WinamaxBackground()
                 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 32) {
-                        // Logo et titre
-                        VStack(spacing: 12) {
-                            Image(systemName: "book.closed.circle.fill")
-                                .resizable()
-                                .frame(width: 110, height: 110)
-                                .foregroundStyle(
-                                    LinearGradient(
-                                        colors: [.brandCyan, .brandPink],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
+                        Spacer(minLength: 40)
+                        
+                        // Logo et branding
+                        VStack(spacing: 16) {
+                            ZStack {
+                                Circle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [theme.primaryGreen, theme.primaryGreen.opacity(0.7)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
                                     )
-                                )
-                                .shadow(color: .brandCyan.opacity(0.35), radius: 18, y: 12)
-                            
-                            VStack(spacing: 4) {
-                                Text("LearnTrack")
-                                    .font(.system(size: 38, weight: .bold))
+                                    .frame(width: 120, height: 120)
+                                    .shadow(color: theme.primaryGreen.opacity(0.4), radius: 20, y: 10)
+                                
+                                Image(systemName: "book.closed.fill")
+                                    .font(.system(size: 50, weight: .bold))
                                     .foregroundColor(.white)
+                            }
+                            
+                            VStack(spacing: 8) {
+                                Text("LearnTrack")
+                                    .font(.winamaxTitle())
+                                    .foregroundColor(theme.textPrimary)
                                 
                                 Text("Gestion de formations")
-                                    .font(.subheadline)
-                                    .foregroundColor(.white.opacity(0.75))
+                                    .font(.winamaxCaption())
+                                    .foregroundColor(theme.textSecondary)
                             }
                         }
-                        .padding(.top, 48)
+                        .padding(.top, 20)
                         
+                        // Formulaire
                         VStack(spacing: 20) {
                             // Email
                             VStack(alignment: .leading, spacing: 8) {
-                                Label("Email", systemImage: "envelope")
-                                    .foregroundColor(.white.opacity(0.85))
-                                    .font(.subheadline)
+                                Text("Email")
+                                    .font(.winamaxCaption())
+                                    .foregroundColor(theme.textPrimary)
+                                    .fontWeight(.semibold)
                                 
                                 TextField("nom@domaine.com", text: $email)
                                     .keyboardType(.emailAddress)
                                     .textInputAutocapitalization(.never)
                                     .autocorrectionDisabled()
-                                    .padding(14)
-                                    .background(Color.white.opacity(0.06))
-                                    .neonBordered()
-                                    .foregroundColor(.white)
+                                    .winamaxTextField()
                             }
                             
                             // Mot de passe
                             VStack(alignment: .leading, spacing: 8) {
-                                Label("Mot de passe", systemImage: "lock")
-                                    .foregroundColor(.white.opacity(0.85))
-                                    .font(.subheadline)
+                                Text("Mot de passe")
+                                    .font(.winamaxCaption())
+                                    .foregroundColor(theme.textPrimary)
+                                    .fontWeight(.semibold)
                                 
                                 SecureField("••••••••", text: $password)
-                                    .padding(14)
-                                    .background(Color.white.opacity(0.06))
-                                    .neonBordered()
-                                    .foregroundColor(.white)
+                                    .winamaxTextField()
                             }
                             
                             // Message d'erreur
                             if let errorMessage = errorMessage {
-                                Text(errorMessage)
-                                    .font(.caption)
-                                    .foregroundColor(.red.opacity(0.9))
-                                    .padding(.top, 4)
+                                HStack(spacing: 8) {
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                        .foregroundColor(.red)
+                                    Text(errorMessage)
+                                        .font(.winamaxCaption())
+                                        .foregroundColor(.red)
+                                }
+                                .padding(12)
+                                .background(Color.red.opacity(0.1))
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
                             }
                             
                             // Bouton de connexion
@@ -94,35 +109,37 @@ struct LoginView: View {
                                         ProgressView()
                                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
                                     } else {
-                                        Image(systemName: "arrow.right.circle.fill")
                                         Text("Se connecter")
                                     }
                                 }
-                                .foregroundColor(.white)
                             }
-                            .buttonStyle(PrimaryButtonStyle())
+                            .buttonStyle(WinamaxPrimaryButton())
                             .disabled(isLoading || email.isEmpty || password.isEmpty)
                             .opacity((email.isEmpty || password.isEmpty) ? 0.6 : 1.0)
                             
-                            HStack {
+                            // Actions secondaires
+                            HStack(spacing: 20) {
                                 Button("Mot de passe oublié ?") {
                                     showResetPassword = true
                                 }
+                                .font(.winamaxCaption())
+                                .foregroundColor(theme.primaryGreen)
                                 
                                 Spacer()
                                 
                                 Button("Créer un compte") {
                                     showRegister = true
                                 }
+                                .font(.winamaxCaption())
+                                .foregroundColor(theme.accentOrange)
                             }
-                            .font(.subheadline)
-                            .foregroundColor(.white.opacity(0.9))
                         }
-                        .padding(24)
-                        .glassCard()
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 24)
+                        .winamaxCard()
                         .padding(.horizontal, 24)
                         
-                        Spacer(minLength: 24)
+                        Spacer(minLength: 40)
                     }
                 }
             }
@@ -155,6 +172,13 @@ struct LoginView: View {
 }
 
 #Preview {
-    LoginView()
-        .environmentObject(AuthService.shared)
+    Group {
+        LoginView()
+            .environmentObject(AuthService.shared)
+            .preferredColorScheme(.light)
+        
+        LoginView()
+            .environmentObject(AuthService.shared)
+            .preferredColorScheme(.dark)
+    }
 }

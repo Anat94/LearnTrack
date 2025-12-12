@@ -2,7 +2,7 @@
 //  FormateursListView.swift
 //  LearnTrack
 //
-//  Liste des formateurs
+//  Liste des formateurs style Winamax
 //
 
 import SwiftUI
@@ -10,41 +10,75 @@ import SwiftUI
 struct FormateursListView: View {
     @StateObject private var viewModel = FormateurViewModel()
     @State private var showingAddFormateur = false
+    @Environment(\.colorScheme) var colorScheme
+    
+    var theme: AppTheme {
+        colorScheme == .dark ? .dark : .light
+    }
     
     var body: some View {
         NavigationView {
             ZStack {
-                BrandBackground()
+                WinamaxBackground()
                 
                 VStack(spacing: 16) {
-                    // Barre de recherche
-                    SearchBar(text: $viewModel.searchText, placeholder: "Rechercher un formateur")
-                        .padding(.horizontal)
+                    SearchBar(text: $viewModel.searchText, placeholder: "Rechercher un formateur...")
+                        .padding(.horizontal, 20)
                         .padding(.top, 8)
                     
                     // Filtre type
-                    Picker("Type", selection: $viewModel.filterType) {
-                        ForEach(FormateurViewModel.FilterType.allCases, id: \.self) { type in
-                            Text(type.rawValue).tag(type)
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 10) {
+                            ForEach(FormateurViewModel.FilterType.allCases, id: \.self) { type in
+                                Button(action: {
+                                    withAnimation(.spring(response: 0.3)) {
+                                        viewModel.filterType = type
+                                    }
+                                }) {
+                                    Text(type.rawValue)
+                                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 10)
+                                        .background(
+                                            Group {
+                                                if viewModel.filterType == type {
+                                                    LinearGradient(
+                                                        colors: [theme.primaryGreen, theme.primaryGreen.opacity(0.85)],
+                                                        startPoint: .leading,
+                                                        endPoint: .trailing
+                                                    )
+                                                } else {
+                                                    theme.cardBackground
+                                                }
+                                            }
+                                        )
+                                        .foregroundColor(viewModel.filterType == type ? .white : theme.textPrimary)
+                                        .clipShape(Capsule(style: .continuous))
+                                        .overlay(
+                                            Capsule(style: .continuous)
+                                                .stroke(viewModel.filterType == type ? .clear : theme.borderColor, lineWidth: 1.5)
+                                        )
+                                        .shadow(
+                                            color: viewModel.filterType == type ? theme.primaryGreen.opacity(0.3) : theme.shadowColor,
+                                            radius: viewModel.filterType == type ? 8 : 4,
+                                            y: viewModel.filterType == type ? 4 : 2
+                                        )
+                                }
+                            }
                         }
+                        .padding(.horizontal, 20)
                     }
-                    .pickerStyle(.segmented)
-                    .padding(.horizontal)
-                    .background(Color.white.opacity(0.04))
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                    .padding(.horizontal)
                     
-                    // Liste
                     if viewModel.isLoading {
-                        ProgressView("Chargement...")
-                            .progressViewStyle(CircularProgressViewStyle(tint: .brandCyan))
-                            .foregroundColor(.white)
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: theme.primaryGreen))
+                            .scaleEffect(1.2)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else if viewModel.filteredFormateurs.isEmpty {
                         EmptyStateView(
                             icon: "person.2.slash",
                             title: "Aucun formateur",
-                            message: "Ajoutez votre premier talent ou ajustez la recherche."
+                            message: "Aucun formateur trouvé"
                         )
                     } else {
                         ScrollView {
@@ -56,8 +90,8 @@ struct FormateursListView: View {
                                     .buttonStyle(.plain)
                                 }
                             }
-                            .padding(.horizontal)
-                            .padding(.bottom, 12)
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 20)
                         }
                         .refreshable {
                             await viewModel.fetchFormateurs()
@@ -66,13 +100,14 @@ struct FormateursListView: View {
                 }
             }
             .navigationTitle("Formateurs")
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingAddFormateur = true }) {
-                        Image(systemName: "sparkles.rectangle.stack")
-                            .font(.title2)
-                            .foregroundColor(.brandCyan)
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 24, weight: .semibold))
+                            .foregroundColor(theme.primaryGreen)
+                            .shadow(color: theme.primaryGreen.opacity(0.3), radius: 8, y: 4)
                     }
                 }
             }
@@ -88,6 +123,11 @@ struct FormateursListView: View {
 
 struct FormateurRowView: View {
     let formateur: Formateur
+    @Environment(\.colorScheme) var colorScheme
+    
+    var theme: AppTheme {
+        colorScheme == .dark ? .dark : .light
+    }
     
     var body: some View {
         HStack(spacing: 14) {
@@ -96,47 +136,52 @@ struct FormateurRowView: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: formateur.exterieur ? [.orange, .brandPink] : [.brandCyan, .green],
+                            colors: formateur.exterieur ? 
+                                [theme.accentOrange, theme.accentOrange.opacity(0.7)] :
+                                [theme.primaryGreen, theme.primaryGreen.opacity(0.7)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: 54, height: 54)
-                    .shadow(color: .brandCyan.opacity(0.3), radius: 10, y: 6)
+                    .frame(width: 56, height: 56)
+                    .shadow(
+                        color: (formateur.exterieur ? theme.accentOrange : theme.primaryGreen).opacity(0.3),
+                        radius: 8,
+                        y: 4
+                    )
                 
                 Text(formateur.initiales)
-                    .font(.headline)
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
             }
             
             VStack(alignment: .leading, spacing: 6) {
                 Text(formateur.nomComplet)
-                    .font(.headline)
-                    .foregroundColor(.white)
+                    .font(.winamaxHeadline())
+                    .foregroundColor(theme.textPrimary)
                 
                 Text(formateur.specialite)
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.75))
+                    .font(.winamaxCaption())
+                    .foregroundColor(theme.textSecondary)
                 
                 // Badge type
-                Text(formateur.type)
-                    .font(.caption.weight(.semibold))
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
-                    .background(Color.white.opacity(0.1))
-                    .foregroundColor(.white)
-                    .clipShape(Capsule())
+                WinamaxBadge(
+                    text: formateur.type,
+                    color: formateur.exterieur ? theme.accentOrange : theme.primaryGreen
+                )
             }
             
             Spacer()
             
             Image(systemName: "chevron.right")
-                .foregroundColor(.white.opacity(0.6))
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(theme.textSecondary)
         }
-        .glassCard()
+        .winamaxCard()
     }
 }
 
 #Preview {
     FormateursListView()
+        .preferredColorScheme(.dark)
 }

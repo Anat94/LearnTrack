@@ -2,116 +2,358 @@
 //  StyleGuide.swift
 //  LearnTrack
 //
-//  Palette et styles visuels personnalisés pour un look plus affirmé.
+//  Système de design inspiré de Winamax - Dark/Light mode distincts
 //
 
 import SwiftUI
 
-struct BrandBackground: View {
-    var body: some View {
-        ZStack {
-            LinearGradient(
-                colors: [
-                    Color(red: 0.06, green: 0.08, blue: 0.16),
-                    Color(red: 0.07, green: 0.11, blue: 0.24),
-                    Color(red: 0.10, green: 0.17, blue: 0.32)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            
-            // Halo coloré dans les coins pour casser la symétrie classique.
-            RadialGradient(
-                colors: [
-                    Color(red: 0.64, green: 0.80, blue: 1.0).opacity(0.6),
-                    .clear
-                ],
-                center: .topLeading,
-                startRadius: 20,
-                endRadius: 420
-            )
-            
-            RadialGradient(
-                colors: [
-                    Color(red: 0.78, green: 0.52, blue: 1.0).opacity(0.5),
-                    .clear
-                ],
-                center: .bottomTrailing,
-                startRadius: 10,
-                endRadius: 360
-            )
+// MARK: - Environment pour le thème
+class ThemeManager: ObservableObject {
+    @Published var isDarkMode: Bool = false
+    
+    var currentTheme: AppTheme {
+        isDarkMode ? .dark : .light
+    }
+}
+
+enum AppTheme {
+    case light
+    case dark
+    
+    // MARK: - Couleurs Winamax
+    var primaryGreen: Color {
+        switch self {
+        case .light: return Color(red: 0.0, green: 0.85, blue: 0.65) // #00D9A5
+        case .dark: return Color(red: 0.0, green: 0.95, blue: 0.75) // Plus lumineux en dark
         }
-        .ignoresSafeArea()
-    }
-}
-
-private struct GlassCardModifier: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .padding()
-            .background(
-                LinearGradient(
-                    colors: [
-                        Color.white.opacity(0.08),
-                        Color.white.opacity(0.04)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .shadow(color: Color.black.opacity(0.32), radius: 20, x: 0, y: 12)
-    }
-}
-
-extension View {
-    func glassCard() -> some View {
-        modifier(GlassCardModifier())
     }
     
-    func neonBordered(radius: CGFloat = 14) -> some View {
-        overlay(
-            RoundedRectangle(cornerRadius: radius, style: .continuous)
-                .stroke(
-                    LinearGradient(
-                        colors: [Color.brandCyan.opacity(0.9), Color.brandPink.opacity(0.9)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1.1
-                )
-        )
+    var accentOrange: Color {
+        switch self {
+        case .light: return Color(red: 1.0, green: 0.4, blue: 0.0) // #FF6600
+        case .dark: return Color(red: 1.0, green: 0.5, blue: 0.1)
+        }
+    }
+    
+    var background: Color {
+        switch self {
+        case .light: return Color(red: 0.98, green: 0.98, blue: 0.99) // Presque blanc
+        case .dark: return Color(red: 0.05, green: 0.05, blue: 0.08) // Noir profond
+        }
+    }
+    
+    var cardBackground: Color {
+        switch self {
+        case .light: return .white
+        case .dark: return Color(red: 0.12, green: 0.12, blue: 0.16)
+        }
+    }
+    
+    var textPrimary: Color {
+        switch self {
+        case .light: return Color(red: 0.1, green: 0.1, blue: 0.15)
+        case .dark: return .white
+        }
+    }
+    
+    var textSecondary: Color {
+        switch self {
+        case .light: return Color(red: 0.4, green: 0.4, blue: 0.45)
+        case .dark: return Color(red: 0.7, green: 0.7, blue: 0.75)
+        }
+    }
+    
+    var borderColor: Color {
+        switch self {
+        case .light: return Color(red: 0.9, green: 0.9, blue: 0.92)
+        case .dark: return Color(red: 0.25, green: 0.25, blue: 0.3)
+        }
+    }
+    
+    var shadowColor: Color {
+        switch self {
+        case .light: return Color.black.opacity(0.08)
+        case .dark: return Color.black.opacity(0.4)
+        }
     }
 }
 
-extension Color {
-    static let brandCyan = Color(red: 0.23, green: 0.82, blue: 0.99)
-    static let brandPink = Color(red: 0.93, green: 0.53, blue: 0.98)
-    static let brandIndigo = Color(red: 0.37, green: 0.47, blue: 0.97)
-    static let brandMidnight = Color(red: 0.07, green: 0.09, blue: 0.15)
+// MARK: - Background Winamax
+struct WinamaxBackground: View {
+    @Environment(\.colorScheme) var colorScheme
+    var theme: AppTheme {
+        colorScheme == .dark ? .dark : .light
+    }
+    
+    var body: some View {
+        ZStack {
+            // Fond de base
+            theme.background
+                .ignoresSafeArea()
+            
+            // Motifs géométriques subtils (light mode)
+            if theme == .light {
+                GeometryReader { geo in
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [theme.primaryGreen.opacity(0.15), .clear],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: geo.size.width * 1.2, height: geo.size.width * 1.2)
+                        .offset(x: -geo.size.width * 0.3, y: -geo.size.width * 0.2)
+                    
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [theme.accentOrange.opacity(0.1), .clear],
+                                startPoint: .bottomTrailing,
+                                endPoint: .topLeading
+                            )
+                        )
+                        .frame(width: geo.size.width * 0.8, height: geo.size.width * 0.8)
+                        .offset(x: geo.size.width * 0.5, y: geo.size.height * 0.7)
+                }
+            } else {
+                // Effets lumineux en dark mode
+                GeometryReader { geo in
+                    RadialGradient(
+                        colors: [
+                            theme.primaryGreen.opacity(0.2),
+                            .clear
+                        ],
+                        center: .topLeading,
+                        startRadius: 50,
+                        endRadius: 400
+                    )
+                    
+                    RadialGradient(
+                        colors: [
+                            theme.accentOrange.opacity(0.15),
+                            .clear
+                        ],
+                        center: .bottomTrailing,
+                        startRadius: 30,
+                        endRadius: 350
+                    )
+                }
+            }
+        }
+    }
 }
 
-struct PrimaryButtonStyle: ButtonStyle {
+// MARK: - Carte Winamax
+struct WinamaxCard<Content: View>: View {
+    @Environment(\.colorScheme) var colorScheme
+    let content: Content
+    var padding: CGFloat = 16
+    var cornerRadius: CGFloat = 16
+    
+    init(padding: CGFloat = 16, cornerRadius: CGFloat = 16, @ViewBuilder content: () -> Content) {
+        self.padding = padding
+        self.cornerRadius = cornerRadius
+        self.content = content()
+    }
+    
+    var theme: AppTheme {
+        colorScheme == .dark ? .dark : .light
+    }
+    
+    var body: some View {
+        content
+            .padding(padding)
+            .background(theme.cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .stroke(theme.borderColor, lineWidth: 1)
+            )
+            .shadow(
+                color: theme.shadowColor,
+                radius: colorScheme == .dark ? 20 : 12,
+                x: 0,
+                y: colorScheme == .dark ? 8 : 4
+            )
+    }
+}
+
+// MARK: - Bouton Primary Winamax
+struct WinamaxPrimaryButton: ButtonStyle {
+    @Environment(\.colorScheme) var colorScheme
+    
+    var theme: AppTheme {
+        colorScheme == .dark ? .dark : .light
+    }
+    
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.headline)
+            .font(.system(size: 16, weight: .bold, design: .rounded))
+            .foregroundColor(.white)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
             .background(
                 LinearGradient(
-                    colors: [.brandCyan, .brandIndigo, .brandPink],
+                    colors: [theme.primaryGreen, theme.primaryGreen.opacity(0.85)],
                     startPoint: .leading,
                     endPoint: .trailing
                 )
             )
-            .cornerRadius(14)
-            .shadow(color: Color.brandCyan.opacity(0.35), radius: 14, x: 0, y: 8)
-            .opacity(configuration.isPressed ? 0.9 : 1.0)
-            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .shadow(
+                color: theme.primaryGreen.opacity(0.4),
+                radius: configuration.isPressed ? 8 : 16,
+                x: 0,
+                y: configuration.isPressed ? 4 : 8
+            )
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
     }
 }
 
+// MARK: - Bouton Secondary
+struct WinamaxSecondaryButton: ButtonStyle {
+    @Environment(\.colorScheme) var colorScheme
+    
+    var theme: AppTheme {
+        colorScheme == .dark ? .dark : .light
+    }
+    
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.system(size: 16, weight: .semibold, design: .rounded))
+            .foregroundColor(theme.textPrimary)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .background(theme.cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(theme.borderColor, lineWidth: 2)
+            )
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
+    }
+}
+
+// MARK: - Bouton Danger
+struct WinamaxDangerButton: ButtonStyle {
+    @Environment(\.colorScheme) var colorScheme
+    
+    var theme: AppTheme {
+        colorScheme == .dark ? .dark : .light
+    }
+    
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.system(size: 16, weight: .bold, design: .rounded))
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .background(
+                LinearGradient(
+                    colors: [Color.red, Color.red.opacity(0.85)],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .shadow(
+                color: Color.red.opacity(0.3),
+                radius: configuration.isPressed ? 8 : 16,
+                x: 0,
+                y: configuration.isPressed ? 4 : 8
+            )
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
+    }
+}
+
+// MARK: - Badge Winamax
+struct WinamaxBadge: View {
+    @Environment(\.colorScheme) var colorScheme
+    let text: String
+    var color: Color? = nil
+    
+    var theme: AppTheme {
+        colorScheme == .dark ? .dark : .light
+    }
+    
+    var badgeColor: Color {
+        color ?? theme.primaryGreen
+    }
+    
+    var body: some View {
+        Text(text)
+            .font(.system(size: 12, weight: .bold, design: .rounded))
+            .foregroundColor(.white)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(
+                LinearGradient(
+                    colors: [badgeColor, badgeColor.opacity(0.8)],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
+            .clipShape(Capsule(style: .continuous))
+            .shadow(color: badgeColor.opacity(0.3), radius: 6, y: 3)
+    }
+}
+
+// MARK: - Champ de texte Winamax
+struct WinamaxTextField: ViewModifier {
+    @Environment(\.colorScheme) var colorScheme
+    
+    var theme: AppTheme {
+        colorScheme == .dark ? .dark : .light
+    }
+    
+    func body(content: Content) -> some View {
+        content
+            .padding(14)
+            .background(theme.cardBackground)
+            .foregroundColor(theme.textPrimary)
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(theme.borderColor, lineWidth: 1.5)
+            )
+    }
+}
+
+extension View {
+    func winamaxTextField() -> some View {
+        modifier(WinamaxTextField())
+    }
+}
+
+// MARK: - Extension pour accès facile au thème
+extension View {
+    @ViewBuilder
+    func winamaxCard(padding: CGFloat = 16, cornerRadius: CGFloat = 16) -> some View {
+        WinamaxCard(padding: padding, cornerRadius: cornerRadius) {
+            self
+        }
+    }
+}
+
+// MARK: - Typographie Winamax
+extension Font {
+    static func winamaxTitle() -> Font {
+        .system(size: 28, weight: .bold, design: .rounded)
+    }
+    
+    static func winamaxHeadline() -> Font {
+        .system(size: 18, weight: .bold, design: .rounded)
+    }
+    
+    static func winamaxBody() -> Font {
+        .system(size: 16, weight: .medium, design: .rounded)
+    }
+    
+    static func winamaxCaption() -> Font {
+        .system(size: 14, weight: .medium, design: .rounded)
+    }
+}
