@@ -37,45 +37,52 @@ struct FormateurFormView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                Section("Identité") {
-                    TextField("Prénom", text: $prenom)
-                    TextField("Nom", text: $nom)
-                }
+            ZStack {
+                BrandBackground()
                 
-                Section("Contact") {
-                    TextField("Email", text: $email)
-                        .keyboardType(.emailAddress)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
+                Form {
+                    Section("Identité") {
+                        TextField("Prénom", text: $prenom)
+                        TextField("Nom", text: $nom)
+                    }
                     
-                    TextField("Téléphone", text: $telephone)
-                        .keyboardType(.phonePad)
-                }
-                
-                Section("Informations professionnelles") {
-                    TextField("Spécialité", text: $specialite)
+                    Section("Contact") {
+                        TextField("Email", text: $email)
+                            .keyboardType(.emailAddress)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                        
+                        TextField("Téléphone", text: $telephone)
+                            .keyboardType(.phonePad)
+                    }
                     
-                    TextField("Taux horaire (€)", text: $tauxHoraire)
-                        .keyboardType(.decimalPad)
+                    Section("Informations professionnelles") {
+                        TextField("Spécialité", text: $specialite)
+                        
+                        TextField("Taux horaire (€)", text: $tauxHoraire)
+                            .keyboardType(.decimalPad)
+                        
+                        Toggle("Formateur externe", isOn: $exterieur)
+                    }
                     
-                    Toggle("Formateur externe", isOn: $exterieur)
-                }
-                
-                if exterieur {
-                    Section("Société") {
-                        TextField("Nom de la société", text: $societe)
-                        TextField("SIRET", text: $siret)
-                        TextField("NDA", text: $nda)
+                    if exterieur {
+                        Section("Société") {
+                            TextField("Nom de la société", text: $societe)
+                            TextField("SIRET", text: $siret)
+                            TextField("NDA", text: $nda)
+                        }
+                    }
+                    
+                    Section("Adresse") {
+                        TextField("Rue", text: $rue)
+                        TextField("Code postal", text: $codePostal)
+                            .keyboardType(.numberPad)
+                        TextField("Ville", text: $ville)
                     }
                 }
-                
-                Section("Adresse") {
-                    TextField("Rue", text: $rue)
-                    TextField("Code postal", text: $codePostal)
-                        .keyboardType(.numberPad)
-                    TextField("Ville", text: $ville)
-                }
+                .scrollContentBackground(.hidden)
+                .listRowBackground(Color.white.opacity(0.06))
+                .tint(.brandCyan)
             }
             .navigationTitle(isEditing ? "Modifier" : "Nouveau formateur")
             .navigationBarTitleDisplayMode(.inline)

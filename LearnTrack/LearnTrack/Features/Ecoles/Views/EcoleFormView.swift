@@ -31,29 +31,36 @@ struct EcoleFormView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                Section("Établissement") {
-                    TextField("Nom de l'école", text: $nom)
-                }
+            ZStack {
+                BrandBackground()
                 
-                Section("Contact") {
-                    TextField("Nom du contact", text: $nomContact)
+                Form {
+                    Section("Établissement") {
+                        TextField("Nom de l'école", text: $nom)
+                    }
                     
-                    TextField("Email", text: $email)
-                        .keyboardType(.emailAddress)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
+                    Section("Contact") {
+                        TextField("Nom du contact", text: $nomContact)
+                        
+                        TextField("Email", text: $email)
+                            .keyboardType(.emailAddress)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                        
+                        TextField("Téléphone", text: $telephone)
+                            .keyboardType(.phonePad)
+                    }
                     
-                    TextField("Téléphone", text: $telephone)
-                        .keyboardType(.phonePad)
+                    Section("Adresse") {
+                        TextField("Rue", text: $rue)
+                        TextField("Code postal", text: $codePostal)
+                            .keyboardType(.numberPad)
+                        TextField("Ville", text: $ville)
+                    }
                 }
-                
-                Section("Adresse") {
-                    TextField("Rue", text: $rue)
-                    TextField("Code postal", text: $codePostal)
-                        .keyboardType(.numberPad)
-                    TextField("Ville", text: $ville)
-                }
+                .scrollContentBackground(.hidden)
+                .listRowBackground(Color.white.opacity(0.06))
+                .tint(.brandCyan)
             }
             .navigationTitle(isEditing ? "Modifier" : "Nouvelle école")
             .navigationBarTitleDisplayMode(.inline)

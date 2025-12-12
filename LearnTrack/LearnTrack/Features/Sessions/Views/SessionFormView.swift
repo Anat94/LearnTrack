@@ -42,120 +42,127 @@ struct SessionFormView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                // Module
-                Section("Informations générales") {
-                    TextField("Module de formation", text: $module)
-                        .autocorrectionDisabled()
-                    
-                    DatePicker("Date", selection: $date, displayedComponents: .date)
-                    
-                    HStack {
-                        Text("Début")
-                        Spacer()
-                        TextField("09:00", text: $debut)
-                            .keyboardType(.numbersAndPunctuation)
-                            .multilineTextAlignment(.trailing)
-                            .frame(width: 80)
-                    }
-                    
-                    HStack {
-                        Text("Fin")
-                        Spacer()
-                        TextField("17:00", text: $fin)
-                            .keyboardType(.numbersAndPunctuation)
-                            .multilineTextAlignment(.trailing)
-                            .frame(width: 80)
-                    }
-                }
+            ZStack {
+                BrandBackground()
                 
-                // Modalité et lieu
-                Section("Modalité") {
-                    Picker("Type", selection: $modalite) {
-                        ForEach(Session.Modalite.allCases, id: \.self) { mode in
-                            Text(mode.label).tag(mode)
+                Form {
+                    // Module
+                    Section("Informations générales") {
+                        TextField("Module de formation", text: $module)
+                            .autocorrectionDisabled()
+                        
+                        DatePicker("Date", selection: $date, displayedComponents: .date)
+                        
+                        HStack {
+                            Text("Début")
+                            Spacer()
+                            TextField("09:00", text: $debut)
+                                .keyboardType(.numbersAndPunctuation)
+                                .multilineTextAlignment(.trailing)
+                                .frame(width: 80)
+                        }
+                        
+                        HStack {
+                            Text("Fin")
+                            Spacer()
+                            TextField("17:00", text: $fin)
+                                .keyboardType(.numbersAndPunctuation)
+                                .multilineTextAlignment(.trailing)
+                                .frame(width: 80)
                         }
                     }
-                    .pickerStyle(SegmentedPickerStyle())
                     
-                    TextField(modalite == .presentiel ? "Adresse" : "Lien visio", text: $lieu)
-                        .autocorrectionDisabled()
-                }
-                
-                // Intervenants
-                Section("Intervenants") {
-                    NavigationLink(destination: FormateurPickerView(
-                        formateurs: formateurViewModel.formateurs,
-                        selectedId: $selectedFormateurId
-                    )) {
-                        HStack {
-                            Text("Formateur")
-                            Spacer()
-                            if let id = selectedFormateurId,
-                               let formateur = formateurViewModel.formateurs.first(where: { $0.id == id }) {
-                                Text(formateur.nomComplet)
-                                    .foregroundColor(.secondary)
-                            } else {
-                                Text("Sélectionner")
-                                    .foregroundColor(.secondary)
+                    // Modalité et lieu
+                    Section("Modalité") {
+                        Picker("Type", selection: $modalite) {
+                            ForEach(Session.Modalite.allCases, id: \.self) { mode in
+                                Text(mode.label).tag(mode)
+                            }
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                        
+                        TextField(modalite == .presentiel ? "Adresse" : "Lien visio", text: $lieu)
+                            .autocorrectionDisabled()
+                    }
+                    
+                    // Intervenants
+                    Section("Intervenants") {
+                        NavigationLink(destination: FormateurPickerView(
+                            formateurs: formateurViewModel.formateurs,
+                            selectedId: $selectedFormateurId
+                        )) {
+                            HStack {
+                                Text("Formateur")
+                                Spacer()
+                                if let id = selectedFormateurId,
+                                   let formateur = formateurViewModel.formateurs.first(where: { $0.id == id }) {
+                                    Text(formateur.nomComplet)
+                                        .foregroundColor(.secondary)
+                                } else {
+                                    Text("Sélectionner")
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                        }
+                        
+                        NavigationLink(destination: ClientPickerView(
+                            clients: clientViewModel.clients,
+                            selectedId: $selectedClientId
+                        )) {
+                            HStack {
+                                Text("Client")
+                                Spacer()
+                                if let id = selectedClientId,
+                                   let client = clientViewModel.clients.first(where: { $0.id == id }) {
+                                    Text(client.raisonSociale)
+                                        .foregroundColor(.secondary)
+                                } else {
+                                    Text("Sélectionner")
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                        }
+                        
+                        NavigationLink(destination: EcolePickerView(
+                            ecoles: ecoleViewModel.ecoles,
+                            selectedId: $selectedEcoleId
+                        )) {
+                            HStack {
+                                Text("École")
+                                Spacer()
+                                if let id = selectedEcoleId,
+                                   let ecole = ecoleViewModel.ecoles.first(where: { $0.id == id }) {
+                                    Text(ecole.nom)
+                                        .foregroundColor(.secondary)
+                                } else {
+                                    Text("Sélectionner")
+                                        .foregroundColor(.secondary)
+                                }
                             }
                         }
                     }
                     
-                    NavigationLink(destination: ClientPickerView(
-                        clients: clientViewModel.clients,
-                        selectedId: $selectedClientId
-                    )) {
-                        HStack {
-                            Text("Client")
-                            Spacer()
-                            if let id = selectedClientId,
-                               let client = clientViewModel.clients.first(where: { $0.id == id }) {
-                                Text(client.raisonSociale)
-                                    .foregroundColor(.secondary)
-                            } else {
-                                Text("Sélectionner")
-                                    .foregroundColor(.secondary)
-                            }
-                        }
+                    // Tarifs
+                    Section("Tarifs (€)") {
+                        TextField("Tarif client", text: $tarifClient)
+                            .keyboardType(.decimalPad)
+                        
+                        TextField("Tarif sous-traitant", text: $tarifSousTraitant)
+                            .keyboardType(.decimalPad)
+                        
+                        TextField("Frais à rembourser", text: $fraisRembourser)
+                            .keyboardType(.decimalPad)
                     }
                     
-                    NavigationLink(destination: EcolePickerView(
-                        ecoles: ecoleViewModel.ecoles,
-                        selectedId: $selectedEcoleId
-                    )) {
-                        HStack {
-                            Text("École")
-                            Spacer()
-                            if let id = selectedEcoleId,
-                               let ecole = ecoleViewModel.ecoles.first(where: { $0.id == id }) {
-                                Text(ecole.nom)
-                                    .foregroundColor(.secondary)
-                            } else {
-                                Text("Sélectionner")
-                                    .foregroundColor(.secondary)
-                            }
-                        }
+                    // Référence
+                    Section("Référence") {
+                        TextField("Référence contrat (optionnel)", text: $refContrat)
+                            .autocorrectionDisabled()
                     }
                 }
-                
-                // Tarifs
-                Section("Tarifs (€)") {
-                    TextField("Tarif client", text: $tarifClient)
-                        .keyboardType(.decimalPad)
-                    
-                    TextField("Tarif sous-traitant", text: $tarifSousTraitant)
-                        .keyboardType(.decimalPad)
-                    
-                    TextField("Frais à rembourser", text: $fraisRembourser)
-                        .keyboardType(.decimalPad)
-                }
-                
-                // Référence
-                Section("Référence") {
-                    TextField("Référence contrat (optionnel)", text: $refContrat)
-                        .autocorrectionDisabled()
-                }
+                .scrollContentBackground(.hidden)
+                .listRowBackground(Color.white.opacity(0.06))
+                .tint(.brandCyan)
             }
             .navigationTitle(isEditing ? "Modifier" : "Nouvelle session")
             .navigationBarTitleDisplayMode(.inline)

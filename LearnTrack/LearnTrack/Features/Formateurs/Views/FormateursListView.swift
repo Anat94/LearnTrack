@@ -13,51 +13,66 @@ struct FormateursListView: View {
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
-                // Barre de recherche
-                SearchBar(text: $viewModel.searchText)
-                    .padding()
+            ZStack {
+                BrandBackground()
                 
-                // Filtre type
-                Picker("Type", selection: $viewModel.filterType) {
-                    ForEach(FormateurViewModel.FilterType.allCases, id: \.self) { type in
-                        Text(type.rawValue).tag(type)
-                    }
-                }
-                .pickerStyle(SegmentedPickerStyle())
-                .padding(.horizontal)
-                
-                // Liste
-                if viewModel.isLoading {
-                    Spacer()
-                    ProgressView("Chargement...")
-                    Spacer()
-                } else if viewModel.filteredFormateurs.isEmpty {
-                    EmptyStateView(
-                        icon: "person.2.slash",
-                        title: "Aucun formateur",
-                        message: "Aucun formateur trouvé"
-                    )
-                } else {
-                    List {
-                        ForEach(viewModel.filteredFormateurs) { formateur in
-                            NavigationLink(destination: FormateurDetailView(formateur: formateur)) {
-                                FormateurRowView(formateur: formateur)
-                            }
+                VStack(spacing: 16) {
+                    // Barre de recherche
+                    SearchBar(text: $viewModel.searchText, placeholder: "Rechercher un formateur")
+                        .padding(.horizontal)
+                        .padding(.top, 8)
+                    
+                    // Filtre type
+                    Picker("Type", selection: $viewModel.filterType) {
+                        ForEach(FormateurViewModel.FilterType.allCases, id: \.self) { type in
+                            Text(type.rawValue).tag(type)
                         }
                     }
-                    .listStyle(PlainListStyle())
-                    .refreshable {
-                        await viewModel.fetchFormateurs()
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal)
+                    .background(Color.white.opacity(0.04))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .padding(.horizontal)
+                    
+                    // Liste
+                    if viewModel.isLoading {
+                        ProgressView("Chargement...")
+                            .progressViewStyle(CircularProgressViewStyle(tint: .brandCyan))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else if viewModel.filteredFormateurs.isEmpty {
+                        EmptyStateView(
+                            icon: "person.2.slash",
+                            title: "Aucun formateur",
+                            message: "Ajoutez votre premier talent ou ajustez la recherche."
+                        )
+                    } else {
+                        ScrollView {
+                            LazyVStack(spacing: 14) {
+                                ForEach(viewModel.filteredFormateurs) { formateur in
+                                    NavigationLink(destination: FormateurDetailView(formateur: formateur)) {
+                                        FormateurRowView(formateur: formateur)
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .padding(.horizontal)
+                            .padding(.bottom, 12)
+                        }
+                        .refreshable {
+                            await viewModel.fetchFormateurs()
+                        }
                     }
                 }
             }
             .navigationTitle("Formateurs")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingAddFormateur = true }) {
-                        Image(systemName: "plus.circle.fill")
+                        Image(systemName: "sparkles.rectangle.stack")
                             .font(.title2)
+                            .foregroundColor(.brandCyan)
                     }
                 }
             }
@@ -75,38 +90,50 @@ struct FormateurRowView: View {
     let formateur: Formateur
     
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 14) {
             // Avatar avec initiales
-            Circle()
-                .fill(formateur.exterieur ? Color.orange.opacity(0.2) : Color.green.opacity(0.2))
-                .frame(width: 50, height: 50)
-                .overlay(
-                    Text(formateur.initiales)
-                        .font(.headline)
-                        .foregroundColor(formateur.exterieur ? .orange : .green)
-                )
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: formateur.exterieur ? [.orange, .brandPink] : [.brandCyan, .green],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 54, height: 54)
+                    .shadow(color: .brandCyan.opacity(0.3), radius: 10, y: 6)
+                
+                Text(formateur.initiales)
+                    .font(.headline)
+                    .foregroundColor(.white)
+            }
             
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(formateur.nomComplet)
                     .font(.headline)
+                    .foregroundColor(.white)
                 
                 Text(formateur.specialite)
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.75))
                 
                 // Badge type
                 Text(formateur.type)
-                    .font(.caption)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 2)
-                    .background(formateur.exterieur ? Color.orange.opacity(0.2) : Color.green.opacity(0.2))
-                    .foregroundColor(formateur.exterieur ? .orange : .green)
-                    .cornerRadius(4)
+                    .font(.caption.weight(.semibold))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color.white.opacity(0.1))
+                    .foregroundColor(.white)
+                    .clipShape(Capsule())
             }
             
             Spacer()
+            
+            Image(systemName: "chevron.right")
+                .foregroundColor(.white.opacity(0.6))
         }
-        .padding(.vertical, 4)
+        .glassCard()
     }
 }
 

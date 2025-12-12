@@ -33,35 +33,42 @@ struct ClientFormView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                Section("Entreprise") {
-                    TextField("Raison sociale", text: $raisonSociale)
-                }
+            ZStack {
+                BrandBackground()
                 
-                Section("Contact principal") {
-                    TextField("Nom du contact", text: $nomContact)
+                Form {
+                    Section("Entreprise") {
+                        TextField("Raison sociale", text: $raisonSociale)
+                    }
                     
-                    TextField("Email", text: $email)
-                        .keyboardType(.emailAddress)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
+                    Section("Contact principal") {
+                        TextField("Nom du contact", text: $nomContact)
+                        
+                        TextField("Email", text: $email)
+                            .keyboardType(.emailAddress)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                        
+                        TextField("Téléphone", text: $telephone)
+                            .keyboardType(.phonePad)
+                    }
                     
-                    TextField("Téléphone", text: $telephone)
-                        .keyboardType(.phonePad)
+                    Section("Adresse") {
+                        TextField("Rue", text: $rue)
+                        TextField("Code postal", text: $codePostal)
+                            .keyboardType(.numberPad)
+                        TextField("Ville", text: $ville)
+                    }
+                    
+                    Section("Informations fiscales") {
+                        TextField("SIRET", text: $siret)
+                            .keyboardType(.numberPad)
+                        TextField("N° TVA intracommunautaire", text: $numeroTva)
+                    }
                 }
-                
-                Section("Adresse") {
-                    TextField("Rue", text: $rue)
-                    TextField("Code postal", text: $codePostal)
-                        .keyboardType(.numberPad)
-                    TextField("Ville", text: $ville)
-                }
-                
-                Section("Informations fiscales") {
-                    TextField("SIRET", text: $siret)
-                        .keyboardType(.numberPad)
-                    TextField("N° TVA intracommunautaire", text: $numeroTva)
-                }
+                .scrollContentBackground(.hidden)
+                .listRowBackground(Color.white.opacity(0.06))
+                .tint(.brandCyan)
             }
             .navigationTitle(isEditing ? "Modifier" : "Nouveau client")
             .navigationBarTitleDisplayMode(.inline)
