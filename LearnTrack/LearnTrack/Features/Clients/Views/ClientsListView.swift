@@ -2,7 +2,7 @@
 //  ClientsListView.swift
 //  LearnTrack
 //
-//  Liste des clients - Design Emerald Premium
+//  Liste des clients - Design Premium
 //
 
 import SwiftUI
@@ -10,6 +10,7 @@ import SwiftUI
 struct ClientsListView: View {
     @StateObject private var viewModel = ClientViewModel()
     @State private var showingAddClient = false
+    @State private var hasAppeared = false
     
     var body: some View {
         NavigationView {
@@ -17,31 +18,27 @@ struct ClientsListView: View {
                 Color.ltBackground
                     .ignoresSafeArea()
                 
-                VStack(spacing: LTSpacing.md) {
-                    // Search bar
-                    LTSearchBar(text: $viewModel.searchText, placeholder: "Rechercher un client...")
+                VStack(spacing: 0) {
+                    // Search
+                    LTSearchBar(text: $viewModel.searchText, placeholder: "Rechercher...")
                         .padding(.horizontal, LTSpacing.lg)
-                        .padding(.top, LTSpacing.sm)
+                        .padding(.vertical, LTSpacing.md)
+                        .opacity(hasAppeared ? 1 : 0)
+                        .offset(y: hasAppeared ? 0 : -20)
                     
                     // Content
-                    Group {
-                        if viewModel.isLoading {
-                            loadingView
-                        } else if viewModel.filteredClients.isEmpty {
-                            emptyStateView
-                        } else {
-                            clientsList
-                        }
-                    }
+                    contentSection
                 }
             }
-            .navigationTitle("Clients")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Clients")
+                        .font(.ltH3)
+                        .foregroundColor(.ltText)
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    LTIconButton(icon: "plus", variant: .primary, size: .small) {
-                        showingAddClient = true
-                    }
+                    addButton
                 }
             }
             .sheet(isPresented: $showingAddClient) {
@@ -50,34 +47,64 @@ struct ClientsListView: View {
             .task {
                 await viewModel.fetchClients()
             }
-        }
-    }
-    
-    // MARK: - Loading View
-    private var loadingView: some View {
-        VStack(spacing: LTSpacing.md) {
-            ForEach(0..<4, id: \.self) { _ in
-                LTSkeletonPersonRow()
+            .onAppear {
+                withAnimation(.easeOut(duration: 0.3).delay(0.1)) {
+                    hasAppeared = true
+                }
             }
         }
-        .padding(.horizontal, LTSpacing.lg)
     }
     
-    // MARK: - Empty State
-    private var emptyStateView: some View {
-        LTEmptyState(
-            icon: "building.2.slash",
-            title: "Aucun client",
-            message: "Aucun client trouvé",
-            actionTitle: "Ajouter",
-            action: { showingAddClient = true }
-        )
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    // MARK: - Add Button
+    private var addButton: some View {
+        Button {
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            showingAddClient = true
+        } label: {
+            ZStack {
+                Circle()
+                    .fill(LinearGradient(colors: [.emerald400, .emerald600], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .frame(width: 36, height: 36)
+                    .shadow(color: .emerald500.opacity(0.4), radius: 8, y: 2)
+                
+                Image(systemName: "plus")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.white)
+            }
+        }
     }
     
-    // MARK: - Clients List
+    // MARK: - Content
+    @ViewBuilder
+    private var contentSection: some View {
+        if viewModel.isLoading {
+            ScrollView {
+                VStack(spacing: LTSpacing.md) {
+                    ForEach(0..<4, id: \.self) { index in
+                        LTSkeletonPersonRow()
+                            .opacity(hasAppeared ? 1 : 0)
+                            .animation(.easeOut(duration: 0.4).delay(Double(index) * 0.1), value: hasAppeared)
+                    }
+                }
+                .padding(.horizontal, LTSpacing.lg)
+            }
+        } else if viewModel.filteredClients.isEmpty {
+            LTEmptyState(
+                icon: "building.2.slash",
+                title: "Aucun client",
+                message: "Aucun client trouvé",
+                actionTitle: "Ajouter",
+                action: { showingAddClient = true }
+            )
+            .opacity(hasAppeared ? 1 : 0)
+        } else {
+            clientsList
+        }
+    }
+    
+    // MARK: - List
     private var clientsList: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             LazyVStack(spacing: LTSpacing.md) {
                 ForEach(Array(viewModel.filteredClients.enumerated()), id: \.element.id) { index, client in
                     NavigationLink(destination: ClientDetailView(client: client)) {
@@ -91,11 +118,16 @@ struct ClientsListView: View {
                         .allowsHitTesting(false)
                     }
                     .buttonStyle(PlainButtonStyle())
-                    .animation(.ltSpringSmooth.delay(Double(index) * 0.03), value: viewModel.filteredClients.count)
+                    .opacity(hasAppeared ? 1 : 0)
+                    .offset(y: hasAppeared ? 0 : 30)
+                    .animation(
+                        .spring(response: 0.5, dampingFraction: 0.8).delay(Double(index) * 0.05),
+                        value: hasAppeared
+                    )
                 }
             }
             .padding(.horizontal, LTSpacing.lg)
-            .padding(.bottom, 120)
+            .padding(.bottom, 100)
         }
         .refreshable {
             await viewModel.fetchClients()

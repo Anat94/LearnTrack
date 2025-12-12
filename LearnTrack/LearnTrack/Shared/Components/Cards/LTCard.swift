@@ -2,7 +2,7 @@
 //  LTCard.swift
 //  LearnTrack
 //
-//  Composant carte custom - Design Emerald
+//  Cartes avec effet 3D Press - Design Premium
 //
 
 import SwiftUI
@@ -14,6 +14,7 @@ enum LTCardVariant {
     case elevated
     case interactive
     case accent
+    case glass
 }
 
 // MARK: - LTCard View
@@ -39,23 +40,18 @@ struct LTCard<Content: View>: View {
     }
     
     @State private var isPressed = false
+    @State private var pressLocation: CGPoint = .zero
     
     var body: some View {
         Group {
             if let action = action {
                 Button(action: {
-                    let impact = UIImpactFeedbackGenerator(style: .light)
-                    impact.impactOccurred()
+                    triggerHaptic()
                     action()
                 }) {
                     cardContent
                 }
-                .buttonStyle(PlainButtonStyle())
-                .simultaneousGesture(
-                    DragGesture(minimumDistance: 0)
-                        .onChanged { _ in isPressed = true }
-                        .onEnded { _ in isPressed = false }
-                )
+                .buttonStyle(Card3DButtonStyle(isPressed: $isPressed, pressLocation: $pressLocation))
             } else {
                 cardContent
             }
@@ -66,76 +62,177 @@ struct LTCard<Content: View>: View {
         content
             .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(backgroundColor)
+            .background(cardBackground)
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
             .overlay(borderOverlay)
             .shadow(color: shadowColor, radius: shadowRadius, x: 0, y: shadowY)
-            .scaleEffect(isPressed && action != nil ? 0.98 : 1.0)
-            .animation(.ltSpringSubtle, value: isPressed)
     }
     
-    private var backgroundColor: Color {
-        variant == .outlined ? .clear : (isPressed ? .ltCardHover : .ltCard)
+    // MARK: - Background
+    @ViewBuilder
+    private var cardBackground: some View {
+        switch variant {
+        case .glass:
+            ZStack {
+                Color.slate800.opacity(0.5)
+                Rectangle().fill(.ultraThinMaterial)
+            }
+        case .outlined:
+            Color.clear
+        default:
+            Color.ltCard
+        }
     }
     
+    // MARK: - Border
     @ViewBuilder
     private var borderOverlay: some View {
         switch variant {
         case .outlined:
-            RoundedRectangle(cornerRadius: cornerRadius).stroke(Color.ltBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: cornerRadius)
+                .stroke(Color.ltBorder, lineWidth: 1)
         case .accent:
             RoundedRectangle(cornerRadius: cornerRadius)
-                .stroke(LinearGradient.emeraldGradient, lineWidth: 2)
+                .stroke(
+                    LinearGradient(
+                        colors: [.emerald400, .emerald600],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 2
+                )
+        case .glass:
+            RoundedRectangle(cornerRadius: cornerRadius)
+                .stroke(
+                    LinearGradient(
+                        colors: [.white.opacity(0.2), .white.opacity(0.05)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1
+                )
         case .interactive:
             RoundedRectangle(cornerRadius: cornerRadius)
-                .stroke(isPressed ? Color.emerald500 : Color.ltBorderSubtle, lineWidth: isPressed ? 2 : 1)
+                .stroke(isPressed ? Color.emerald500.opacity(0.5) : Color.ltBorderSubtle, lineWidth: 1)
         default:
             EmptyView()
         }
     }
     
+    // MARK: - Shadow
     private var shadowColor: Color {
         switch variant {
-        case .default, .interactive: return .black.opacity(0.08)
-        case .elevated: return .black.opacity(0.12)
-        case .accent: return .emerald500.opacity(0.15)
-        case .outlined: return .clear
+        case .elevated: return .black.opacity(0.15)
+        case .accent: return .emerald500.opacity(0.2)
+        case .glass: return .black.opacity(0.2)
+        default: return .black.opacity(0.08)
         }
     }
     
     private var shadowRadius: CGFloat {
         switch variant {
-        case .default, .interactive: return 8
-        case .elevated: return 16
-        case .accent: return 12
-        case .outlined: return 0
+        case .elevated: return 20
+        case .accent: return 16
+        case .glass: return 24
+        default: return 8
         }
     }
     
     private var shadowY: CGFloat {
         switch variant {
-        case .default, .interactive: return 4
-        case .elevated: return 8
-        case .accent: return 6
-        case .outlined: return 0
+        case .elevated: return 10
+        case .accent: return 8
+        case .glass: return 12
+        default: return 4
         }
+    }
+    
+    private func triggerHaptic() {
+        let impact = UIImpactFeedbackGenerator(style: .light)
+        impact.impactOccurred()
     }
 }
 
-// MARK: - Icon Label
-struct LTIconLabel: View {
-    let icon: String
-    let text: String
-    var color: Color = .ltTextSecondary
+// MARK: - 3D Button Style
+struct Card3DButtonStyle: ButtonStyle {
+    @Binding var isPressed: Bool
+    @Binding var pressLocation: CGPoint
+    
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .rotation3DEffect(
+                .degrees(configuration.isPressed ? rotationAngle.x : 0),
+                axis: (x: 1, y: 0, z: 0),
+                perspective: 0.5
+            )
+            .rotation3DEffect(
+                .degrees(configuration.isPressed ? rotationAngle.y : 0),
+                axis: (x: 0, y: 1, z: 0),
+                perspective: 0.5
+            )
+            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+            .brightness(configuration.isPressed ? 0.02 : 0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
+            .onChange(of: configuration.isPressed) { _, newValue in
+                isPressed = newValue
+            }
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        pressLocation = value.location
+                    }
+            )
+    }
+    
+    private var rotationAngle: (x: Double, y: Double) {
+        // Subtle 3D tilt based on press location
+        (x: 3, y: -3)
+    }
+}
+
+// MARK: - Interactive Card (Simplified)
+struct LTInteractiveCard<Content: View>: View {
+    let action: () -> Void
+    @ViewBuilder let content: Content
+    
+    @State private var isPressed = false
     
     var body: some View {
-        HStack(spacing: LTSpacing.xs) {
-            Image(systemName: icon)
-                .font(.system(size: LTIconSize.sm))
-            Text(text)
-                .font(.ltCaption)
+        Button(action: {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            action()
+        }) {
+            content
+                .padding(LTSpacing.lg)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(isPressed ? Color.ltCardHover : Color.ltCard)
+                .clipShape(RoundedRectangle(cornerRadius: LTRadius.xl))
+                .overlay(
+                    RoundedRectangle(cornerRadius: LTRadius.xl)
+                        .stroke(isPressed ? Color.emerald500.opacity(0.3) : Color.ltBorderSubtle, lineWidth: 1)
+                )
+                .shadow(color: .black.opacity(0.08), radius: 8, y: 4)
+                .scaleEffect(isPressed ? 0.98 : 1.0)
+                .rotation3DEffect(
+                    .degrees(isPressed ? 2 : 0),
+                    axis: (x: 1, y: 0, z: 0),
+                    perspective: 0.5
+                )
         }
-        .foregroundColor(color)
+        .buttonStyle(PlainButtonStyle())
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    withAnimation(.spring(response: 0.2, dampingFraction: 0.6)) {
+                        isPressed = true
+                    }
+                }
+                .onEnded { _ in
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                        isPressed = false
+                    }
+                }
+        )
     }
 }
 
@@ -165,7 +262,7 @@ struct LTPersonCard: View {
     }
     
     var body: some View {
-        LTCard(variant: .interactive, padding: LTSpacing.md, action: action) {
+        LTInteractiveCard(action: action) {
             HStack(spacing: LTSpacing.md) {
                 LTAvatar(initials: initials, size: .medium, color: badgeColor)
                 
@@ -191,13 +288,47 @@ struct LTPersonCard: View {
     }
 }
 
-#Preview {
-    VStack(spacing: 16) {
-        LTCard { Text("Default Card").font(.ltH4) }
-        LTCard(variant: .outlined) { Text("Outlined").font(.ltH4) }
-        LTCard(variant: .elevated) { Text("Elevated").font(.ltH4) }
-        LTCard(variant: .accent) { Text("Accent").font(.ltH4) }
+// MARK: - Icon Label
+struct LTIconLabel: View {
+    let icon: String
+    let text: String
+    var color: Color = .ltTextSecondary
+    
+    var body: some View {
+        HStack(spacing: LTSpacing.xs) {
+            Image(systemName: icon)
+                .font(.system(size: LTIconSize.sm))
+            Text(text)
+                .font(.ltCaption)
+        }
+        .foregroundColor(color)
     }
-    .padding()
+}
+
+// MARK: - Preview
+#Preview {
+    ScrollView {
+        VStack(spacing: 16) {
+            LTCard { Text("Default Card").font(.ltH4) }
+            LTCard(variant: .glass) { Text("Glass Card").font(.ltH4) }
+            LTCard(variant: .accent) { Text("Accent Card").font(.ltH4) }
+            
+            LTInteractiveCard(action: {}) {
+                Text("Interactive - Tap me!")
+                    .font(.ltH4)
+            }
+            
+            LTPersonCard(
+                name: "Jean Dupont",
+                subtitle: "Formateur Swift",
+                initials: "JD",
+                badge: "Externe",
+                badgeColor: .warning,
+                action: {}
+            )
+        }
+        .padding()
+    }
     .background(Color.ltBackground)
+    .preferredColorScheme(.dark)
 }

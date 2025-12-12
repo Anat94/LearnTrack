@@ -2,7 +2,7 @@
 //  FormateursListView.swift
 //  LearnTrack
 //
-//  Liste des formateurs - Design Emerald Premium
+//  Liste des formateurs - Design Premium
 //
 
 import SwiftUI
@@ -11,6 +11,7 @@ struct FormateursListView: View {
     @StateObject private var viewModel = FormateurViewModel()
     @State private var showingAddFormateur = false
     @State private var selectedFilterIndex = 0
+    @State private var hasAppeared = false
     
     var body: some View {
         NavigationView {
@@ -18,38 +19,20 @@ struct FormateursListView: View {
                 Color.ltBackground
                     .ignoresSafeArea()
                 
-                VStack(spacing: LTSpacing.md) {
-                    // Search bar
-                    LTSearchBar(text: $viewModel.searchText, placeholder: "Rechercher un formateur...")
-                        .padding(.horizontal, LTSpacing.lg)
-                        .padding(.top, LTSpacing.sm)
-                    
-                    // Filter tabs
-                    LTSegmentedControl(
-                        selectedIndex: $selectedFilterIndex,
-                        items: ["Tous", "Internes", "Externes"]
-                    )
-                    .padding(.horizontal, LTSpacing.lg)
-                    
-                    // Content
-                    Group {
-                        if viewModel.isLoading {
-                            loadingView
-                        } else if viewModel.filteredFormateurs.isEmpty {
-                            emptyStateView
-                        } else {
-                            formateursList
-                        }
-                    }
+                VStack(spacing: 0) {
+                    headerSection
+                    contentSection
                 }
             }
-            .navigationTitle("Formateurs")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Formateurs")
+                        .font(.ltH3)
+                        .foregroundColor(.ltText)
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    LTIconButton(icon: "plus", variant: .primary, size: .small) {
-                        showingAddFormateur = true
-                    }
+                    addButton
                 }
             }
             .sheet(isPresented: $showingAddFormateur) {
@@ -57,6 +40,11 @@ struct FormateursListView: View {
             }
             .task {
                 await viewModel.fetchFormateurs()
+            }
+            .onAppear {
+                withAnimation(.easeOut(duration: 0.3).delay(0.1)) {
+                    hasAppeared = true
+                }
             }
             .onChange(of: selectedFilterIndex) { _, newValue in
                 withAnimation(.ltSpringSnappy) {
@@ -71,14 +59,67 @@ struct FormateursListView: View {
         }
     }
     
-    // MARK: - Loading View
-    private var loadingView: some View {
+    // MARK: - Header
+    private var headerSection: some View {
         VStack(spacing: LTSpacing.md) {
-            ForEach(0..<4, id: \.self) { _ in
-                LTSkeletonPersonRow()
+            LTSearchBar(text: $viewModel.searchText, placeholder: "Rechercher...")
+                .padding(.horizontal, LTSpacing.lg)
+            
+            LTSegmentedControl(
+                selectedIndex: $selectedFilterIndex,
+                items: ["Tous", "Internes", "Externes"]
+            )
+            .padding(.horizontal, LTSpacing.lg)
+        }
+        .padding(.top, LTSpacing.sm)
+        .padding(.bottom, LTSpacing.md)
+        .opacity(hasAppeared ? 1 : 0)
+        .offset(y: hasAppeared ? 0 : -20)
+    }
+    
+    // MARK: - Content
+    @ViewBuilder
+    private var contentSection: some View {
+        if viewModel.isLoading {
+            loadingView
+        } else if viewModel.filteredFormateurs.isEmpty {
+            emptyStateView
+        } else {
+            formateursList
+        }
+    }
+    
+    // MARK: - Add Button
+    private var addButton: some View {
+        Button {
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            showingAddFormateur = true
+        } label: {
+            ZStack {
+                Circle()
+                    .fill(LinearGradient(colors: [.emerald400, .emerald600], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .frame(width: 36, height: 36)
+                    .shadow(color: .emerald500.opacity(0.4), radius: 8, y: 2)
+                
+                Image(systemName: "plus")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.white)
             }
         }
-        .padding(.horizontal, LTSpacing.lg)
+    }
+    
+    // MARK: - Loading
+    private var loadingView: some View {
+        ScrollView {
+            VStack(spacing: LTSpacing.md) {
+                ForEach(0..<4, id: \.self) { index in
+                    LTSkeletonPersonRow()
+                        .opacity(hasAppeared ? 1 : 0)
+                        .animation(.easeOut(duration: 0.4).delay(Double(index) * 0.1), value: hasAppeared)
+                }
+            }
+            .padding(.horizontal, LTSpacing.lg)
+        }
     }
     
     // MARK: - Empty State
@@ -90,12 +131,13 @@ struct FormateursListView: View {
             actionTitle: "Ajouter",
             action: { showingAddFormateur = true }
         )
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .opacity(hasAppeared ? 1 : 0)
+        .scaleEffect(hasAppeared ? 1 : 0.9)
     }
     
-    // MARK: - Formateurs List
+    // MARK: - List
     private var formateursList: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             LazyVStack(spacing: LTSpacing.md) {
                 ForEach(Array(viewModel.filteredFormateurs.enumerated()), id: \.element.id) { index, formateur in
                     NavigationLink(destination: FormateurDetailView(formateur: formateur)) {
@@ -110,11 +152,16 @@ struct FormateursListView: View {
                         .allowsHitTesting(false)
                     }
                     .buttonStyle(PlainButtonStyle())
-                    .animation(.ltSpringSmooth.delay(Double(index) * 0.03), value: viewModel.filteredFormateurs.count)
+                    .opacity(hasAppeared ? 1 : 0)
+                    .offset(y: hasAppeared ? 0 : 30)
+                    .animation(
+                        .spring(response: 0.5, dampingFraction: 0.8).delay(Double(index) * 0.05),
+                        value: hasAppeared
+                    )
                 }
             }
             .padding(.horizontal, LTSpacing.lg)
-            .padding(.bottom, 120)
+            .padding(.bottom, 100)
         }
         .refreshable {
             await viewModel.fetchFormateurs()
