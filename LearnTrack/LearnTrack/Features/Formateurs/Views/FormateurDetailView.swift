@@ -160,7 +160,7 @@ struct FormateurDetailView: View {
                 SectionHeader(icon: "briefcase.fill", title: "Informations", color: .warning)
                 
                 VStack(spacing: LTSpacing.sm) {
-                    InfoRowCompact(label: "Taux horaire", value: "\(formateur.tauxHoraire) €/h")
+                    InfoRowCompact(label: "Tarif journalier", value: "\(formateur.tarifJournalier) €/j")
                     
                     if let nda = formateur.nda, !nda.isEmpty {
                         InfoRowCompact(label: "NDA", value: nda)
@@ -291,7 +291,7 @@ struct FormateurDetailView: View {
             email: api.email,
             telephone: api.telephone ?? "",
             specialite: specialite,
-            tauxHoraire: taux,
+            tarifJournalier: taux,
             exterieur: extras?.exterieur ?? false,
             societe: extras?.societe,
             siret: extras?.siret,
@@ -446,7 +446,7 @@ struct InfoRowCompact: View {
             email: "jean@example.com",
             telephone: "0123456789",
             specialite: "Swift",
-            tauxHoraire: 50,
+            tarifJournalier: 50,
             exterieur: false
         ))
         .environmentObject(AuthService.shared)

@@ -197,7 +197,7 @@ class SessionViewModel: ObservableObject {
             email: api.email,
             telephone: api.telephone ?? "",
             specialite: specialite,
-            tauxHoraire: taux,
+            tarifJournalier: taux,
             exterieur: extras?.exterieur ?? false,
             societe: extras?.societe,
             siret: extras?.siret,

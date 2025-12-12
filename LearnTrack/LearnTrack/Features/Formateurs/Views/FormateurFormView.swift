@@ -18,7 +18,7 @@ struct FormateurFormView: View {
     @State private var email = ""
     @State private var telephone = ""
     @State private var specialite = ""
-    @State private var tauxHoraire = ""
+    @State private var tarifJournalier = ""
     @State private var exterieur = false
     @State private var societe = ""
     @State private var siret = ""
@@ -55,7 +55,7 @@ struct FormateurFormView: View {
                         // Infos professionnelles
                         LTFormSection(title: "Informations professionnelles") {
                             LTFormField(label: "Spécialité", text: $specialite, placeholder: "Ex: Swift, iOS")
-                            LTFormField(label: "Taux horaire (€)", text: $tauxHoraire, placeholder: "50.00", keyboardType: .decimalPad)
+                            LTFormField(label: "Tarif journalier (€/j)", text: $tarifJournalier, placeholder: "400.00", keyboardType: .decimalPad)
                             LTFormToggle(label: "Formateur externe", isOn: $exterieur, icon: "person.badge.key.fill")
                         }
                         
@@ -122,7 +122,7 @@ struct FormateurFormView: View {
         email = f.email
         telephone = f.telephone
         specialite = f.specialite
-        tauxHoraire = "\(f.tauxHoraire)"
+        tarifJournalier = "\(f.tarifJournalier)"
         exterieur = f.exterieur
         societe = f.societe ?? ""
         siret = f.siret ?? ""
@@ -135,8 +135,8 @@ struct FormateurFormView: View {
     private func saveFormateur() {
         isLoading = true
         
-        guard let tauxValue = Decimal(string: tauxHoraire) else {
-            errorMessage = "Veuillez saisir un taux horaire valide"
+        guard let tauxValue = Decimal(string: tarifJournalier) else {
+            errorMessage = "Veuillez saisir un tarif journalier valide"
             showError = true
             isLoading = false
             return
@@ -149,7 +149,7 @@ struct FormateurFormView: View {
             email: email,
             telephone: telephone,
             specialite: specialite,
-            tauxHoraire: tauxValue,
+            tarifJournalier: tauxValue,
             exterieur: exterieur,
             societe: societe.isEmpty ? nil : societe,
             siret: siret.isEmpty ? nil : siret,
