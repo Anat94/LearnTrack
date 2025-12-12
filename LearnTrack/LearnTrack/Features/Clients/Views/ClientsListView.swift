@@ -1,50 +1,36 @@
+//
+//  ClientsListView.swift
+//  LearnTrack
+//
+//  Liste des clients - Design Emerald Premium
+//
+
 import SwiftUI
 
 struct ClientsListView: View {
     @StateObject private var viewModel = ClientViewModel()
     @State private var showingAddClient = false
-    @Environment(\.colorScheme) var colorScheme
-    
-    var theme: AppTheme {
-        colorScheme == .dark ? .dark : .light
-    }
     
     var body: some View {
         NavigationView {
             ZStack {
-                WinamaxBackground()
+                Color.ltBackground
+                    .ignoresSafeArea()
                 
-                VStack(spacing: 12) {
-                    SearchBar(text: $viewModel.searchText, placeholder: "Rechercher une entreprise...")
-                        .padding(.horizontal, 20)
-                        .padding(.top, 8)
+                VStack(spacing: LTSpacing.md) {
+                    // Search bar
+                    LTSearchBar(text: $viewModel.searchText, placeholder: "Rechercher un client...")
+                        .padding(.horizontal, LTSpacing.lg)
+                        .padding(.top, LTSpacing.sm)
                     
-                    if viewModel.isLoading {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: theme.primaryGreen))
-                            .scaleEffect(1.2)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    } else if viewModel.filteredClients.isEmpty {
-                        EmptyStateView(
-                            icon: "building.2.slash",
-                            title: "Aucun client",
-                            message: "Ajoutez votre premier partenaire ou ajustez la recherche"
-                        )
-                    } else {
-                        ScrollView {
-                            LazyVStack(spacing: 12) {
-                                ForEach(viewModel.filteredClients) { client in
-                                    NavigationLink(destination: ClientDetailView(client: client)) {
-                                        ClientRowView(client: client)
-                                    }
-                                    .buttonStyle(.plain)
-                                }
-                            }
-                            .padding(.horizontal, 20)
-                            .padding(.bottom, 16)
-                        }
-                        .refreshable {
-                            await viewModel.fetchClients()
+                    // Content
+                    Group {
+                        if viewModel.isLoading {
+                            loadingView
+                        } else if viewModel.filteredClients.isEmpty {
+                            emptyStateView
+                        } else {
+                            clientsList
                         }
                     }
                 }
@@ -53,11 +39,8 @@ struct ClientsListView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingAddClient = true }) {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 24, weight: .semibold))
-                            .foregroundColor(theme.primaryGreen)
-                            .shadow(color: theme.primaryGreen.opacity(0.3), radius: 8, y: 4)
+                    LTIconButton(icon: "plus", variant: .primary, size: .small) {
+                        showingAddClient = true
                     }
                 }
             }
@@ -69,105 +52,59 @@ struct ClientsListView: View {
             }
         }
     }
-}
-
-struct ClientRowView: View {
-    let client: Client
-    @Environment(\.colorScheme) var colorScheme
-    @State private var isPressed = false
     
-    var theme: AppTheme {
-        colorScheme == .dark ? .dark : .light
+    // MARK: - Loading View
+    private var loadingView: some View {
+        VStack(spacing: LTSpacing.md) {
+            ForEach(0..<4, id: \.self) { _ in
+                LTSkeletonPersonRow()
+            }
+        }
+        .padding(.horizontal, LTSpacing.lg)
     }
     
-    var body: some View {
-        HStack(spacing: 14) {
-            ZStack {
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [
-                                theme.primaryGreen.opacity(0.3),
-                                theme.primaryGreen.opacity(0.1),
-                                .clear
-                            ],
-                            center: .center,
-                            startRadius: 5,
-                            endRadius: 30
+    // MARK: - Empty State
+    private var emptyStateView: some View {
+        LTEmptyState(
+            icon: "building.2.slash",
+            title: "Aucun client",
+            message: "Aucun client trouvé",
+            actionTitle: "Ajouter",
+            action: { showingAddClient = true }
+        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+    
+    // MARK: - Clients List
+    private var clientsList: some View {
+        ScrollView {
+            LazyVStack(spacing: LTSpacing.md) {
+                ForEach(Array(viewModel.filteredClients.enumerated()), id: \.element.id) { index, client in
+                    NavigationLink(destination: ClientDetailView(client: client)) {
+                        LTPersonCard(
+                            name: client.raisonSociale,
+                            subtitle: client.email.isEmpty ? (client.ville ?? "") : client.email,
+                            initials: client.initiales,
+                            badgeColor: .info,
+                            action: {}
                         )
-                    )
-                    .frame(width: 60, height: 60)
-                    .blur(radius: 8)
-                
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                theme.primaryGreen,
-                                theme.primaryGreen.opacity(0.8),
-                                theme.primaryGreen.opacity(0.7)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 56, height: 56)
-                    .overlay(
-                        Circle()
-                            .stroke(
-                                LinearGradient(
-                                    colors: [
-                                        Color.white.opacity(0.3),
-                                        Color.white.opacity(0.1)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 2
-                            )
-                    )
-                    .shadow(color: theme.primaryGreen.opacity(0.4), radius: 12, y: 6)
-                    .shadow(color: theme.primaryGreen.opacity(0.2), radius: 6, y: 3)
-                
-                Text(client.initiales)
-                    .font(.system(size: 19, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
-            }
-            
-            VStack(alignment: .leading, spacing: 6) {
-                Text(client.raisonSociale)
-                    .font(.winamaxHeadline())
-                    .foregroundColor(theme.textPrimary)
-                    .lineLimit(2)
-                
-                HStack(spacing: 5) {
-                    Image(systemName: "mappin.circle.fill")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(theme.accentOrange.opacity(0.8))
-                    Text(client.villeDisplay)
-                        .font(.winamaxCaption())
-                        .foregroundColor(theme.textSecondary)
+                        .allowsHitTesting(false)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .animation(.ltSpringSmooth.delay(Double(index) * 0.03), value: viewModel.filteredClients.count)
                 }
             }
-            
-            Spacer()
-            
-            Image(systemName: "chevron.right")
-                .font(.system(size: 13, weight: .bold))
-                .foregroundColor(theme.textSecondary.opacity(0.5))
+            .padding(.horizontal, LTSpacing.lg)
+            .padding(.bottom, 120)
         }
-        .winamaxCard(
-            padding: 16,
-            cornerRadius: 20,
-            hasGlow: true,
-            glowColor: theme.primaryGreen
-        )
-        .scaleEffect(isPressed ? 0.98 : 1.0)
-        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isPressed)
+        .refreshable {
+            await viewModel.fetchClients()
+        }
     }
 }
 
 #Preview {
     ClientsListView()
+        .environmentObject(AuthService.shared)
         .preferredColorScheme(.dark)
 }

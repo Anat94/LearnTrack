@@ -2,92 +2,50 @@
 //  MainTabView.swift
 //  LearnTrack
 //
-//  Navigation principale style Winamax
+//  Navigation principale avec TabBar Liquid Glass Emerald
 //
 
 import SwiftUI
 
 struct MainTabView: View {
     @State private var selectedTab = 0
-    @Environment(\.colorScheme) var colorScheme
     
-    var theme: AppTheme {
-        colorScheme == .dark ? .dark : .light
-    }
+    // Définition des tabs
+    private let tabs = [
+        LTTabItem(title: "Sessions", icon: "calendar"),
+        LTTabItem(title: "Formateurs", icon: "person.2"),
+        LTTabItem(title: "Clients", icon: "building.2"),
+        LTTabItem(title: "Écoles", icon: "graduationcap"),
+        LTTabItem(title: "Profil", icon: "person.circle")
+    ]
     
     var body: some View {
-        ZStack {
-            WinamaxBackground()
-                .ignoresSafeArea()
-            
-            TabView(selection: $selectedTab) {
-                // Sessions
-                SessionsListView()
-                    .tabItem {
-                        Label("Sessions", systemImage: "calendar")
+        LTTabView(selectedIndex: $selectedTab, items: tabs, style: .floating) {
+            ZStack {
+                // Fond avec gradient subtil
+                Color.ltBackground
+                    .ignoresSafeArea()
+                
+                // Contenu selon l'onglet sélectionné
+                Group {
+                    switch selectedTab {
+                    case 0:
+                        SessionsListView()
+                    case 1:
+                        FormateursListView()
+                    case 2:
+                        ClientsListView()
+                    case 3:
+                        EcolesListView()
+                    case 4:
+                        ProfileView()
+                    default:
+                        SessionsListView()
                     }
-                    .tag(0)
-                
-                // Formateurs
-                FormateursListView()
-                    .tabItem {
-                        Label("Formateurs", systemImage: "person.2.fill")
-                    }
-                    .tag(1)
-                
-                // Clients
-                ClientsListView()
-                    .tabItem {
-                        Label("Clients", systemImage: "building.2.fill")
-                    }
-                    .tag(2)
-                
-                // Écoles
-                EcolesListView()
-                    .tabItem {
-                        Label("Écoles", systemImage: "graduationcap.fill")
-                    }
-                    .tag(3)
-                
-                // Profil
-                ProfileView()
-                    .tabItem {
-                        Label("Profil", systemImage: "person.circle.fill")
-                    }
-                    .tag(4)
-            }
-            .tint(theme.primaryGreen)
-            .onAppear {
-                // Personnalisation de la TabBar
-                let appearance = UITabBarAppearance()
-                appearance.configureWithOpaqueBackground()
-                appearance.backgroundColor = theme == .dark ? 
-                    UIColor(red: 0.12, green: 0.12, blue: 0.16, alpha: 0.95) :
-                    UIColor(red: 0.98, green: 0.98, blue: 0.99, alpha: 0.95)
-                
-                appearance.shadowColor = UIColor(theme.shadowColor)
-                appearance.shadowImage = UIImage()
-                
-                // Couleur des items non sélectionnés
-                appearance.stackedLayoutAppearance.normal.iconColor = UIColor(theme.textSecondary)
-                appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
-                    .foregroundColor: UIColor(theme.textSecondary),
-                    .font: UIFont.systemFont(ofSize: 11, weight: .medium)
-                ]
-                
-                // Couleur des items sélectionnés
-                appearance.stackedLayoutAppearance.selected.iconColor = UIColor(theme.primaryGreen)
-                appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
-                    .foregroundColor: UIColor(theme.primaryGreen),
-                    .font: UIFont.systemFont(ofSize: 11, weight: .bold)
-                ]
-                
-                UITabBar.appearance().standardAppearance = appearance
-                if #available(iOS 15.0, *) {
-                    UITabBar.appearance().scrollEdgeAppearance = appearance
                 }
             }
         }
+        .ltToasts() // Support des toast notifications
     }
 }
 
