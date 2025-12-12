@@ -21,13 +21,11 @@ struct SessionsListView: View {
             ZStack {
                 WinamaxBackground()
                 
-                VStack(spacing: 16) {
-                    // Barre de recherche
+                VStack(spacing: 12) {
                     SearchBar(text: $viewModel.searchText, placeholder: "Rechercher une session...")
                         .padding(.horizontal, 20)
                         .padding(.top, 8)
                     
-                    // Filtres par mois
                     MonthFilterView(selectedMonth: $viewModel.selectedMonth)
                         .padding(.horizontal, 20)
                     
@@ -46,7 +44,7 @@ struct SessionsListView: View {
                             )
                         } else {
                             ScrollView {
-                                LazyVStack(spacing: 14) {
+                                LazyVStack(spacing: 12) {
                                     ForEach(viewModel.filteredSessions) { session in
                                         NavigationLink(destination: SessionDetailView(session: session)) {
                                             SessionCardView(session: session)
@@ -55,7 +53,7 @@ struct SessionsListView: View {
                                     }
                                 }
                                 .padding(.horizontal, 20)
-                                .padding(.bottom, 20)
+                                .padding(.bottom, 16)
                             }
                             .refreshable {
                                 await viewModel.fetchSessions()
@@ -86,7 +84,7 @@ struct SessionsListView: View {
     }
 }
 
-// Card pour afficher une session - Design moderne
+// Card pour afficher une session - Design moderne et propre
 struct SessionCardView: View {
     let session: Session
     @Environment(\.colorScheme) var colorScheme
@@ -97,28 +95,26 @@ struct SessionCardView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top, spacing: 12) {
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 8) {
                     Text(session.module)
                         .font(.winamaxHeadline())
                         .foregroundColor(theme.textPrimary)
                         .lineLimit(2)
-                        .fixedSize(horizontal: false, vertical: true)
                     
-                    HStack(spacing: 16) {
-                        HStack(spacing: 6) {
+                    HStack(spacing: 14) {
+                        HStack(spacing: 5) {
                             Image(systemName: "calendar")
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.system(size: 12, weight: .semibold))
                                 .foregroundColor(theme.primaryGreen)
                             Text(session.displayDate)
                                 .font(.winamaxCaption())
                                 .foregroundColor(theme.textSecondary)
                         }
-                        
-                        HStack(spacing: 6) {
+                        HStack(spacing: 5) {
                             Image(systemName: "clock")
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.system(size: 12, weight: .semibold))
                                 .foregroundColor(theme.accentOrange)
                             Text(session.displayHoraires)
                                 .font(.winamaxCaption())
@@ -126,10 +122,7 @@ struct SessionCardView: View {
                         }
                     }
                 }
-                
                 Spacer()
-                
-                // Badge modalité avec glow
                 WinamaxBadge(
                     text: session.modalite.label,
                     color: session.modalite == .presentiel ? theme.primaryGreen : theme.accentOrange,
@@ -137,50 +130,35 @@ struct SessionCardView: View {
                 )
             }
             
-            // Divider avec gradient
-            Rectangle()
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            theme.borderColor.opacity(0.5),
-                            theme.borderColor.opacity(0.2),
-                            theme.borderColor.opacity(0.5)
-                        ],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-                .frame(height: 1)
-                .padding(.vertical, 4)
-            
-            HStack(spacing: 14) {
-                if let formateur = session.formateur {
-                    HStack(spacing: 6) {
-                        Image(systemName: "person.fill")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(theme.primaryGreen.opacity(0.8))
-                        Text(formateur.nomComplet)
-                            .font(.winamaxCaption())
-                            .foregroundColor(theme.textSecondary)
+            if session.formateur != nil || session.modalite == .presentiel {
+                HStack(spacing: 12) {
+                    if let formateur = session.formateur {
+                        HStack(spacing: 5) {
+                            Image(systemName: "person.fill")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundColor(theme.primaryGreen.opacity(0.8))
+                            Text(formateur.nomComplet)
+                                .font(.winamaxCaption())
+                                .foregroundColor(theme.textSecondary)
+                        }
                     }
-                }
-                
-                if session.modalite == .presentiel {
-                    HStack(spacing: 6) {
-                        Image(systemName: "mappin.circle.fill")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(theme.accentOrange.opacity(0.8))
-                        Text(session.lieu)
-                            .font(.winamaxCaption())
-                            .foregroundColor(theme.textSecondary)
-                            .lineLimit(1)
+                    if session.modalite == .presentiel {
+                        HStack(spacing: 5) {
+                            Image(systemName: "mappin.circle.fill")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundColor(theme.accentOrange.opacity(0.8))
+                            Text(session.lieu)
+                                .font(.winamaxCaption())
+                                .foregroundColor(theme.textSecondary)
+                                .lineLimit(1)
+                        }
                     }
                 }
             }
         }
         .winamaxCard(
-            padding: 18,
-            cornerRadius: 22,
+            padding: 16,
+            cornerRadius: 20,
             hasGlow: true,
             glowColor: session.modalite == .presentiel ? theme.primaryGreen : theme.accentOrange
         )

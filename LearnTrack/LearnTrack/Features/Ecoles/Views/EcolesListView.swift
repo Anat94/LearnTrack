@@ -21,7 +21,7 @@ struct EcolesListView: View {
             ZStack {
                 WinamaxBackground()
                 
-                VStack(spacing: 16) {
+                VStack(spacing: 12) {
                     SearchBar(text: $viewModel.searchText, placeholder: "Rechercher une école...")
                         .padding(.horizontal, 20)
                         .padding(.top, 8)
@@ -39,7 +39,7 @@ struct EcolesListView: View {
                         )
                     } else {
                         ScrollView {
-                            LazyVStack(spacing: 14) {
+                            LazyVStack(spacing: 12) {
                                 ForEach(viewModel.filteredEcoles) { ecole in
                                     NavigationLink(destination: EcoleDetailView(ecole: ecole)) {
                                         EcoleRowView(ecole: ecole)
@@ -48,7 +48,7 @@ struct EcolesListView: View {
                                 }
                             }
                             .padding(.horizontal, 20)
-                            .padding(.bottom, 20)
+                            .padding(.bottom, 16)
                         }
                         .refreshable {
                             await viewModel.fetchEcoles()
@@ -88,10 +88,8 @@ struct EcoleRowView: View {
     }
     
     var body: some View {
-        HStack(spacing: 16) {
-            // Avatar avec initiales - Design amélioré
+        HStack(spacing: 14) {
             ZStack {
-                // Glow effect
                 Circle()
                     .fill(
                         RadialGradient(
@@ -105,7 +103,7 @@ struct EcoleRowView: View {
                             endRadius: 30
                         )
                     )
-                    .frame(width: 64, height: 64)
+                    .frame(width: 60, height: 60)
                     .blur(radius: 8)
                 
                 Circle()
@@ -120,7 +118,7 @@ struct EcoleRowView: View {
                             endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: 60, height: 60)
+                    .frame(width: 56, height: 56)
                     .overlay(
                         Circle()
                             .stroke(
@@ -139,35 +137,35 @@ struct EcoleRowView: View {
                     .shadow(color: theme.accentOrange.opacity(0.2), radius: 6, y: 3)
                 
                 Text(ecole.initiales)
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .font(.system(size: 19, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
             }
             
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(ecole.nom)
                     .font(.winamaxHeadline())
                     .foregroundColor(theme.textPrimary)
                     .lineLimit(2)
                 
-                HStack(spacing: 6) {
+                HStack(spacing: 5) {
                     Image(systemName: "mappin.circle.fill")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(theme.accentOrange.opacity(0.8))
                     Text(ecole.villeDisplay)
                         .font(.winamaxCaption())
+                        .foregroundColor(theme.textSecondary)
                 }
-                .foregroundColor(theme.textSecondary)
             }
             
             Spacer()
             
             Image(systemName: "chevron.right")
-                .font(.system(size: 14, weight: .bold))
-                .foregroundColor(theme.textSecondary.opacity(0.6))
+                .font(.system(size: 13, weight: .bold))
+                .foregroundColor(theme.textSecondary.opacity(0.5))
         }
         .winamaxCard(
-            padding: 18,
-            cornerRadius: 22,
+            padding: 16,
+            cornerRadius: 20,
             hasGlow: true,
             glowColor: theme.accentOrange
         )

@@ -246,11 +246,9 @@ struct WinamaxCard<Content: View>: View {
             .padding(padding)
             .background(
                 ZStack {
-                    // Fond principal
                     RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                         .fill(theme.cardBackground)
                     
-                    // Effet glassmorphism en dark mode
                     if colorScheme == .dark {
                         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                             .fill(
@@ -282,16 +280,16 @@ struct WinamaxCard<Content: View>: View {
                     )
             )
             .shadow(
-                color: hasGlow ? (glowColor ?? theme.primaryGreen).opacity(0.3) : theme.shadowColor,
-                radius: colorScheme == .dark ? 25 : 15,
+                color: hasGlow ? (glowColor ?? theme.primaryGreen).opacity(0.25) : theme.shadowColor,
+                radius: colorScheme == .dark ? 20 : 12,
                 x: 0,
-                y: colorScheme == .dark ? 10 : 5
+                y: colorScheme == .dark ? 8 : 4
             )
             .shadow(
                 color: theme.shadowColor,
-                radius: colorScheme == .dark ? 15 : 8,
+                radius: colorScheme == .dark ? 10 : 6,
                 x: 0,
-                y: colorScheme == .dark ? 5 : 2
+                y: colorScheme == .dark ? 4 : 2
             )
     }
 }

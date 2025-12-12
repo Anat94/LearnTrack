@@ -21,12 +21,11 @@ struct FormateursListView: View {
             ZStack {
                 WinamaxBackground()
                 
-                VStack(spacing: 16) {
+                VStack(spacing: 12) {
                     SearchBar(text: $viewModel.searchText, placeholder: "Rechercher un formateur...")
                         .padding(.horizontal, 20)
                         .padding(.top, 8)
                     
-                    // Filtre type
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 10) {
                             ForEach(FormateurViewModel.FilterType.allCases, id: \.self) { type in
@@ -82,7 +81,7 @@ struct FormateursListView: View {
                         )
                     } else {
                         ScrollView {
-                            LazyVStack(spacing: 14) {
+                            LazyVStack(spacing: 12) {
                                 ForEach(viewModel.filteredFormateurs) { formateur in
                                     NavigationLink(destination: FormateurDetailView(formateur: formateur)) {
                                         FormateurRowView(formateur: formateur)
@@ -91,7 +90,7 @@ struct FormateursListView: View {
                                 }
                             }
                             .padding(.horizontal, 20)
-                            .padding(.bottom, 20)
+                            .padding(.bottom, 16)
                         }
                         .refreshable {
                             await viewModel.fetchFormateurs()
@@ -135,10 +134,8 @@ struct FormateurRowView: View {
     }
     
     var body: some View {
-        HStack(spacing: 16) {
-            // Avatar avec initiales - Design amélioré
+        HStack(spacing: 14) {
             ZStack {
-                // Glow effect
                 Circle()
                     .fill(
                         RadialGradient(
@@ -152,7 +149,7 @@ struct FormateurRowView: View {
                             endRadius: 30
                         )
                     )
-                    .frame(width: 64, height: 64)
+                    .frame(width: 60, height: 60)
                     .blur(radius: 8)
                 
                 Circle()
@@ -167,7 +164,7 @@ struct FormateurRowView: View {
                             endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: 60, height: 60)
+                    .frame(width: 56, height: 56)
                     .overlay(
                         Circle()
                             .stroke(
@@ -186,36 +183,36 @@ struct FormateurRowView: View {
                     .shadow(color: avatarColor.opacity(0.2), radius: 6, y: 3)
                 
                 Text(formateur.initiales)
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .font(.system(size: 19, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
             }
             
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(formateur.nomComplet)
                     .font(.winamaxHeadline())
                     .foregroundColor(theme.textPrimary)
                 
-                Text(formateur.specialite)
-                    .font(.winamaxCaption())
-                    .foregroundColor(theme.textSecondary)
-                
-                // Badge type
-                WinamaxBadge(
-                    text: formateur.type,
-                    color: avatarColor,
-                    size: .small
-                )
+                HStack(spacing: 8) {
+                    Text(formateur.specialite)
+                        .font(.winamaxCaption())
+                        .foregroundColor(theme.textSecondary)
+                    WinamaxBadge(
+                        text: formateur.type,
+                        color: avatarColor,
+                        size: .small
+                    )
+                }
             }
             
             Spacer()
             
             Image(systemName: "chevron.right")
-                .font(.system(size: 14, weight: .bold))
-                .foregroundColor(theme.textSecondary.opacity(0.6))
+                .font(.system(size: 13, weight: .bold))
+                .foregroundColor(theme.textSecondary.opacity(0.5))
         }
         .winamaxCard(
-            padding: 18,
-            cornerRadius: 22,
+            padding: 16,
+            cornerRadius: 20,
             hasGlow: true,
             glowColor: avatarColor
         )
