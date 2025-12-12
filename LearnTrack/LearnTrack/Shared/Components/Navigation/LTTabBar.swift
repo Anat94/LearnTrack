@@ -262,11 +262,11 @@ struct LTTabView<Content: View>: View {
                 VStack(spacing: 20) {
                     Text("Page \(index + 1)")
                         .font(.system(size: 48, weight: .bold, design: .rounded))
-                        .foregroundStyle(.ltText)
+                        .foregroundColor(.ltText)
                     
                     Text("Swipe ou tap pour naviguer")
                         .font(.ltCaption)
-                        .foregroundStyle(.ltTextSecondary)
+                        .foregroundColor(.ltTextSecondary)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
